@@ -330,7 +330,7 @@ function didi_ai_chat_stream($req) {
   $customFlag = !empty($params['custom']);
   if ($customFlag && is_user_logged_in()) {
     $level = get_user_meta(get_current_user_id(), 'didi_membership', true);
-    $level = in_array($level, array('free', 'silver', 'gold')) ? $level : 'free';
+    $level = in_array($level, didi_ai_membership_levels()) ? $level : 'free';
     if ($level === 'free') {
       return new WP_Error('need_membership', '自定义模型需要升级会员资格，促销期仅需 ¥0.01 即可开通，请前往 [会员中心](' . home_url('/member') . ') 开通', array('status' => 403));
     }
@@ -595,6 +595,25 @@ function didi_ai_record_usage($feature, $note = '') {
     $usage[$module]['logs'] = $logs;
   }
   update_user_meta($uid, 'didi_usage', $usage);
+}
+
+// 消费流水：type = recharge(充值) / membership(开通会员) / spend(消费) / refund(退款) / bonus(奖励)
+function didi_ai_billing_log($type, $feature, $cost, $balance, $note = '') {
+  if (!is_user_logged_in()) return;
+  $uid = get_current_user_id();
+  $logs = get_user_meta($uid, 'didi_billing', true);
+  if (!is_array($logs)) $logs = array();
+  array_unshift($logs, array('t' => time(), 'type' => $type, 'feature' => $feature, 'cost' => (float) $cost, 'balance' => (float) $balance, 'note' => $note));
+  if (count($logs) > 200) $logs = array_slice($logs, 0, 200);
+  update_user_meta($uid, 'didi_billing', $logs);
+}
+
+// 最近消费记录（供会员中心展示）
+function didi_ai_billing_items($limit = 50) {
+  if (!is_user_logged_in()) return array();
+  $logs = get_user_meta(get_current_user_id(), 'didi_billing', true);
+  if (!is_array($logs)) $logs = array();
+  return array_slice($logs, 0, max(1, min((int) $limit, 200)));
 }
 
 function didi_ai_note_from_messages($messages) {
@@ -943,13 +962,19 @@ function didi_ai_pricing() {
   );
 }
 
-// 会员档位定义
+// 会员档位定义（trial 试用会员为最低档，置于最前）
 function didi_ai_memberships() {
   return array(
+    'trial'  => array('name' => '试用会员', 'color' => '#14b8a6', 'monthly' => 1000, 'daily' => array('chat' => 50, 'code' => 50, 'work' => 50, 'image' => 5, 'video' => 1, 'video_intl' => 0, 'animate' => 1, 'edit' => 3)),
     'free'   => array('name' => '普通会员', 'color' => '#86909c', 'monthly' => 0,   'daily' => array('chat' => 20, 'code' => 20, 'work' => 20, 'image' => 2, 'video' => 0, 'video_intl' => 0, 'animate' => 0, 'edit' => 1)),
     'silver' => array('name' => '银牌会员', 'color' => '#1668dc', 'monthly' => 3000, 'daily' => array('chat' => 200, 'code' => 200, 'work' => 200, 'image' => 50, 'video' => 10, 'video_intl' => 3, 'animate' => 10, 'edit' => 30)),
     'gold'   => array('name' => '金牌会员', 'color' => '#f7ba1e', 'monthly' => 10000,'daily' => array('chat' => 1000, 'code' => 1000, 'work' => 1000, 'image' => 200, 'video' => 50, 'video_intl' => 15, 'animate' => 50, 'edit' => 100)),
   );
+}
+
+// 合法会员档位
+function didi_ai_membership_levels() {
+  return array('trial', 'free', 'silver', 'gold');
 }
 
 // 当前用户会员等级与余额
@@ -962,7 +987,7 @@ function didi_ai_user_quota() {
     didi_ai_init_quota($uid);
   }
   $level = get_user_meta($uid, 'didi_membership', true);
-  $level = in_array($level, array('free', 'silver', 'gold')) ? $level : 'free';
+  $level = in_array($level, didi_ai_membership_levels()) ? $level : 'free';
   $ms = didi_ai_memberships();
   $balance = (float) get_user_meta($uid, 'didi_balance', true);
   $date = gmdate('Y-m-d');
@@ -1002,7 +1027,7 @@ function didi_ai_charge($feature, $note = '') {
 
   // 免费用户：视频/动漫不开放
   $level = get_user_meta($uid, 'didi_membership', true);
-  $level = in_array($level, array('free', 'silver', 'gold')) ? $level : 'free';
+  $level = in_array($level, didi_ai_membership_levels()) ? $level : 'free';
   $ms = didi_ai_memberships();
   $dailyLimit = $ms[$level]['daily'];
 
@@ -1033,6 +1058,7 @@ function didi_ai_charge($feature, $note = '') {
   $daily[$dailyKey] = $used + 1;
   update_user_meta($uid, 'didi_daily_' . $date, $daily);
   didi_ai_record_usage($feature, $note);
+  didi_ai_billing_log('spend', $feature, $cost, $balance - $cost, $note);
 
   return array('ok' => true, 'error' => '', 'cost' => $cost, 'balance' => $balance - $cost);
 }
@@ -1067,7 +1093,7 @@ function didi_ai_charge_hold($feature, $hold = 10) {
 
   // 每日额度
   $level = get_user_meta($uid, 'didi_membership', true);
-  $level = in_array($level, array('free', 'silver', 'gold')) ? $level : 'free';
+  $level = in_array($level, didi_ai_membership_levels()) ? $level : 'free';
   $ms = didi_ai_memberships();
   $dailyLimit = $ms[$level]['daily'];
   $date = gmdate('Y-m-d');
@@ -1121,9 +1147,11 @@ function didi_ai_settle_chat($feature, $total_tokens, $hold = 10, $answered = tr
   if ($actual < 1) $actual = 1;
   if ($actual > $hold) $actual = $hold; // 单次封顶 hold
   $refund = $hold - $actual;
+  didi_ai_billing_log('spend', $feature, $actual, $balance, '对话结算（' . $total_tokens . ' tokens）');
   if ($refund > 0) {
     $balance += $refund;
     update_user_meta($uid, 'didi_balance', $balance);
+    didi_ai_billing_log('refund', $feature, $refund, $balance, '结算退款（预扣 ' . $hold . '，实扣 ' . $actual . '）');
   }
   return array('tokens' => (int) $total_tokens, 'cost' => $actual, 'refund' => $refund, 'balance' => $balance);
 }
@@ -1134,6 +1162,38 @@ function didi_ai_quota_endpoint($req) {
   $q['pricing'] = didi_ai_pricing();
   return $q;
 }
+
+// REST：修改密码（wp_set_password 会使当前会话失效，前端提示重新登录）
+function didi_ai_change_password_endpoint($req) {
+  if (!is_user_logged_in()) {
+    return new WP_REST_Response(array('ok' => false, 'message' => '请先登录'), 401);
+  }
+  $old = (string) $req->get_param('old_password');
+  $new = (string) $req->get_param('new_password');
+  if ($old === '' || $new === '') {
+    return new WP_REST_Response(array('ok' => false, 'message' => '请填写当前密码与新密码'), 400);
+  }
+  if (strlen($new) < 6) {
+    return new WP_REST_Response(array('ok' => false, 'message' => '新密码至少 6 位'), 400);
+  }
+  $uid = get_current_user_id();
+  $user = get_userdata($uid);
+  if (!$user || !wp_check_password($old, $user->user_pass, $uid)) {
+    return new WP_REST_Response(array('ok' => false, 'message' => '当前密码不正确'), 400);
+  }
+  wp_set_password($new, $uid);
+  didi_ai_billing_log('bonus', 'password', 0, (float) get_user_meta($uid, 'didi_balance', true), '修改登录密码');
+  return array('ok' => true, 'message' => '密码修改成功，请重新登录');
+}
+
+// REST：消费记录
+function didi_ai_billing_endpoint($req) {
+  if (!is_user_logged_in()) {
+    return new WP_REST_Response(array('ok' => false, 'message' => '请先登录'), 401);
+  }
+  $limit = (int) $req->get_param('limit');
+  return array('ok' => true, 'items' => didi_ai_billing_items($limit));
+}
 // REST：充值（模拟，正式需接支付）
 function didi_ai_recharge_endpoint($req) {
   if (!is_user_logged_in()) {
@@ -1143,14 +1203,34 @@ function didi_ai_recharge_endpoint($req) {
   $plan = sanitize_key($req->get_param('plan') ?: '');
   $uid = get_current_user_id();
   $balance = (float) get_user_meta($uid, 'didi_balance', true);
+  $curLevel = get_user_meta($uid, 'didi_membership', true);
+  $curLevel = in_array($curLevel, didi_ai_membership_levels()) ? $curLevel : 'free';
+
+  // 试用会员：最低档，¥0.01 体验 7 天（仅 free/普通用户可开通）
+  if ($plan === 'trial') {
+    if ($curLevel !== 'free') {
+      return new WP_REST_Response(array('ok' => false, 'message' => '您已是 ' . didi_ai_memberships()[$curLevel]['name'] . '，无需开通试用'), 400);
+    }
+    $points = 1; // ¥0.01 = 1 点
+    update_user_meta($uid, 'didi_membership', 'trial');
+    update_user_meta($uid, 'didi_membership_plan', 'trial');
+    update_user_meta($uid, 'didi_membership_expire', date('Y-m-d H:i:s', time() + 7 * 86400));
+    update_user_meta($uid, 'didi_balance', $balance + $points);
+    didi_ai_billing_log('membership', 'trial', $points, $balance + $points, '¥0.01 开通试用会员（7 天）');
+    return array('ok' => true, 'membership' => 'trial', 'balance' => $balance + $points, 'added' => $points, 'method' => $method, 'note' => '试用会员开通成功：¥0.01 体验 7 天');
+  }
 
   // 会员开通：促销期 ¥0.01 入会（原价月 ¥9.99 / 年 ¥99.99）
   if (in_array($plan, array('membership', 'month', 'year'), true)) {
+    if ($curLevel !== 'free' && $curLevel !== 'trial') {
+      return new WP_REST_Response(array('ok' => false, 'message' => '您已是会员，无需重复开通'), 400);
+    }
     $points = 1; // ¥0.01 = 1 点
     update_user_meta($uid, 'didi_membership', 'silver');
     update_user_meta($uid, 'didi_membership_plan', $plan === 'year' ? 'year' : 'month');
     update_user_meta($uid, 'didi_membership_expire', date('Y-m-d H:i:s', time() + ($plan === 'year' ? 365 : 30) * 86400));
     update_user_meta($uid, 'didi_balance', $balance + $points);
+    didi_ai_billing_log('membership', 'silver', $points, $balance + $points, '促销活动：¥0.01 开通会员（原价：月 ¥9.99 / 年 ¥99.99）');
     return array('ok' => true, 'membership' => 'silver', 'balance' => $balance + $points, 'added' => $points, 'method' => $method, 'note' => '促销活动：¥0.01 开通会员（原价：月 ¥9.99 / 年 ¥99.99）');
   }
 
@@ -1160,6 +1240,7 @@ function didi_ai_recharge_endpoint($req) {
   }
   $points = $amount * 100; // ¥1 = 100 点
   update_user_meta($uid, 'didi_balance', $balance + $points);
+  didi_ai_billing_log('recharge', 'recharge', $points, $balance + $points, '充值 ¥' . $amount . '（' . $method . '）');
   return array('ok' => true, 'balance' => $balance + $points, 'added' => $points, 'method' => $method, 'note' => '当前为模拟充值，接入真实支付后金额将直接入账');
 }
 
@@ -1329,6 +1410,16 @@ function didi_ai_register_quota_routes() {
   register_rest_route('didi/v1', '/vps', array(
     'methods' => 'POST',
     'callback' => 'didi_ai_vps_proxy',
+    'permission_callback' => '__return_true',
+  ));
+  register_rest_route('didi/v1', '/change-password', array(
+    'methods' => 'POST',
+    'callback' => 'didi_ai_change_password_endpoint',
+    'permission_callback' => '__return_true',
+  ));
+  register_rest_route('didi/v1', '/billing', array(
+    'methods' => 'GET',
+    'callback' => 'didi_ai_billing_endpoint',
     'permission_callback' => '__return_true',
   ));
 }

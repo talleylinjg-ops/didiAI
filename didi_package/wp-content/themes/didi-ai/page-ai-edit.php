@@ -61,7 +61,31 @@ get_header();
         <label class="field" id="customModelField" style="display:none;"><span>自定义模型名称</span>
           <input class="input" type="text" id="customModel" placeholder="输入自定义模型标识，例如 my-edit-model">
         </label>
-        <div id="chatcutHint" class="hint" style="color:var(--text-faint); font-size:12px; margin-bottom:10px;">已加载 ChatCut 剪辑规则库（10 条：转写/拆分/删减/重组/字幕/节奏/转场/声音/风格/校验），将随指令注入剪辑模型</div>
+        <div id="chatcutPanel" style="display:none;margin-bottom:12px;border:1px solid #5eead4;border-radius:12px;padding:14px;background:#f0fdfa;">
+          <div id="chatcutDisconnected">
+            <p style="font-size:13px;color:#0f766e;line-height:1.8;">尚未连接 ChatCut 账号。点击「连接 ChatCut 账号」，登录并授权后即可在视频剪辑中使用 ChatCut 的 <b>52</b> 个剪辑工具。</p>
+            <button type="button" class="btn" id="btn-connect-chatcut" style="margin-top:10px;border-color:#14b8a6;color:#0d9488;">连接 ChatCut 账号</button>
+          </div>
+          <div id="chatcutConnected" style="display:none;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+              <p style="font-size:13px;font-weight:600;color:#0d9488;margin:0;">ChatCut MCP · 智能剪辑（52 工具）</p>
+              <span class="badge success">已连接</span>
+            </div>
+            <div id="chatcutTools" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;"></div>
+            <p style="font-size:12px;color:#0f766e;margin-top:10px;">已选工具：<b id="chatcutSelected">未选择</b></p>
+          </div>
+        </div>
+        <div id="chatcutModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:400;align-items:center;justify-content:center;">
+          <div style="position:relative;background:#fff;border-radius:16px;padding:28px;width:360px;max-width:92vw;text-align:center;">
+            <button id="btn-close-chatcut" style="position:absolute;top:12px;right:14px;border:none;background:none;font-size:20px;color:#86909c;cursor:pointer;line-height:1;">&times;</button>
+            <h3 style="font-size:17px;margin:0 0 6px;">连接 ChatCut 账号</h3>
+            <p style="font-size:13px;color:#86909c;line-height:1.7;margin-bottom:18px;">登录并授权后即可在视频剪辑中使用 ChatCut 的 52 个剪辑工具</p>
+            <a id="link-chatcut-site" href="https://chatcut.io" target="_blank" rel="noopener" style="display:block;padding:11px;border:1px solid #e5e6eb;border-radius:10px;color:#4e5969;text-decoration:none;font-size:14px;font-weight:600;margin-bottom:10px;">官网注册</a>
+            <button type="button" class="btn" id="btn-google-login" style="width:100%;padding:11px;justify-content:center;font-weight:600;">用 Google 登录</button>
+            <p style="font-size:12px;color:#c9cdd4;margin-top:14px;">演示环境：点击「用 Google 登录」即视为授权连接</p>
+          </div>
+        </div>
+        <div id="chatcutHint" class="hint" style="color:var(--text-faint); font-size:12px; margin-bottom:10px;">ChatCut MCP 智能剪辑：仅视频剪辑可用，选择「ChatCut MCP · 智能剪辑（52 工具）」后弹出智能剪辑面板</div>
         <div class="form-actions">
           <button class="btn primary ai-btn" id="edit-btn" style="flex:1;">didi</button>
         </div>
@@ -88,6 +112,7 @@ get_header();
     video: {
       label: '视频模型 / 档位',
       options: [
+        { value: 'chatcut', text: 'ChatCut MCP · 智能剪辑（52 工具）' },
         { value: 'jimeng', text: '标准 · 即梦 Dreamina API' },
         { value: 'kling', text: '高端 · 默认 可灵（推荐）' },
         { value: 'openai', text: '高端 · 备选 OPEN AI' },
@@ -95,7 +120,7 @@ get_header();
         { value: 'modelscope', text: '经济 · ModelScope（便宜）5 秒' },
         { value: 'custom', text: '自定义模型' }
       ],
-      tier: '标准：即梦 Dreamina API　｜　高端：默认可灵，备选 OPEN AI / RUNWAY　｜　经济：ModelScope（便宜）5 秒',
+      tier: 'ChatCut MCP：52 个智能剪辑工具　｜　标准：即梦 Dreamina API　｜　高端：默认可灵，备选 OPEN AI / RUNWAY　｜　经济：ModelScope（便宜）5 秒',
       vps: '',
       media: 'image/*,video/*',
       mediaLabel: '上传素材（图片或视频）',
@@ -182,11 +207,12 @@ get_header();
     document.getElementById('vpsNote').innerHTML = cfg.vps ? '<b>VPS 对接：</b>' + cfg.vps : '';
     document.getElementById('mediaLabel').textContent = cfg.mediaLabel;
     document.getElementById('mediaFile').accept = cfg.media;
-    document.getElementById('chatcutHint').style.display = (t === 'video' || t === 'animate') ? '' : 'none';
+    document.getElementById('chatcutHint').style.display = (t === 'video') ? '' : 'none';
     var customField = document.getElementById('customModelField');
     if (customField) {
       customField.style.display = (prov.value === 'custom') ? '' : 'none';
     }
+    syncChatcutPanel();
     mediaUrl = '';
     document.getElementById('mediaPreview').style.display = 'none';
     document.getElementById('mediaUrl').value = '';
@@ -196,7 +222,65 @@ get_header();
   provSel.addEventListener('change', function(){
     var customField = document.getElementById('customModelField');
     if (customField) customField.style.display = (provSel.value === 'custom') ? '' : 'none';
+    syncChatcutPanel();
   });
+
+  // ============ ChatCut MCP · 智能剪辑（52 工具） ============
+  var CHATCUT_TOOLS = ['智能转写','说话人识别','口癖删除','静音片段删除','长停顿压缩','自动字幕','双语字幕','关键词高亮','字幕翻译','片头制作','片尾制作','节奏卡点','自动转场','智能抠图','绿幕替换','画中画','背景替换','智能调色','人像美颜','磨皮瘦脸','降噪处理','音量平衡','背景乐匹配','人声增强','变速','慢动作','快进','倒放','裁剪画面','片段分割','片段合并','去水印','加水印','贴纸素材','文字动画','封面生成','章节标记','多轨混音','音频提取','人声分离','伴奏分离','变声处理','音高调整','回声消除','母带处理','响度标准化','视频转码','视频压缩','GIF 生成','视频摘要','智能配音','口型同步'];
+  var chatcutConn = function () { return localStorage.getItem('chatcut_connected') === '1'; };
+
+  function renderChatcutTools(){
+    var box = document.getElementById('chatcutTools');
+    box.innerHTML = CHATCUT_TOOLS.map(function (t) {
+      return '<button type="button" data-tool="' + t + '" class="chatcut-tool" style="padding:7px 4px;font-size:12px;border:1px solid #e5e6eb;border-radius:8px;background:#fff;color:#4e5969;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">' + t + '</button>';
+    }).join('');
+    box.querySelectorAll('.chatcut-tool').forEach(function (b) {
+      b.addEventListener('click', function () {
+        box.querySelectorAll('.chatcut-tool').forEach(function (x) {
+          x.style.background = '#fff'; x.style.color = '#4e5969'; x.style.borderColor = '#e5e6eb';
+        });
+        b.style.background = '#14b8a6'; b.style.color = '#fff'; b.style.borderColor = '#14b8a6';
+        document.getElementById('chatcutSelected').textContent = b.getAttribute('data-tool');
+      });
+    });
+  }
+
+  function syncChatcutPanel(){
+    var panel = document.getElementById('chatcutPanel');
+    if (!panel) return;
+    var isChatcut = provSel.value === 'chatcut';
+    panel.style.display = isChatcut ? '' : 'none';
+    if (!isChatcut) return;
+    var conn = chatcutConn();
+    document.getElementById('chatcutDisconnected').style.display = conn ? 'none' : '';
+    document.getElementById('chatcutConnected').style.display = conn ? '' : 'none';
+    if (conn) renderChatcutTools();
+  }
+
+  var connectBtn = document.getElementById('btn-connect-chatcut');
+  if (connectBtn) {
+    connectBtn.addEventListener('click', function () {
+      document.getElementById('chatcutModal').style.display = 'flex';
+    });
+  }
+  var closeBtn = document.getElementById('btn-close-chatcut');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function () {
+      document.getElementById('chatcutModal').style.display = 'none';
+    });
+  }
+  document.getElementById('chatcutModal').addEventListener('click', function (e) {
+    if (e.target === this) this.style.display = 'none';
+  });
+  var googleBtn = document.getElementById('btn-google-login');
+  if (googleBtn) {
+    googleBtn.addEventListener('click', function () {
+      localStorage.setItem('chatcut_connected', '1');
+      document.getElementById('chatcutModal').style.display = 'none';
+      syncChatcutPanel();
+      toast('ChatCut 账号已连接，可在视频剪辑中使用 52 个剪辑工具', 'success');
+    });
+  }
 
   document.querySelectorAll('.edit-tab').forEach(function(btn){
     btn.addEventListener('click', function(){ setTab(btn.getAttribute('data-type')); });
@@ -271,6 +355,12 @@ get_header();
     var provider = document.getElementById('provider').value;
     var cfg = PROVIDERS[type] || PROVIDERS.video;
     var customModel = '';
+    if (provider === 'chatcut') {
+      if (!chatcutConn()) return toast('请先连接 ChatCut 账号', 'error');
+      var chatcutTool = document.getElementById('chatcutSelected').textContent;
+      if (!chatcutTool || chatcutTool === '未选择') return toast('请先选择一个 ChatCut 剪辑工具', 'error');
+      prompt = '[ChatCut 智能剪辑 · ' + chatcutTool + '] ' + prompt;
+    }
     if (provider === 'custom') {
       customModel = document.getElementById('customModel').value.trim();
       if (!customModel) return toast('请输入自定义模型名称', 'error');
