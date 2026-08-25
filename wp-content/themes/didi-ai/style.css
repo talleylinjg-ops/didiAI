@@ -114,15 +114,15 @@ footer a:hover{color:#1668dc}
 .ai-chat-input textarea{flex:1;background:transparent;border:none;outline:none;color:#1f2329;font-family:inherit;font-size:14px;resize:none;padding:6px 8px;max-height:140px}
 .ai-chat-input .btn{align-self:flex-end}
 .ai-input-tools{display:flex;align-items:center;gap:6px;flex-shrink:0;align-self:flex-end}
-.ai-input-tools .ai-tool{width:36px;height:36px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #e5e6eb;border-radius:10px;background:#f7f8fa;font-size:15px;cursor:pointer;transition:all .2s;color:#4e5969;padding:0}
-.ai-input-tools .ai-tool svg{width:17px;height:17px}
-.ai-input-tools .ai-tool:hover{color:#1668dc;border-color:#1668dc;background:#eef4ff}
+.ai-input-tools .ai-tool{width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;border:none;border-radius:6px;background:transparent;font-size:15px;cursor:pointer;transition:all .2s;color:#86909c;padding:0}
+.ai-input-tools .ai-tool svg{width:10px;height:10px}
+.ai-input-tools .ai-tool:hover{color:#1668dc;background:#eef4ff}
 .ai-input-tools .ai-tool:disabled{opacity:.5;cursor:not-allowed}
 .prompt-row{display:flex;gap:8px;align-items:stretch}
 .prompt-row textarea{flex:1;min-height:120px}
 .prompt-row .prompt-tools{display:flex;flex-direction:column;gap:6px;justify-content:flex-end;flex-shrink:0}
-.prompt-row .prompt-tools .tool-icon{width:36px;height:36px;padding:0}
-.prompt-row .prompt-tools .tool-icon svg{width:17px;height:17px}
+.prompt-row .prompt-tools .tool-icon{width:20px;height:20px;padding:0}
+.prompt-row .prompt-tools .tool-icon svg{width:10px;height:10px}
 .ai-btn{border:none;border-radius:10px;padding:10px 22px;background:linear-gradient(180deg,#1668dc,#6a3de8);color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s}
 #pickImage,#pickMedia{font-size:22px;padding:14px 32px;border-radius:14px;background:linear-gradient(180deg,#1668dc,#6a3de8);color:#fff;border:none;font-weight:600;cursor:pointer}
 .ai-btn:hover{opacity:.88}

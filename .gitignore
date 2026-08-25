@@ -59,6 +59,8 @@
 **/eggs/
 **/.eggs/
 **/parts/
+!wp-content/themes/didi-ai/parts/
+!wp-content/themes/didi-ai/parts/**
 **/sdist/
 **/var/
 **/wheels/
