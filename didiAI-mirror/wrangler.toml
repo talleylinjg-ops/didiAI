@@ -1,0 +1,23 @@
+# didiAI 静态镜像层 —— Cloudflare Worker 配置
+# 说明：首次部署前先建好 R2 bucket 与 KV namespace，并把真实值填入下面占位符。
+#   wrangler r2 bucket create didi-ai-mirror
+#   wrangler kv namespace create HTML_KV
+# 不要把真实密钥提交到 git。
+
+name = "didi-ai-mirror"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+
+# 源站（生产环境为 didiAI 公网地址；本地调试可用开发服务器，仅限内网抓取校验）
+[vars]
+ORIGIN = "https://your-didiai-origin.example.com"
+
+# 静态资源镜像桶：key 为裸路径，例如 wp-content/themes/didi-ai/style.css
+[[r2_buckets]]
+binding = "MIRROR_R2"
+bucket_name = "didi-ai-mirror"
+
+# HTML 页面快照：key 为规范化路径，例如 / 或 /product/abc
+[[kv_namespaces]]
+binding = "HTML_KV"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
