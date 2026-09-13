@@ -63,8 +63,11 @@ function isSameHost(u) {
 }
 
 function barePath(u) {
-  const p = new URL(u, ORIGIN).pathname.replace(/^\/+/, '');
-  return p || 'index.html';
+  let p = new URL(u, ORIGIN).pathname.replace(/^\/+/, '');
+  if (p === '' || p.endsWith('/')) return p + 'index.html';
+  const last = p.slice(p.lastIndexOf('/') + 1);
+  if (!last.includes('.')) return p + '/index.html';
+  return p;
 }
 
 function isHtmlPath(u) {

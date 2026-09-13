@@ -56,8 +56,10 @@ function mimeOf(path: string): string {
 }
 
 function normalizeKey(pathname: string): string {
-  let p = pathname.replace(/^\/+/, '');
-  if (p === '' || p.endsWith('/')) p += 'index.html';
+  const p = pathname.replace(/^\/+/, '');
+  if (p === '' || p.endsWith('/')) return p + 'index.html';
+  const last = p.slice(p.lastIndexOf('/') + 1);
+  if (!last.includes('.')) return p + '/index.html';
   return p;
 }
 
