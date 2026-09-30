@@ -81,4 +81,6 @@ This file records user instructions, preferences, and teachings for reference in
   - didiAI 的访客登录守卫会 302 跳 `/login`，采集镜像时必须带搜索引擎爬虫 UA；`scripts/mirror.mjs` 支持 `MIRROR_UA`（默认 Googlebot），并支持 `PUBLIC_ORIGIN` 把快照中的站点根地址（含 `http:\/\/` JSON 转义与 URL 编码形式）重写为公开域名，否则 canonical/og:url 与静态/接口地址会指向采集地址。
   - 标准刷新流程：`ORIGIN=http://localhost:8080 PUBLIC_ORIGIN=https://didi-ai-mirror.talley-linjg.workers.dev node scripts/mirror.mjs seeds.txt`，再用 CF_API_TOKEN 运行 `node scripts/apply.mjs`（先 R2 后 KV）。
   - CF 免费额度会拦截 KV 写入：报错 `your account has reached the free usage limit for this operation for today [code: 10048]`，当日无法刷新 HTML 快照，需次日重试；R2 资源写入通常不受影响。
+  - 静态页必须与原站完全一致：采集后运行 `ORIGIN=... PUBLIC_ORIGIN=... node scripts/verify.mjs` 做逐字节校验（HTML 按采集时相同的地址重写规则还原，静态资源直接比较），差异为 0 才算通过；快照变更后必须重采再上传，否则旧快照会与源站不一致。
+  - Worker 回源依赖 `env.ORIGIN`（原为占位符）；`proxyToOrigin` 曾只读 `X-Origin-Override` 请求头导致所有未镜像请求回源失败，现已改为使用 `env.ORIGIN`，ORIGIN 未配置时返回 502。Worker 静态资源按扩展名统一走 R2（不再限 `/wp-content/`），带查询串的请求不走 HTML 快照以免内容错配。
 

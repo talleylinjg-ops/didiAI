@@ -63,12 +63,19 @@ function normalizeKey(pathname: string): string {
   return p;
 }
 
-async function proxyToOrigin(request: Request): Promise<Response> {
-  const origin = request.headers.get('X-Origin-Override') || '';
-  const target = origin + new URL(request.url).pathname + new URL(request.url).search;
+async function proxyToOrigin(request: Request, env: Env): Promise<Response> {
+  const base = (env.ORIGIN || '').replace(/\/+$/, '');
+  if (!base || base.includes('pending.invalid')) {
+    return new Response('mirror origin not configured', { status: 502 });
+  }
+  const reqUrl = new URL(request.url);
+  const target = base + reqUrl.pathname + reqUrl.search;
+  const headers = new Headers(request.headers);
+  headers.delete('host');
+  headers.set('x-forwarded-host', reqUrl.host);
   const init: RequestInit = {
     method: request.method,
-    headers: request.headers,
+    headers,
     redirect: 'follow',
   };
   if (request.method !== 'GET' && request.method !== 'HEAD') {
@@ -83,11 +90,12 @@ export default {
 
     // 1) 动态请求直接回源，保证业务实时
     if (isDynamic(url, request.method)) {
-      return proxyToOrigin(request);
+      return proxyToOrigin(request, env);
     }
 
-    // 2) 静态资源：R2 镜像 -> 回源
-    if (url.pathname.startsWith('/wp-content/')) {
+    // 2) 静态资源：按扩展名判定（/wp-content、/wp-includes、uploads 等一视同仁）
+    //    R2 镜像命中即返回，否则回源，保证渲染与原站一致
+    if (/\.[a-z0-9]+$/i.test(url.pathname)) {
       const key = normalizeKey(url.pathname);
       const obj = await env.MIRROR_R2.get(key);
       if (obj) {
@@ -97,22 +105,23 @@ export default {
         headers.set('x-served-from', 'r2-static');
         return new Response(obj.body, { headers });
       }
-      const res = await proxyToOrigin(request);
-      return res;
+      return proxyToOrigin(request, env);
     }
 
-    // 3) HTML 页面快照：KV -> 回源
-    const key = normalizeKey(url.pathname);
-    const html = await env.HTML_KV.get(key);
-    if (html !== null) {
-      return new Response(html, {
-        headers: {
-          'Content-Type': 'text/html; charset=utf-8',
-          'Cache-Control': 'public, max-age=300',
-          'x-served-from': 'html-snapshot',
-        },
-      });
+    // 3) HTML 页面快照：仅无查询串的路径命中 KV（快照按键存储），带参请求回源避免内容错配
+    if (url.search === '') {
+      const key = normalizeKey(url.pathname);
+      const html = await env.HTML_KV.get(key);
+      if (html !== null) {
+        return new Response(html, {
+          headers: {
+            'Content-Type': 'text/html; charset=utf-8',
+            'Cache-Control': 'public, max-age=300',
+            'x-served-from': 'html-snapshot',
+          },
+        });
+      }
     }
-    return proxyToOrigin(request);
+    return proxyToOrigin(request, env);
   },
 };

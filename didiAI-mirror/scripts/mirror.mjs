@@ -107,6 +107,11 @@ function collectRefs(html, base) {
   };
   for (const m of html.matchAll(/(?:href|src|data-src|poster)=["']([^"']+)["']/gi)) add(m[1]);
   for (const m of html.matchAll(/url\(\s*["']?([^"')]+)["']?\s*\)/gi)) add(m[1]);
+  for (const m of html.matchAll(/(?:srcset|imagesrcset)=["']([^"']+)["']/gi)) {
+    for (const part of m[1].split(',')) add(part.trim().split(/\s+/)[0]);
+  }
+  // og:image / twitter:image 等内容属性中的图片（限可识别扩展名，避免误抓描述文本）
+  for (const m of html.matchAll(/content=["']([^"']+\.(?:png|jpe?g|gif|webp|svg|ico|avif)(?:\?[^"']*)?)["']/gi)) add(m[1]);
   return [...refs].map((v) => new URL(v, base).pathname);
 }
 
