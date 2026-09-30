@@ -18,20 +18,22 @@ $placeholder = '描述任务，例如：帮我创建一个 Python 待办事项�
       <span class="hd-label">选择模型</span>
       <select id="codexModel" class="ai-model-select" title="选择模型">
         <optgroup label="国内模型">
-          <option value="qwen3.8-max" selected>通义千问 Qwen3.8-Max（国内最强）</option>
-          <option value="deepseek-chat">DeepSeek</option>
-          <option value="qwen-plus">通义千问</option>
-          <option value="glm-4">智谱 GLM</option>
-          <option value="doubao-pro">豆包</option>
-          <option value="hunyuan-turbo">腾讯混元</option>
-          <option value="ernie-4.0-turbo">文心 ERNIE</option>
+          <option value="kimi-k2.7-code" selected>Kimi K2.7 Code（国内编程最强）</option>
+          <option value="kimi-k2.7-code-highspeed">Kimi K2.7 Code 高速版</option>
+          <option value="deepseek-v4.1-flash">DeepSeek V4.1 Flash</option>
+          <option value="deepseek-v4-pro">DeepSeek V4 Pro</option>
+          <option value="qwen3-coder-plus">通义千问 Qwen3-Coder-Plus</option>
+          <option value="qwen3.8-max">通义千问 Qwen3.8-Max</option>
+          <option value="glm-5.3">智谱 GLM-5.3</option>
+          <option value="minimax-m3">MiniMax M3</option>
         </optgroup>
         <optgroup label="海外模型">
           <option value="claude-fable-5.1">Claude Fable 5.1（全球最强）</option>
+          <option value="claude-opus-5">Claude Opus 5</option>
           <option value="gpt-6-astra">GPT-6 Astra</option>
-          <option value="gpt-4o">GPT-4o</option>
-          <option value="claude-3-5-sonnet">Claude 3.5 Sonnet</option>
-          <option value="gemini-1.5-pro">Gemini 1.5 Pro</option>
+          <option value="gpt-6-sol">GPT-6 Sol</option>
+          <option value="gemini-3.1-pro-preview">Gemini 3.1 Pro</option>
+          <option value="grok-4.7">Grok 4.7</option>
         </optgroup>
         <optgroup label="定制模型">
           <option value="__custom__">自定义模型</option>
@@ -151,7 +153,7 @@ $placeholder = '描述任务，例如：帮我创建一个 Python 待办事项�
   function syncModelCustom() { modelSelCustom.style.display = modelSel.value === '__custom__' ? '' : 'none'; }
   modelSel.addEventListener('change', syncModelCustom);
   if (typeof didiRememberModel === 'function') {
-    didiRememberModel('code', modelSel, { customValue: '__custom__', customInput: modelSelCustom, onChange: syncModelCustom });
+    didiRememberModel('code_v2', modelSel, { customValue: '__custom__', customInput: modelSelCustom, onChange: syncModelCustom });
   }
   var editor = $id('codexEditor');
   var editorWrap = $id('editorWrap');
@@ -335,7 +337,9 @@ $placeholder = '描述任务，例如：帮我创建一个 Python 待办事项�
     if (!cur) { if (window.toast) toast('请先选择或新建项目', 'error'); return; }
     if (!text) return;
     var model = modelSel.value;
+    var isCustom = false;
     if (model === '__custom__') {
+      isCustom = true;
       model = (modelSelCustom.value || '').trim();
       if (!model) { if (window.toast) toast('请输入自定义模型名称', 'error'); modelSelCustom.focus(); return; }
     }
@@ -345,7 +349,7 @@ $placeholder = '描述任务，例如：帮我创建一个 Python 待办事项�
     var loading = addMsg('assistant', '&#60;/&#62;', '<span class="codex-loading"><span class="spinner"></span> 正在分析并编写代码…</span>');
     sendBtn.disabled = true;
     sendBtn.textContent = '生成中…';
-    api('POST', 'task', { slug: cur.slug, message: text, model: model }).then(function (d) {
+    api('POST', 'task', { slug: cur.slug, message: text, model: model, custom: isCustom }).then(function (d) {
       loading.remove();
       var html = '';
       if (d.plan) html += '<div class="codex-plan">' + esc(d.plan) + '</div>';

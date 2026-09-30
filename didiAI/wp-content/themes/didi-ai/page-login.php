@@ -67,7 +67,6 @@ get_header();
 <main style="flex-direction:column;align-items:center;padding:80px 20px 40px;">
   <div style="width:100%;max-width:420px;">
     <h1 style="font-size:28px;margin-bottom:6px;text-align:center;">登录 didi AI</h1>
-    <p style="font-size:14px;color:#4e5969;margin-bottom:28px;text-align:center;">登录后即可使用博客、论坛、AI 创作等全部功能</p>
 
     <?php if ($err) : ?>
       <p style="color:#dc2626;font-size:13px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 12px;margin-bottom:16px;"><?php echo esc_html($err); ?></p>

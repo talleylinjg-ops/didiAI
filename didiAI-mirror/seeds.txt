@@ -1,6 +1,19 @@
 # 需要镜像的页面路径，每行一个。# 开头为注释。
-# 示例：
-# /
-# /blog/
-# 产品/内容页按实际路径补充
 /
+/blog
+/forum
+/recharge
+/member
+/login
+/register
+/ai-code
+/ai-work
+/ai-video
+/ai-avatar
+/ai-animate
+/ai-image
+/ai-chat
+/ai-music
+/ai-write
+/ai-ppt
+/ai-edit

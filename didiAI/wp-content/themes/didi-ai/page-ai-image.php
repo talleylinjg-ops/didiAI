@@ -28,15 +28,19 @@ get_header();
         <label class="field"><span>图片模型</span>
           <select class="input" id="provider">
             <optgroup label="国内模型">
-              <option value="didi-media">免费 · didi Media</option>
-              <option value="jimeng" selected>标准 · 即梦 Seedream 5.0（国内最强）</option>
+              <option value="didi-media" data-provider="didi-media">免费 · didi Media</option>
+              <option value="doubao-seedream-5.0" data-provider="jimeng" selected>标准 · 即梦 Seedream 5.0（国内最强）</option>
+              <option value="qwen-image-2.5" data-provider="qwen">标准 · 通义万相 2.5</option>
+              <option value="hunyuan-image-3.0" data-provider="hunyuan">标准 · 腾讯混元图像 3.0</option>
             </optgroup>
             <optgroup label="海外模型">
-              <option value="gpt-image-2">高端 · GPT Image 2（全球最强）</option>
-              <option value="gemini">高端 · Nano Banana 2</option>
+              <option value="gpt-image-2" data-provider="openai">高端 · GPT Image 2（全球最强）</option>
+              <option value="gemini-3-pro-image-preview" data-provider="gemini">高端 · Nano Banana 2</option>
+              <option value="flux-1.1-pro" data-provider="flux">高端 · Flux 1.1 Pro</option>
+              <option value="midjourney-v7" data-provider="midjourney">高端 · Midjourney V7</option>
             </optgroup>
             <optgroup label="定制模型">
-              <option value="custom">自定义模型</option>
+              <option value="custom" data-provider="custom">自定义模型</option>
             </optgroup>
           </select>
         </label>
@@ -94,7 +98,18 @@ get_header();
   }
   providerSel.addEventListener('change', syncProvider);
   if (typeof didiRememberModel === 'function') {
-    didiRememberModel('image', providerSel, { customValue: 'custom', customInput: document.getElementById('customModel'), onChange: syncProvider });
+    didiRememberModel('image_v2', providerSel, { customValue: 'custom', customInput: document.getElementById('customModel'), onChange: syncProvider });
+  }
+  function currentChoice() {
+    var opt = providerSel.options[providerSel.selectedIndex];
+    var provider = opt ? (opt.getAttribute('data-provider') || opt.value) : 'jimeng';
+    var model = providerSel.value;
+    var custom = provider === 'custom';
+    if (custom) {
+      model = (document.getElementById('customModel').value || '').trim();
+      if (!model) { toast('请输入自定义模型名称', 'error'); return null; }
+    }
+    return { provider: provider, model: model, custom: custom };
   }
   if (pickBtn && fileInput) {
     pickBtn.addEventListener('click', function () { fileInput.click(); });
@@ -130,12 +145,8 @@ get_header();
   document.getElementById('generate-btn').addEventListener('click', async function() {
     var prompt = document.getElementById('prompt').value.trim();
     if (!prompt) return toast('请输入图片提示词', 'error');
-    var provider = document.getElementById('provider').value;
-    var customModel = '';
-    if (provider === 'custom') {
-      customModel = document.getElementById('customModel').value.trim();
-      if (!customModel) return toast('请输入自定义模型名称', 'error');
-    }
+    var choice = currentChoice();
+    if (!choice) return;
     var size = document.getElementById('size').value;
     var ref = uploadedUrl;
     var btn = document.getElementById('generate-btn');
@@ -143,7 +154,7 @@ get_header();
     var output = document.getElementById('output');
     output.innerHTML = '<div style="text-align:center; color:var(--text-dim); padding:40px;"><div class="loading-spinner" style="margin:0 auto 16px;"></div><p>正在生成图片，请稍候...</p></div>';
     try {
-      var data = await didiPost('/wp-json/didi/v1/image', { prompt: prompt, size: size, provider: provider, imageUrl: ref, model: customModel });
+      var data = await didiPost('/wp-json/didi/v1/image', { prompt: prompt, size: size, provider: choice.provider, imageUrl: ref, model: choice.model, custom: choice.custom });
       var urls = data.result && data.result.urls ? data.result.urls : (data.urls || []);
       output.innerHTML = urls.map(function(u) {
         return '<img src="' + escapeHtml(u) + '" alt="' + escapeHtml(prompt) + '" style="width:100%; margin-bottom:12px;">';

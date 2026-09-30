@@ -32,7 +32,6 @@ $expire = $logged_in ? get_user_meta($u->ID, 'didi_membership_expire', true) : '
 </style>
 <main style="flex-direction:column;align-items:center;padding:90px 20px 60px;">
   <h1 style="font-size:30px;margin-bottom:8px;">会员中心</h1>
-  <p style="font-size:14px;color:#86909c;margin-bottom:28px;">一个钱包 · 所有模型统一计费</p>
 
   <?php if ($logged_in): ?>
   <div style="width:100%;max-width:880px;display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
@@ -56,7 +55,6 @@ $expire = $logged_in ? get_user_meta($u->ID, 'didi_membership_expire', true) : '
   </div>
   <?php else: ?>
   <div style="width:100%;max-width:880px;border:1px solid #e5e6eb;border-radius:16px;padding:24px;text-align:center;background:#f7f9ff;">
-    <p style="font-size:14px;color:#4e5969;margin-bottom:12px;">登录后可查看账户信息、点数余额、消费记录与会员开通入口</p>
     <a href="<?php echo esc_url(home_url('/login')); ?>" class="btn-primary" style="display:inline-block;text-decoration:none;">登录 / 注册</a>
   </div>
   <?php endif; ?>

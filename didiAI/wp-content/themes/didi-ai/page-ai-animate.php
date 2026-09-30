@@ -28,16 +28,18 @@ get_header();
         <label class="field"><span>动画模型</span>
           <select class="input" id="provider">
             <optgroup label="国内模型">
-              <option value="kling" selected>高端 · 可灵 3.0（国内最强）</option>
-              <option value="didi-media">免费 · didi Media</option>
+              <option value="didi-media" data-provider="didi-media">免费 · didi Media</option>
+              <option value="kling-3.0" data-provider="kling" selected>高端 · 可灵 3.0（国内最强）</option>
+              <option value="jimeng-animate-3.0" data-provider="jimeng">高端 · 即梦动画 3.0</option>
+              <option value="vidu-q2-animate" data-provider="vidu">标准 · 生数 Vidu Q2</option>
             </optgroup>
             <optgroup label="海外模型">
-              <option value="veo-3.1">高端 · Veo 3.1（全球最强）</option>
-              <option value="animatediff">AnimateDiff</option>
-              <option value="animatediff-lite">AnimateDiff-Lite</option>
+              <option value="veo-3.1" data-provider="veo">高端 · Veo 3.1（全球最强）</option>
+              <option value="animatediff" data-provider="animatediff">AnimateDiff</option>
+              <option value="animatediff-lite" data-provider="animatediff-lite">AnimateDiff-Lite</option>
             </optgroup>
             <optgroup label="定制模型">
-              <option value="custom">自定义模型</option>
+              <option value="custom" data-provider="custom">自定义模型</option>
             </optgroup>
           </select>
         </label>
@@ -86,37 +88,73 @@ get_header();
   }
   providerSel.addEventListener('change', syncProvider);
   if (typeof didiRememberModel === 'function') {
-    didiRememberModel('animate', providerSel, { customValue: 'custom', customInput: customModelInput, onChange: syncProvider });
+    didiRememberModel('animate_v2', providerSel, { customValue: 'custom', customInput: customModelInput, onChange: syncProvider });
+  }
+  function currentChoice() {
+    var opt = providerSel.options[providerSel.selectedIndex];
+    var provider = opt ? (opt.getAttribute('data-provider') || opt.value) : 'kling';
+    var label = opt ? opt.textContent.trim() : provider;
+    var model = providerSel.value;
+    var custom = provider === 'custom';
+    if (custom) {
+      model = customModelInput.value.trim();
+      if (!model) { toast('请输入自定义模型名称', 'error'); return null; }
+    }
+    return { provider: provider, model: model, custom: custom, label: label };
+  }
+  function sleep(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+  function errCard(msg){ return '<div class="placeholder"><div class="big">&#9888;</div><p style="color:var(--danger)">' + escapeHtml(msg) + '</p></div>'; }
+  async function pollMediaCut(taskId){
+    var output = document.getElementById('output');
+    var deadline = Date.now() + 10 * 60 * 1000;
+    var statusNames = { pending: '排队中', running: '生成中', processing: '生成中' };
+    while (Date.now() < deadline) {
+      await sleep(5000);
+      var d;
+      try { d = await didiPost('/wp-json/didi/v1/mc/task', { taskId: taskId }); }
+      catch (e) { output.innerHTML = errCard(e.message); toast(e.message, 'error'); return; }
+      if (d.url) {
+        output.innerHTML = '<div style="width:100%; padding:20px;"><h3 style="margin-bottom:10px;">动画生成完成</h3><video src="' + escapeHtml(d.url) + '" controls style="max-width:100%; border-radius:10px;"></video><p style="font-size:12px; color:var(--text-faint); margin-top:8px;">任务 ID：' + escapeHtml(taskId) + '</p></div>';
+        toast('动画生成完成', 'success');
+        return;
+      }
+      if (d.ok === false) { output.innerHTML = errCard(d.message || '任务失败'); toast(d.message || '任务失败', 'error'); return; }
+      var st = String(d.status || 'pending').toLowerCase();
+      output.innerHTML = '<div style="text-align:center; color:var(--text-dim); padding:40px;"><div class="loading-spinner" style="margin:0 auto 16px;"></div><p>' + (statusNames[st] || '处理中') + '…</p><p style="font-size:12px; margin-top:8px;">任务 ID：' + escapeHtml(taskId) + '</p></div>';
+    }
+    output.innerHTML = '<div style="width:100%; padding:20px;"><h3>任务仍在处理</h3><p style="font-size:13px; color:var(--text-dim);">任务 ID：' + escapeHtml(taskId) + '，请稍后重试查询。</p></div>';
   }
   document.getElementById('generate-btn').addEventListener('click', async function() {
     var prompt = document.getElementById('prompt').value.trim();
     if (!prompt) return toast('请输入动画提示词', 'error');
-    var provider = providerSel.value;
-    var customModel = '';
-    if (provider === 'custom') {
-      customModel = customModelInput.value.trim();
-      if (!customModel) return toast('请输入自定义模型名称', 'error');
-    }
+    var choice = currentChoice();
+    if (!choice) return;
     var frames = Number(document.getElementById('frames').value);
     var res = document.getElementById('resolution').value.split('x');
     var width = Number(res[0]), height = Number(res[1]);
     var btn = document.getElementById('generate-btn');
     btn.disabled = true;
     var output = document.getElementById('output');
-    output.innerHTML = '<div style="text-align:center; color:var(--text-dim); padding:40px;"><div class="loading-spinner" style="margin:0 auto 16px;"></div><p>动画生成任务已提交，请稍候...</p><p style="font-size:12px; margin-top:8px;">模型：' + (customModel || provider) + ' · 帧数：' + frames + ' · ' + width + '×' + height + '</p></div>';
+    output.innerHTML = '<div style="text-align:center; color:var(--text-dim); padding:40px;"><div class="loading-spinner" style="margin:0 auto 16px;"></div><p>动画生成任务已提交，请稍候...</p><p style="font-size:12px; margin-top:8px;">模型：' + escapeHtml(choice.label) + ' · 帧数：' + frames + ' · ' + width + '×' + height + '</p></div>';
     try {
-      var data = await didiPost('/wp-json/didi/v1/animate', { prompt: prompt, frames: frames, width: width, height: height, provider: provider, model: customModel });
-      output.innerHTML = '<div style="width:100%; padding:20px;">'
-        + '<h3 style="margin-bottom:10px;">动画任务已提交</h3>'
-        + '<p style="font-size:13.5px; color:var(--text-dim); margin-bottom:14px;">提示词：' + escapeHtml(prompt) + '</p>'
-        + '<div class="card" style="background:var(--bg-soft);">'
-        + '<p><b>任务 ID：</b>' + escapeHtml(data.result.taskId || data.taskId || 'N/A') + '</p>'
-        + '<p><b>状态：</b><span class="badge accent">' + escapeHtml(data.result.status || data.status || 'submitted') + '</span></p>'
-        + '<p style="font-size:12px; color:var(--text-faint); margin-top:8px;">AnimateDiff 动画完成后，帧序列或视频 URL 会出现在接口返回中。</p></div>'
-        + '</div>';
-      toast('动画任务已提交', 'success');
+      var data = await didiPost('/wp-json/didi/v1/animate', { prompt: prompt, frames: frames, width: width, height: height, provider: choice.provider, model: choice.model, custom: choice.custom });
+      var taskId = (data.result && data.result.taskId) || data.taskId || '';
+      var shouldPoll = choice.provider === 'didi-media' || (data.result && data.result.poll) || data.poll;
+      if (shouldPoll && taskId) {
+        await pollMediaCut(taskId);
+      } else {
+        output.innerHTML = '<div style="width:100%; padding:20px;">'
+          + '<h3 style="margin-bottom:10px;">动画任务已提交</h3>'
+          + '<p style="font-size:13.5px; color:var(--text-dim); margin-bottom:14px;">提示词：' + escapeHtml(prompt) + '</p>'
+          + '<div class="card" style="background:var(--bg-soft);">'
+          + '<p><b>任务 ID：</b>' + escapeHtml(taskId || 'N/A') + '</p>'
+          + '<p><b>状态：</b><span class="badge accent">' + escapeHtml((data.result && data.result.status) || data.status || 'submitted') + '</span></p>'
+          + '<p style="font-size:12px; color:var(--text-faint); margin-top:8px;">AnimateDiff 动画完成后，帧序列或视频 URL 会出现在接口返回中。</p></div>'
+          + '</div>';
+        toast('动画任务已提交', 'success');
+      }
     } catch (err) {
-      output.innerHTML = '<div class="placeholder"><div class="big">&#9888;</div><p style="color:var(--danger)">' + escapeHtml(err.message) + '</p></div>';
+      output.innerHTML = errCard(err.message);
       toast(err.message, 'error');
     }
     btn.disabled = false;

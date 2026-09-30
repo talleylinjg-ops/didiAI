@@ -33,9 +33,18 @@ function toast(msg, type = 'info', ms = 3000) {
   const el = document.createElement('div');
   el.className = `toast ${type}`;
   el.textContent = msg;
-  document.body.appendChild(el);
+  const host = document.querySelector('.ai-page') || document.body;
+  host.appendChild(el);
   setTimeout(() => el.remove(), ms);
 }
+
+// 自定义模型为付费会员专属：免费会员选中时给出提示。返回 true 表示已提示（未解锁）
+function didiCustomModelLocked() {
+  if (window.didiIsPaidMember) return false;
+  toast('自定义模型为付费会员专属，开通月卡 / 年卡后即可使用', 'error', 3200);
+  return true;
+}
+window.didiCustomModelLocked = didiCustomModelLocked;
 
 async function didiPost(path, body) {
   const res = await fetch(path, {
@@ -227,7 +236,10 @@ function didiRememberModel(key, selectEl, opts) {
   }
   function currentInput() { ensure(); var el = getInput(); return el ? el.value.trim() : ''; }
 
-  selectEl.addEventListener('change', function () { apply(); store(selectEl.value, currentInput()); });
+  selectEl.addEventListener('change', function () {
+    if (selectEl.value === customValue && typeof didiCustomModelLocked === 'function') didiCustomModelLocked();
+    apply(); store(selectEl.value, currentInput());
+  });
 
   function bindInput() {
     ensure();

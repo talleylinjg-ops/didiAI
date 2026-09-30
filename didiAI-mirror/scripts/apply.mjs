@@ -19,17 +19,28 @@ const manifest = JSON.parse(await readFile(join(ROOT, 'out', 'manifest.json'), '
 
 function run(cmd) {
   console.log(cmd);
-  if (!dry) execSync(cmd, { stdio: 'inherit', cwd: ROOT });
+  if (dry) return;
+  const attempts = 4;
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      execSync(cmd, { stdio: 'inherit', cwd: ROOT });
+      return;
+    } catch (e) {
+      if (i === attempts) throw e;
+      console.warn(`  上传失败，第 ${i} 次重试...`);
+      execSync('sleep 3', { cwd: ROOT });
+    }
+  }
 }
 
 const bucket = process.env.R2_BUCKET || 'didi-ai-mirror';
 
 for (const rel of manifest.assets) {
-  run(`wrangler r2 object put ${bucket}/${rel} --file=${join(ROOT, 'out', 'static', rel)} --content-type=${detect(rel)} --cache-control="public, max-age=31536000, immutable"`);
+  run(`wrangler r2 object put ${bucket}/${rel} --file=${join(ROOT, 'out', 'static', rel)} --content-type=${detect(rel)} --cache-control="public, max-age=31536000, immutable" --remote`);
 }
 
 for (const page of manifest.htmlPages) {
-  run(`wrangler kv:key put --binding=HTML_KV "${page.key}" --path=${join(ROOT, 'out', 'html', page.key)}`);
+  run(`wrangler kv key put "${page.key}" --binding=HTML_KV --path=${join(ROOT, 'out', 'html', page.key)} --remote`);
 }
 
 function detect(rel) {

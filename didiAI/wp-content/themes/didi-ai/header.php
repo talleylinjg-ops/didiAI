@@ -37,6 +37,7 @@
 </style>
 </head>
 <body <?php body_class(); ?>>
+<?php wp_body_open(); ?>
 <header>
   <div class="nav-usage" id="navUsage">
     <button class="usage-title" id="usageToggle" type="button">使用记录</button>

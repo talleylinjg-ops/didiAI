@@ -12,7 +12,7 @@
  *   其中 seeds.txt 每行一个页面路径（如 / 或 /product/abc），# 开头为注释
  */
 
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, posix } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -24,6 +24,9 @@ if (!ORIGIN) {
 }
 
 const seedsFile = process.argv[2];
+// 采集用 UA：默认伪装为搜索引擎爬虫，绕过站点的访客登录守卫以便抓到真实页面内容
+const UA = process.env.MIRROR_UA || 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)';
+const FETCH_OPTS = { redirect: 'follow', headers: { 'User-Agent': UA } };
 const OUT = join(ROOT, 'out');
 const outStatic = join(OUT, 'static');
 const outHtml = join(OUT, 'html');
@@ -96,6 +99,9 @@ function collectRefs(html, base) {
     if (!raw) return;
     const v = raw.trim();
     if (!v || v.startsWith('data:') || v.startsWith('#') || v.startsWith('//')) return;
+    // 过滤 JS 模板串被误匹配出的伪引用（如 href="' + href + '"），
+    // 真实页面/资源一定含 "/" 或扩展名的 "."。
+    if (!v.includes('/') && !v.includes('.')) return;
     if (!isSameHost(v)) return;
     refs.add(v);
   };
@@ -127,11 +133,14 @@ function storeFileKey(rel, buf) {
 
 async function fetchAsset(url, rel) {
   try {
-    const res = await fetch(url, { redirect: 'follow' });
+    const res = await fetch(url, FETCH_OPTS);
     if (!res.ok) {
       if (res.status >= 400 && res.status < 500) failures.push({ url, status: res.status });
       return null;
     }
+    // 源站对缺失的静态资源会回退成 HTML（路由到首页/登录页），不能当成资源保存
+    const ctype = res.headers.get('content-type') || '';
+    if (ctype.includes('text/html')) return null;
     const buf = Buffer.from(await res.arrayBuffer());
     const file = storeFileKey(rel, buf);
     await mkdir(dirname(file), { recursive: true });
@@ -148,7 +157,7 @@ async function crawlHtml(seedPath) {
   if (seenHtml.has(key) || !isHtmlPath(url.pathname)) return;
   seenHtml.add(key);
 
-  const res = await fetch(url, { redirect: 'follow' });
+  const res = await fetch(url, FETCH_OPTS);
   if (!res.ok) {
     if (res.status >= 400) failures.push({ url: seedPath, status: res.status });
     return;
@@ -173,8 +182,9 @@ async function crawlHtml(seedPath) {
       const file = join(outStatic, rel);
       await mkdir(dirname(file), { recursive: true });
       try {
-        const cssRes = await fetch(full, { redirect: 'follow' });
-        if (cssRes.ok) {
+        const cssRes = await fetch(full, FETCH_OPTS);
+        const cssType = cssRes.headers.get('content-type') || '';
+        if (cssRes.ok && /css/i.test(cssType)) {
           const buf = Buffer.from(await cssRes.arrayBuffer());
           await writeFile(file, buf);
           assets.push(rel);
@@ -207,6 +217,36 @@ async function main() {
     seeds = txt.split('\n').map((s) => s.trim()).filter((s) => s && !s.startsWith('#'));
   }
   for (const s of seeds) await crawlHtml(s);
+
+  // 将快照中的站点根地址重写为公开域名（否则 canonical/og:url 与静态资源会指向采集地址）
+  const PUBLIC_ORIGIN = (process.env.PUBLIC_ORIGIN || '').replace(/\/+$/, '');
+  if (PUBLIC_ORIGIN && PUBLIC_ORIGIN !== ORIGIN) {
+    const rewrite = async (file) => {
+      try {
+        let src = await readFile(file, 'utf8');
+        const encFrom = encodeURIComponent(ORIGIN);
+        const jsonFrom = ORIGIN.replace(/\//g, '\\/');
+        if (!src.includes(ORIGIN) && !src.includes(encFrom) && !src.includes(jsonFrom)) return;
+        src = src.split(ORIGIN).join(PUBLIC_ORIGIN);
+        src = src.split(jsonFrom).join(PUBLIC_ORIGIN);
+        if (src.includes(encFrom)) {
+          src = src.split(encFrom).join(encodeURIComponent(PUBLIC_ORIGIN));
+        }
+        await writeFile(file, src);
+      } catch {
+        /* ignore */
+      }
+    };
+    for (const page of htmlPages) {
+      await rewrite(join(outHtml, page.key));
+      page.url = page.url.replace(ORIGIN, PUBLIC_ORIGIN);
+    }
+    for (const rel of assets) {
+      if (rel.endsWith('.css')) await rewrite(join(outStatic, rel));
+    }
+    console.log(`已重写站点根地址：${ORIGIN} -> ${PUBLIC_ORIGIN}`);
+  }
+
   await mkdir(OUT, { recursive: true });
   await writeFile(join(OUT, 'manifest.json'), JSON.stringify({
     origin: ORIGIN,

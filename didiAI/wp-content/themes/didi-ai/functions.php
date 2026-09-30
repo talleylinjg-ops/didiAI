@@ -4,6 +4,9 @@
  */
 if (!defined('ABSPATH')) exit;
 
+require_once __DIR__ . '/inc/mediacut.php';
+require_once __DIR__ . '/inc/mpt.php';
+
 add_theme_support('title-tag');
 add_theme_support('post-thumbnails');
 add_theme_support('html5', array('search-form', 'comment-form', 'comment-list', 'gallery', 'caption'));
@@ -164,7 +167,7 @@ add_action('admin_menu', 'didi_ai_admin_menu');
 
 function didi_ai_admin_page() {
   if (isset($_POST['didi_cfg_save']) && check_admin_referer('didi_cfg_save')) {
-    $sections = array('llm', 'code', 'work', 'music', 'write', 'ppt', 'avatar', 'voice', 'file', 'video', 'video_intl', 'animate', 'image', 'edit_video', 'edit_image', 'edit_animate');
+    $sections = array('llm', 'code', 'work', 'music', 'write', 'ppt', 'avatar', 'voice', 'file', 'video', 'video_intl', 'animate', 'image', 'edit_video', 'edit_image', 'edit_animate', 'mediacut', 'mpt');
     $all = array();
     foreach ($sections as $s) {
       if (isset($_POST['cfg'][$s])) {
@@ -197,8 +200,10 @@ function didi_ai_admin_page() {
     'edit_video'  => '剪辑 · 视频编辑（可灵）',
     'edit_image'  => '剪辑 · 图片编辑（即梦 / OpenAI）',
     'edit_animate'=> '剪辑 · 动画编辑（Runway）',
+    'mediacut'    => 'didi Media（MediaCut 免费渠道 · 图片/视频/音频/剪辑共用）',
+    'mpt'         => 'MPT 视频（门户网关 · 主题一键成片免费渠道）',
   );
-  $providers = array('deepseek' => 'DeepSeek', 'kling' => '可灵 Kling', 'jimeng' => '即梦 Jimeng', 'runway' => 'Runway', 'animatediff' => 'AnimateDiff', 'openai' => 'OpenAI', 'sd' => 'Stable Diffusion');
+  $providers = array('deepseek' => 'DeepSeek', 'kling' => '可灵 Kling', 'jimeng' => '即梦 Jimeng', 'runway' => 'Runway', 'animatediff' => 'AnimateDiff', 'openai' => 'OpenAI', 'sd' => 'Stable Diffusion', 'mediacut' => 'MediaCut', 'mpt' => 'MPT 开放平台');
   ?>
   <div class="wrap">
     <h1>didi AI 模型配置</h1>
@@ -308,6 +313,8 @@ function didi_ai_chat_stream($req) {
   if (!is_array($messages) || count($messages) === 0) {
     return new WP_Error('empty_messages', '消息不能为空', array('status' => 400));
   }
+  $customGuard = didi_ai_guard_custom_model($params);
+  if (is_wp_error($customGuard)) return $customGuard;
   // 配额预扣：llm=>提问，code=>代码，work=>工作
   $feature = $section === 'code' ? 'code' : ($section === 'work' ? 'work' : 'chat');
   // 发起请求即记录使用（无论后续 API 是否成功），保证使用记录可追踪
@@ -326,13 +333,6 @@ function didi_ai_chat_stream($req) {
   $base = rtrim($conf['baseUrl'], '/');
   $headers = array('Authorization: Bearer ' . $conf['apiKey']);
   $model = (isset($params['model']) && trim($params['model']) !== '') ? trim($params['model']) : $conf['model'];
-  $customFlag = !empty($params['custom']);
-  if ($customFlag && is_user_logged_in()) {
-    $level = didi_ai_normalize_level(get_user_meta(get_current_user_id(), 'didi_membership', true));
-    if ($level === 'free') {
-      update_user_meta(get_current_user_id(), 'didi_membership', 'free');
-    }
-  }
   $body = array('model' => $model, 'messages' => $messages, 'temperature' => 0.7, 'stream' => true, 'stream_options' => array('include_usage' => true));
 
   $ch = curl_init($base . '/chat/completions');
@@ -412,6 +412,15 @@ function didi_ai_generate_image($req) {
   if (!$prompt) return new WP_Error('empty_prompt', '提示词不能为空', array('status' => 400));
   $imageUrl = isset($params['imageUrl']) ? esc_url_raw(trim($params['imageUrl'])) : '';
 
+  // didi Media（MediaCut）免费渠道：文生图 / 图生图独立走适配层，计费 0 点
+  $mediacutProvider = isset($params['provider']) ? sanitize_key($params['provider']) : '';
+  if (didi_ai_mediacut_is_provider($mediacutProvider)) {
+    if (!is_user_logged_in()) return new WP_Error('login_required', '请先登录', array('status' => 401));
+    $mcResult = $imageUrl ? didi_ai_mediacut_i2i($params, $prompt, $imageUrl) : didi_ai_mediacut_generate_image($params, $prompt);
+    if (!is_wp_error($mcResult)) didi_ai_record_usage('image', $prompt);
+    return $mcResult;
+  }
+
   // 图生图：有参考图时走编辑端点
   if ($imageUrl) {
     $edit_req = new WP_REST_Request('POST', '/didi/v1/edit');
@@ -431,16 +440,29 @@ function didi_ai_generate_image($req) {
   if (empty($conf['apiKey'])) {
     return new WP_Error('not_configured', '图片接口未配置，请在服务端环境变量中填写 USER_IMAGE_* 系列配置', array('status' => 503));
   }
+  $size = isset($params['size']) ? $params['size'] : '1024x1024';
+  $provider = isset($params['provider']) ? strtolower(sanitize_key($params['provider'])) : $conf['provider'];
+  $hasExplicitModel = isset($params['model']) && trim($params['model']) !== '';
+  $customGuard = didi_ai_guard_custom_model($params, $provider);
+  if (is_wp_error($customGuard)) return $customGuard;
   $charge = didi_ai_charge('image', $prompt);
   if (!$charge['ok']) {
     return new WP_Error('no_quota', $charge['error'], array('status' => 402));
   }
-  $size = isset($params['size']) ? $params['size'] : '1024x1024';
-  $provider = isset($params['provider']) ? strtolower($params['provider']) : $conf['provider'];
   $base = rtrim($conf['baseUrl'] ? $conf['baseUrl'] : 'https://api.openai.com/v1', '/');
-  $model = (isset($params['model']) && trim($params['model']) !== '') ? sanitize_text_field($params['model']) : ($conf['model'] ? $conf['model'] : ($provider === 'modelscope' ? 'Flux.1-schnell' : ($provider === 'jimeng' ? getenv('USER_IMAGE_JIMENG_MODEL') ?: 'doubao-seedream' : 'dall-e-3')));
-  if ($provider === 'modelscope') $model = getenv('USER_IMAGE_MODELSCOPE_MODEL') ?: 'Flux.1-schnell';
-  if ($provider === 'gemini') $model = getenv('USER_IMAGE_GEMINI_MODEL') ?: 'gemini-2.5-flash-image';
+  if ($hasExplicitModel) {
+    $model = sanitize_text_field($params['model']);
+  } elseif ($conf['model']) {
+    $model = $conf['model'];
+  } elseif ($provider === 'modelscope') {
+    $model = getenv('USER_IMAGE_MODELSCOPE_MODEL') ?: 'Flux.1-schnell';
+  } elseif ($provider === 'jimeng') {
+    $model = getenv('USER_IMAGE_JIMENG_MODEL') ?: 'doubao-seedream';
+  } elseif ($provider === 'gemini') {
+    $model = getenv('USER_IMAGE_GEMINI_MODEL') ?: 'gemini-2.5-flash-image';
+  } else {
+    $model = 'dall-e-3';
+  }
   $body = array(
     'model' => $model,
     'prompt' => $prompt,
@@ -473,27 +495,71 @@ function didi_ai_generate_video($req) {
   $isIntl = $tier === 'intl';
   $tierKey = $isIntl ? 'intl' : 'domestic';
   $tierName = $isIntl ? '国际高端' : ($tier === 'premium' ? '高端' : ($tier === 'economy' ? '经济' : '标准'));
+
+  // didi Media（MediaCut）免费渠道：提交任务后由前端轮询 /mc/task，计费 0 点
+  $mediacutProvider = isset($params['provider']) ? sanitize_key($params['provider']) : '';
+  if (didi_ai_mediacut_is_provider($mediacutProvider)) {
+    if (!is_user_logged_in()) return new WP_Error('login_required', '请先登录', array('status' => 401));
+    $mcSubmit = didi_ai_mediacut_video_submit($params, $prompt);
+    if (is_wp_error($mcSubmit)) return $mcSubmit;
+    didi_ai_record_usage($isIntl ? 'video_intl' : 'video', $prompt);
+    return array(
+      'provider' => 'didi-media',
+      'tier' => $tier,
+      'taskId' => $mcSubmit['task_id'],
+      'status' => $mcSubmit['status'],
+      'poll' => true,
+      'raw' => $mcSubmit['raw'],
+    );
+  }
+
+  // MPT 门户网关：主题一键成片（Pexels/Pixabay + Edge TTS），提交后由前端轮询 /mpt/task，计费 0 点
+  $mptProvider = isset($params['provider']) ? sanitize_key($params['provider']) : '';
+  if (didi_ai_mpt_is_provider($mptProvider)) {
+    if (!is_user_logged_in()) return new WP_Error('login_required', '请先登录', array('status' => 401));
+    $mptSubmit = didi_ai_mpt_submit($params, $prompt);
+    if (is_wp_error($mptSubmit)) return $mptSubmit;
+    didi_ai_record_usage($isIntl ? 'video_intl' : 'video', $prompt);
+    return array(
+      'provider' => 'didi-mpt',
+      'tier' => $tier,
+      'taskId' => $mptSubmit['task_id'],
+      'status' => $mptSubmit['status'],
+      'poll' => true,
+      'raw' => $mptSubmit['raw'],
+    );
+  }
+
   $conf = didi_ai_video_cfg($tierKey);
   if (empty($conf['apiKey']) || empty($conf['baseUrl'])) {
     $env_key = $isIntl ? 'USER_VIDEO_INTL_*' : 'USER_VIDEO_*';
     return new WP_Error('not_configured', $tierName . '档视频接口未配置，请在服务端环境变量或后台配置中填写 ' . $env_key . ' 系列配置', array('status' => 503));
   }
   $feature = $isIntl ? 'video_intl' : 'video';
+  $duration = isset($params['duration']) ? (int) $params['duration'] : 5;
+  $hasExplicitModel = isset($params['model']) && trim($params['model']) !== '';
+  $provider = isset($params['provider']) ? strtolower(sanitize_key($params['provider'])) : $conf['provider'];
+  if (!$hasExplicitModel) {
+    $provider = in_array($provider, array('kling', 'seedance', 'jimeng', 'runway', 'modelscope', 'openai', 'custom')) ? $provider : $conf['provider'];
+  }
+  $customGuard = didi_ai_guard_custom_model($params, $provider);
+  if (is_wp_error($customGuard)) return $customGuard;
   $charge = didi_ai_charge($feature, $prompt);
   if (!$charge['ok']) {
     return new WP_Error('no_quota', $charge['error'], array('status' => 402));
   }
-  $duration = isset($params['duration']) ? (int) $params['duration'] : 5;
-  $provider = isset($params['provider']) ? strtolower($params['provider']) : $conf['provider'];
-  $provider = in_array($provider, array('kling', 'seedance', 'jimeng', 'runway', 'modelscope', 'openai', 'custom')) ? $provider : $conf['provider'];
   $base = rtrim($conf['baseUrl'], '/');
-  $model = (isset($params['model']) && trim($params['model']) !== '') ? sanitize_text_field($params['model']) : $conf['model'];
-  if ($provider === 'seedance') {
-    $model = getenv('USER_VIDEO_SEEDANCE_MODEL') ?: $conf['model'];
-  } elseif ($provider === 'jimeng') {
-    $model = getenv('USER_VIDEO_JIMENG_MODEL') ?: $conf['model'];
-  } elseif ($provider === 'modelscope') {
-    $model = getenv('USER_VIDEO_MODELSCOPE_MODEL') ?: 'Wan2.1-I2V-14B-480P';
+  if ($hasExplicitModel) {
+    $model = sanitize_text_field($params['model']);
+  } else {
+    $model = $conf['model'];
+    if ($provider === 'seedance') {
+      $model = getenv('USER_VIDEO_SEEDANCE_MODEL') ?: $conf['model'];
+    } elseif ($provider === 'jimeng') {
+      $model = getenv('USER_VIDEO_JIMENG_MODEL') ?: $conf['model'];
+    } elseif ($provider === 'modelscope') {
+      $model = getenv('USER_VIDEO_MODELSCOPE_MODEL') ?: 'Wan2.1-I2V-14B-480P';
+    }
   }
   $body = array(
     'model' => $model,
@@ -527,15 +593,34 @@ function didi_ai_generate_animate($req) {
   $params = $req->get_json_params();
   $prompt = isset($params['prompt']) ? trim($params['prompt']) : '';
   if (!$prompt) return new WP_Error('empty_prompt', '提示词不能为空', array('status' => 400));
+
+  // didi Media（MediaCut）免费渠道：复用视频提交，前端轮询 /mc/task
+  $mediacutProvider = isset($params['provider']) ? sanitize_key($params['provider']) : '';
+  if (didi_ai_mediacut_is_provider($mediacutProvider)) {
+    if (!is_user_logged_in()) return new WP_Error('login_required', '请先登录', array('status' => 401));
+    $mcSubmit = didi_ai_mediacut_video_submit($params, $prompt);
+    if (is_wp_error($mcSubmit)) return $mcSubmit;
+    didi_ai_record_usage('animate', $prompt);
+    return array(
+      'provider' => 'didi-media',
+      'taskId' => $mcSubmit['task_id'],
+      'status' => $mcSubmit['status'],
+      'poll' => true,
+      'raw' => $mcSubmit['raw'],
+    );
+  }
+
   $conf = didi_ai_animate_cfg();
   if (empty($conf['apiKey']) || empty($conf['baseUrl'])) {
     return new WP_Error('not_configured', '动画接口未配置，请在服务端环境变量中填写 USER_ANIMATE_* 系列配置', array('status' => 503));
   }
+  $provider = isset($params['provider']) ? strtolower(sanitize_key($params['provider'])) : $conf['provider'];
+  $customGuard = didi_ai_guard_custom_model($params, $provider);
+  if (is_wp_error($customGuard)) return $customGuard;
   $charge = didi_ai_charge('animate', $prompt);
   if (!$charge['ok']) {
     return new WP_Error('no_quota', $charge['error'], array('status' => 402));
   }
-  $provider = isset($params['provider']) ? strtolower($params['provider']) : $conf['provider'];
   $base = rtrim($conf['baseUrl'], '/');
   $model = (isset($params['model']) && trim($params['model']) !== '') ? sanitize_text_field($params['model']) : $conf['model'];
   $body = array(
@@ -717,6 +802,8 @@ function didi_ai_edit($req) {
       array('status' => 503));
   }
   $provider = $provider ? $provider : $conf['provider'];
+  $customGuard = didi_ai_guard_custom_model($params, $provider);
+  if (is_wp_error($customGuard)) return $customGuard;
   // 按 provider 定价扣费：可灵30 / 即梦25 / Runway80 / OpenAI25
   $editFeature = $provider === 'runway' ? 'edit_runway' : ($provider === 'kling' ? 'edit_kling' : ($provider === 'jimeng' ? 'edit_jimeng' : ($provider === 'openai' ? 'edit_openai' : 'edit')));
   $charge = didi_ai_charge($editFeature, $prompt);
@@ -728,6 +815,9 @@ function didi_ai_edit($req) {
   $model = (isset($params['model']) && trim($params['model']) !== '') ? sanitize_text_field($params['model']) : $conf['model'];
 
   // 下载素材为临时文件
+  if (!function_exists('download_url')) {
+    require_once ABSPATH . 'wp-admin/includes/file.php';
+  }
   $tmp = download_url($imageUrl);
   if (is_wp_error($tmp)) {
     didi_ai_refund($editFeature);
@@ -829,9 +919,30 @@ function didi_ai_post_form($url, $headers, $fields) {
 /* ================= 访客权限控制 ================= */
 // 隐藏 ADMIN 后台入口：禁用前台管理工具条；非管理员在前台看不到后台链接
 add_filter('show_admin_bar', '__return_false');
+
+// 识别主流搜索引擎 / 生成式引擎爬虫（GEO：让生成式引擎能读取并引用站点内容）
+function didi_ai_is_crawler() {
+  $ua = isset($_SERVER['HTTP_USER_AGENT']) ? strtolower((string) $_SERVER['HTTP_USER_AGENT']) : '';
+  if ($ua === '') return false;
+  $bots = array(
+    'googlebot', 'bingbot', 'baiduspider', 'yandexbot', 'duckduckbot', 'sogou web spider',
+    '360spider', 'haosouspider', 'bytespider', 'applebot', 'petalbot', 'amazonbot',
+    'gptbot', 'chatgpt-user', 'oai-searchbot', 'perplexitybot', 'claudebot', 'claude-web',
+    'anthropic-ai', 'google-extended', 'ccbot', 'cohere-ai', 'youbot', 'ia_archiver',
+    'semrushbot', 'ahrefsbot', 'mj12bot', 'dotbot',
+  );
+  foreach ($bots as $b) {
+    if (strpos($ua, $b) !== false) return true;
+  }
+  return false;
+}
+
 function didi_ai_guest_access_control() {
   if (is_user_logged_in()) return;
   if (is_admin()) return;
+
+  // 爬虫放行前台内容页（含 /ai-* 工具页与文章详情），私密页由 meta robots 标 noindex
+  if (didi_ai_is_crawler()) return;
 
   $path = isset($_SERVER['REQUEST_URI']) ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : '';
   $path = '/' . ltrim($path, '/');
@@ -869,6 +980,7 @@ add_action('wp_head', function () {
   if (is_user_logged_in()) {
     echo '<script>window.didiRestNonce=' . wp_json_encode(wp_create_nonce('wp_rest')) . ';</script>';
   }
+  echo '<script>window.didiIsPaidMember=' . (didi_ai_is_paid_member() ? 'true' : 'false') . ';</script>';
   if (didi_ai_is_embed()) {
     echo '<style>
       body.didi-embed header, body.didi-embed footer, body.didi-embed .lang-box { display:none !important; }
@@ -888,7 +1000,27 @@ remove_action('wp_head', 'wp_generator');
 
 // 站点核心关键词（含国内/全球模型名，便于生成式引擎检索）
 function didi_ai_seo_keywords() {
-  return 'didi AI,AI 工具台,AI 对话,AI 提问,AI 代码,AI 写作,AI PPT,AI 生成图片,AI 生成视频,数字人,AI 动画,AI 音频,AI 剪辑,Kimi,通义千问,可灵,即梦,Seedream,Veo,GPT Image,国产大模型';
+  return 'didi AI,AI 工具台,AI 对话,AI 提问,AI 代码,AI 写作,AI PPT,AI 生成图片,AI 生成视频,数字人,AI 动画,AI 音频,AI 剪辑,文生视频,图生视频,AI 配音,AI 字幕,免费 AI,免费 AI 视频生成,免费 AI 图片生成,Kimi,通义千问,可灵,即梦,Seedream,Veo,GPT Image,国产大模型';
+}
+
+// 各 AI 工具页的专属描述（用于 meta description 与结构化数据）
+function didi_ai_seo_tool_desc($slug) {
+  $map = array(
+    'ai-chat'    => 'didi AI 提问：聚合国内与全球最强对话模型，支持语音、文件与图片输入，适合问答、分析与创作。',
+    'ai-code'    => 'didi AI 代码：代码生成、解释、调试与多文件工程编辑，覆盖主流编程语言与框架。',
+    'ai-work'    => 'didi AI 工作台：文档撰写、总结、方案策划与数据整理，一站式提升办公效率。',
+    'ai-image'   => 'didi AI 图片生成：即梦 Seedream、GPT Image、Nano Banana 等多模型文生图，支持图生图、修图、抠图与画质增强。',
+    'ai-video'   => 'didi AI 视频生成：可灵、即梦、Veo、Runway 等文生视频与图生视频，并提供主题一键成片的免费渠道。',
+    'ai-avatar'  => 'didi AI 数字人：输入文案即可合成口播数字人视频，适用于讲解、营销与课程内容。',
+    'ai-animate' => 'didi AI 动画：可灵、Veo、AnimateDiff 图生动画，让静态图片动起来。',
+    'ai-music'   => 'didi AI 音频：音乐生成、语音合成（TTS）与语音识别（ASR），支持免费音频剪辑。',
+    'ai-voice'   => 'didi AI 语音：语音输入转文字，由国产大模型用语音与文字一起回答，支持浏览器语音识别与语音合成。',
+    'ai-file'    => 'didi AI 文件：上传 txt、md、csv、json 等文本文件，AI 自动提取、总结与分析内容。',
+    'ai-write'   => 'didi AI 写作：长文、公文、营销文案与新媒体内容创作。',
+    'ai-ppt'     => 'didi AI PPT：根据主题一键生成演示大纲与页面。',
+    'ai-edit'    => 'didi AI 智能剪辑：视频、动画、图片、音频的 AI 剪辑与处理，支持图片修图/抠图/增强与音频编辑。',
+  );
+  return isset($map[$slug]) ? $map[$slug] : '';
 }
 
 // 当前页面 SEO 上下文
@@ -920,6 +1052,10 @@ function didi_ai_seo_context() {
     $ctx['type'] = 'article';
     $slug = get_post_field('post_name');
     $ctx['is_tool'] = (get_post_type() === 'page' && strpos((string)$slug, 'ai-') === 0);
+    if ($ctx['is_tool']) {
+      $toolDesc = didi_ai_seo_tool_desc($slug);
+      if ($toolDesc) $ctx['desc'] = $toolDesc;
+    }
   } elseif (is_category() || is_tag() || is_tax()) {
     $term = get_queried_object();
     $tname = ($term && !is_wp_error($term)) ? $term->name : '';
@@ -936,6 +1072,11 @@ function didi_ai_seo_context() {
     $ctx['desc']   = '在 didi AI 中搜索相关内容。';
     $ctx['url']    = get_search_link();
     $ctx['robots'] = 'noindex,follow';
+  } elseif (is_404()) {
+    $ctx['title']  = '页面未找到 · ' . $site;
+    $ctx['desc']   = '抱歉，您访问的页面不存在或已被移动，可返回首页使用 didi AI 各项 AI 工具。';
+    $ctx['url']    = '';
+    $ctx['robots'] = 'noindex,follow';
   }
 
   // 登录 / 注册 / 会员 / 充值等私密页不收录
@@ -950,19 +1091,46 @@ function didi_ai_seo_context() {
   return $ctx;
 }
 
+// 为缺少标题的工具页补一个无障碍隐藏 H1（标题在工具页由模板 H1 提供的页面不处理）
+add_action('wp_body_open', function () {
+  if (is_admin()) return;
+  if (is_front_page()) {
+    echo '<h1 class="didi-sr-only">' . esc_html(get_bloginfo('name')) . ' · 一站式 AI 工具台</h1>' . "\n";
+    return;
+  }
+  if (!is_page()) return;
+  $post = get_queried_object();
+  if (!($post instanceof WP_Post)) return;
+  $need = array(
+    'page-ai-video.php', 'page-ai-image.php', 'page-ai-animate.php', 'page-ai-edit.php',
+  );
+  if (!in_array((string) get_page_template_slug($post->ID), $need, true)) return;
+  $title = get_the_title($post);
+  if ($title === '') return;
+  echo '<h1 class="didi-sr-only">' . esc_html($title) . '</h1>' . "\n";
+});
+
 // 结构化数据（JSON-LD）
 function didi_ai_seo_jsonld($c) {
   $home   = $c['home'] . '/';
   $org_id = $home . '#organization';
   $web_id = $home . '#website';
-  $graph  = array(
-    array(
-      '@type' => 'Organization',
-      '@id'   => $org_id,
-      'name'  => $c['site'],
-      'url'   => $home,
-      'description' => 'didi AI 是聚合国内与全球最强 AI 模型的一站式在线工具台。',
-    ),
+  $icon   = get_site_icon_url();
+
+  $org = array(
+    '@type' => 'Organization',
+    '@id'   => $org_id,
+    'name'  => $c['site'],
+    'url'   => $home,
+    'description' => 'didi AI 是聚合国内与全球最强 AI 模型的一站式在线工具台。',
+  );
+  if ($icon) {
+    $org['logo'] = array('@type' => 'ImageObject', 'url' => $icon);
+    $org['image'] = $icon;
+  }
+
+  $graph = array(
+    $org,
     array(
       '@type' => 'WebSite',
       '@id'   => $web_id,
@@ -976,7 +1144,10 @@ function didi_ai_seo_jsonld($c) {
         'query-input' => 'required name=search_term_string',
       ),
     ),
-    array(
+  );
+
+  if (!empty($c['url'])) {
+    $graph[] = array(
       '@type' => 'WebPage',
       '@id'   => $c['url'] . '#webpage',
       'url'   => $c['url'],
@@ -984,8 +1155,9 @@ function didi_ai_seo_jsonld($c) {
       'description' => $c['desc'],
       'isPartOf' => array('@id' => $web_id),
       'inLanguage' => 'zh-CN',
-    ),
-  );
+    );
+  }
+
   if (!empty($c['is_tool'])) {
     $graph[] = array(
       '@type' => 'SoftwareApplication',
@@ -997,6 +1169,46 @@ function didi_ai_seo_jsonld($c) {
       'offers' => array('@type' => 'Offer', 'price' => '0', 'priceCurrency' => 'CNY'),
     );
   }
+
+  // 文章结构化数据
+  if (is_singular('post')) {
+    $pid = get_queried_object_id();
+    $art = array(
+      '@type' => 'BlogPosting',
+      '@id'   => $c['url'] . '#article',
+      'headline' => get_the_title($pid),
+      'description' => $c['desc'],
+      'url'   => $c['url'],
+      'mainEntityOfPage' => array('@id' => $c['url']),
+      'datePublished' => get_the_date('c', $pid),
+      'dateModified'  => get_the_modified_date('c', $pid),
+      'inLanguage' => 'zh-CN',
+      'author' => array('@type' => 'Person', 'name' => get_the_author_meta('display_name', (int) get_post_field('post_author', $pid))),
+      'publisher' => array('@id' => $org_id),
+    );
+    $thumb = get_the_post_thumbnail_url($pid, 'full');
+    if ($thumb) $art['image'] = $thumb;
+    $cats = get_the_category($pid);
+    if (!empty($cats) && !is_wp_error($cats)) $art['articleSection'] = $cats[0]->name;
+    $graph[] = $art;
+  }
+
+  // 面包屑
+  if (!empty($c['url']) && is_singular()) {
+    $crumbs = array(array('@type' => 'ListItem', 'position' => 1, 'name' => '首页', 'item' => $home));
+    if (is_singular('post')) {
+      $cats = get_the_category(get_queried_object_id());
+      if (!empty($cats) && !is_wp_error($cats)) {
+        $clink = get_category_link($cats[0]->term_id);
+        if (!is_wp_error($clink)) {
+          $crumbs[] = array('@type' => 'ListItem', 'position' => 2, 'name' => $cats[0]->name, 'item' => $clink);
+        }
+      }
+    }
+    $crumbs[] = array('@type' => 'ListItem', 'position' => count($crumbs) + 1, 'name' => get_the_title(), 'item' => $c['url']);
+    $graph[] = array('@type' => 'BreadcrumbList', 'itemListElement' => $crumbs);
+  }
+
   echo '<script type="application/ld+json">' . wp_json_encode(
     array('@context' => 'https://schema.org', '@graph' => $graph),
     JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
@@ -1008,6 +1220,10 @@ add_action('wp_head', function () {
   if (is_admin() || is_feed()) return;
   $c = didi_ai_seo_context();
   $icon = get_site_icon_url();
+  // 社交分享图：优先站点图标，其次文章特色图
+  if (!$icon && is_singular() && has_post_thumbnail()) {
+    $icon = get_the_post_thumbnail_url(null, 'full');
+  }
 
   if (!empty($c['url']) && !is_wp_error($c['url'])) {
     echo '<link rel="canonical" href="' . esc_url($c['url']) . '">' . "\n";
@@ -1051,9 +1267,37 @@ add_filter('robots_txt', function ($output, $public) {
     'Allow: /wp-admin/admin-ajax.php',
     '',
     '# 生成式引擎可读取的站点摘要',
+    '# llms.txt: ' . $home . '/llms.txt',
     'Sitemap: ' . $home . '/wp-sitemap.xml',
   );
   return implode("\n", $lines) . "\n";
+}, 10, 2);
+
+// sitemap：剔除不收录的私密页，关闭低价值的作者归档 sitemap
+function didi_ai_seo_private_page_ids() {
+  $ids = get_posts(array(
+    'post_type'      => 'page',
+    'posts_per_page' => -1,
+    'fields'         => 'ids',
+    'no_found_rows'  => true,
+    'meta_key'       => '_wp_page_template',
+    'meta_value'     => array('page-login.php', 'page-member.php', 'page-recharge.php', 'page-forum-new.php'),
+    'meta_compare'   => 'IN',
+  ));
+  return is_array($ids) ? array_map('intval', $ids) : array();
+}
+add_filter('wp_sitemaps_posts_query_args', function ($args, $post_type) {
+  if ($post_type !== 'page') return $args;
+  $exclude = didi_ai_seo_private_page_ids();
+  if (!empty($exclude)) {
+    $prev = isset($args['post__not_in']) && is_array($args['post__not_in']) ? $args['post__not_in'] : array();
+    $args['post__not_in'] = array_values(array_unique(array_merge($prev, $exclude)));
+  }
+  return $args;
+}, 10, 2);
+add_filter('wp_sitemaps_add_provider', function ($provider, $name) {
+  if ($name === 'users') return false;
+  return $provider;
 }, 10, 2);
 
 // llms.txt：为生成式引擎（GEO）提供站点结构化摘要
@@ -1072,6 +1316,8 @@ add_action('template_redirect', function () {
     array('AI 数字人',           '/ai-avatar','硅基智能、HeyGen 等数字人视频合成。'),
     array('AI 动画',             '/ai-animate','可灵、Veo、AnimateDiff 图生动画。'),
     array('AI 音频',             '/ai-music', '音潮、Suno 等音乐与音频生成。'),
+    array('AI 语音',             '/ai-voice', '语音输入转文字，由国产大模型用语音与文字一起回答。'),
+    array('AI 文件',             '/ai-file',  '上传文本文件，AI 提取、总结与分析内容。'),
     array('AI 写作',             '/ai-write', '长文、公文、营销文案创作。'),
     array('AI PPT',              '/ai-ppt',   '一键生成演示文稿大纲与页面。'),
     array('AI 智能剪辑',         '/ai-edit',  '视频、动画、图片、音频的 AI 剪辑。'),
@@ -1085,6 +1331,10 @@ add_action('template_redirect', function () {
   $out .= "\n## 内容\n";
   $out .= '- [博客](' . $home . '/blog)：AI 模型能力、应用实践与行业观察。' . "\n";
   $out .= '- [论坛](' . $home . '/forum)：AI 使用经验与技巧交流。' . "\n";
+  $out .= "\n## 免费能力\n";
+  $out .= "- 图片：文生图、图生图、修图、抠图、画质增强。\n";
+  $out .= "- 视频：主题一键成片（免费素材 + 配音 + 字幕）、图生运镜短片。\n";
+  $out .= "- 音频：语音合成（TTS）、语音识别（ASR）、音频剪辑。\n";
   $out .= "\n## 说明\n";
   $out .= "- 站点语言：简体中文\n- 主要栏目：AI 工具台、博客、论坛\n- Sitemap：" . $home . "/wp-sitemap.xml\n";
   echo $out;
@@ -1239,6 +1489,23 @@ function didi_ai_normalize_level($level) {
   $map = array('trial' => 'free', 'silver' => 'month', 'gold' => 'year');
   if (isset($map[$level])) return $map[$level];
   return in_array($level, array('free', 'month', 'year'), true) ? $level : 'free';
+}
+
+// 付费会员判定：仅月卡 / 年卡视为付费会员（免费会员不享受付费权益）
+function didi_ai_is_paid_member($uid = 0) {
+  $uid = $uid ? (int) $uid : (int) get_current_user_id();
+  if (!$uid) return false;
+  $level = didi_ai_normalize_level(get_user_meta($uid, 'didi_membership', true));
+  return $level === 'month' || $level === 'year';
+}
+
+// 自定义模型守卫：付费会员放行返回 null；免费会员请求自定义模型返回 WP_Error
+function didi_ai_guard_custom_model($params, $provider = '') {
+  $provider = strtolower((string) $provider);
+  $isCustom = !empty($params['custom']) || $provider === 'custom' || $provider === '__custom__';
+  if (!$isCustom) return null;
+  if (didi_ai_is_paid_member()) return null;
+  return new WP_Error('custom_model_locked', '自定义模型仅对付费会员（月卡 / 年卡）开放，请先开通会员', array('status' => 403));
 }
 
 // 当前用户会员等级与余额
@@ -1654,12 +1921,28 @@ function didi_ai_vps_proxy($req) {
   $action = isset($params['action']) ? sanitize_key($params['action']) : 'generate';
   $path = isset($params['path']) ? trim($params['path']) : '';
   if (!$path) return new WP_Error('empty_path', '缺少 VPS 接口路径', array('status' => 400));
+
+  // didi Media（MediaCut）免费渠道：图片/音频剪辑直达适配层，不依赖 USER_VPS_BASE_URL
+  $mcPayload = (isset($params['data']) && is_array($params['data'])) ? $params['data'] : array();
+  $mcProvider = isset($mcPayload['provider']) ? strtolower((string) $mcPayload['provider']) : '';
+  if (didi_ai_mediacut_is_provider($mcProvider)) {
+    if (!is_user_logged_in()) return new WP_Error('login_required', '请先登录', array('status' => 401));
+    $mcGuard = didi_ai_guard_custom_model($mcPayload, $mcProvider);
+    if (is_wp_error($mcGuard)) return $mcGuard;
+    $mcRes = didi_ai_mediacut_vps_dispatch($feature, $path, $mcPayload);
+    if (!is_wp_error($mcRes)) didi_ai_record_usage('edit', 'didi Media ' . $feature);
+    return $mcRes;
+  }
+
   $base = rtrim(getenv('USER_VPS_BASE_URL') ?: '', '/');
   if (!$base) {
     return new WP_Error('not_configured', 'VPS 剪辑服务未配置：请在服务端环境变量中填写 USER_VPS_BASE_URL 指向你的剪辑服务地址', array('status' => 503));
   }
   $payload = isset($params['data']) ? $params['data'] : array();
   if (!is_array($payload)) $payload = array();
+  $payloadProvider = isset($payload['provider']) ? strtolower((string) $payload['provider']) : '';
+  $customGuard = didi_ai_guard_custom_model($payload, $payloadProvider);
+  if (is_wp_error($customGuard)) return $customGuard;
   $url = $base . '/' . ltrim($path, '/');
   $headers = array();
   $vpsKey = getenv('USER_VPS_API_KEY') ?: '';
@@ -1701,6 +1984,16 @@ function didi_ai_register_quota_routes() {
   register_rest_route('didi/v1', '/vps', array(
     'methods' => 'POST',
     'callback' => 'didi_ai_vps_proxy',
+    'permission_callback' => '__return_true',
+  ));
+  register_rest_route('didi/v1', '/mc/task', array(
+    'methods' => 'POST',
+    'callback' => 'didi_ai_mediacut_task_endpoint',
+    'permission_callback' => '__return_true',
+  ));
+  register_rest_route('didi/v1', '/mpt/task', array(
+    'methods' => 'POST',
+    'callback' => 'didi_ai_mpt_task_endpoint',
     'permission_callback' => '__return_true',
   ));
   register_rest_route('didi/v1', '/change-password', array(
@@ -1926,6 +2219,9 @@ function didi_codex_run_task($req) {
   $dir = didi_codex_project_dir($slug);
   if (!$dir || !is_dir($dir)) return new WP_Error('not_found', '项目不存在', array('status' => 404));
   if ($message === '') return new WP_Error('empty_message', '请输入任务描述', array('status' => 400));
+
+  $customGuard = didi_ai_guard_custom_model($params);
+  if (is_wp_error($customGuard)) return $customGuard;
 
   $conf = didi_ai_llm_cfg('code');
   if (empty($conf['apiKey'])) {

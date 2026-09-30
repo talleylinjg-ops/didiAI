@@ -57,6 +57,17 @@ get_header();
         </label>
         <div id="tierNote" style="display:none;margin-top:8px;padding:8px 10px;background:var(--bg-soft);border-radius:10px;font-size:12.5px;color:#4e5969;line-height:1.7;"></div>
         <div id="vpsNote" style="display:none;margin-top:8px;padding:8px 10px;background:linear-gradient(90deg,rgba(22,104,220,.08),rgba(123,104,238,.08));border:1px dashed #c8dbff;border-radius:10px;font-size:12.5px;color:#1668dc;line-height:1.7;"></div>
+        <label class="field" id="modeField" style="display:none;"><span>图片处理模式</span>
+          <select class="input" id="editMode">
+            <option value="edit">修图 · 滤镜 / 裁剪 / 缩放 / 水印 / 格式</option>
+            <option value="i2i">改图 · 按指令重绘（需填写剪辑指令）</option>
+            <option value="matting">抠图 · 去背景</option>
+            <option value="enhance">增强 · 画质提升</option>
+          </select>
+        </label>
+        <label class="field" id="editParamsField" style="display:none;"><span>修图参数（JSON，可选）</span>
+          <textarea class="input" id="editParams" style="min-height:70px;font-family:monospace;font-size:12.5px;" placeholder='{"filter":"...","crop":"...","resize":"...","watermark":"...","output_format":"png"}'></textarea>
+        </label>
         <label class="field"><span id="mediaLabel">上传素材（图片或视频）</span>
           <div style="display:flex;gap:10px;">
             <input class="input" type="text" id="mediaUrl" placeholder="粘贴素材 URL，或上传本地文件">
@@ -110,23 +121,27 @@ get_header();
   var PROVIDERS = {
     video: {
       label: '视频模型 / 档位',
-      default: 'kling',
+      default: 'kling-3.0',
       groups: [
         { label: '国内模型', options: [
-          { value: 'didi-media', text: '免费 · didi Media' },
-          { value: 'jimeng', text: '标准 · 即梦 Dreamina API' },
-          { value: 'kling', text: '高端 · 可灵 3.0（国内最强）' }
+          { value: 'doubao-seedance-1.0-pro', provider: 'seedance', text: '标准 · 豆包 Seedance 1.0 Pro' },
+          { value: 'jimeng-video-3.0', provider: 'jimeng', text: '标准 · 即梦 Dreamina 3.0' },
+          { value: 'kling-3.0', provider: 'kling', text: '高端 · 可灵 3.0（国内最强）' },
+          { value: 'vidu-q2', provider: 'vidu', text: '高端 · 生数 Vidu Q2' },
+          { value: 'hailuo-2.3', provider: 'minimax', text: '高端 · MiniMax 海螺 2.3' },
+          { value: 'wan2.5-i2v', provider: 'wan', text: '标准 · 通义万相 2.5' }
         ] },
         { label: '海外模型', options: [
-          { value: 'veo-3.1', text: '高端 · Veo 3.1（全球最强）' },
-          { value: 'openai', text: '高端 · 备选 OPEN AI' },
-          { value: 'runway', text: '高端 · 备选 RUNWAY' }
+          { value: 'veo-3.1', provider: 'veo', text: '高端 · Veo 3.1（全球最强）' },
+          { value: 'sora-2', provider: 'sora', text: '高端 · Sora 2' },
+          { value: 'runway-gen4', provider: 'runway', text: '高端 · Runway Gen-4' },
+          { value: 'pika-2.5', provider: 'pika', text: '标准 · Pika 2.5' }
         ] },
         { label: '定制模型', options: [
-          { value: 'custom', text: '自定义模型' }
+          { value: 'custom', provider: 'custom', text: '自定义模型' }
         ] }
       ],
-      tier: '国内：免费 didi Media / 即梦 / 可灵 3.0（最强）　｜　海外：Veo 3.1（最强）/ OPEN AI / RUNWAY　｜　定制：自定义模型',
+      tier: '国内：豆包 Seedance / 即梦 3.0 / 可灵 3.0（最强）/ Vidu Q2 / 海螺 2.3 / 通义万相 2.5　｜　海外：Veo 3.1（最强）/ Sora 2 / Runway Gen-4 / Pika 2.5　｜　定制：自定义模型',
       vps: '',
       media: 'image/*,video/*',
       mediaLabel: '上传素材（图片或视频）',
@@ -134,22 +149,23 @@ get_header();
     },
     animate: {
       label: '动画模型',
-      default: 'kling',
+      default: 'kling-3.0',
       groups: [
         { label: '国内模型', options: [
-          { value: 'kling', text: '高端 · 可灵 3.0（国内最强）' },
-          { value: 'didi-media', text: '免费 · didi Media' }
+          { value: 'kling-3.0', provider: 'kling', text: '高端 · 可灵 3.0（国内最强）' },
+          { value: 'jimeng-animate-3.0', provider: 'jimeng', text: '高端 · 即梦动画 3.0' },
+          { value: 'vidu-q2-animate', provider: 'vidu', text: '标准 · 生数 Vidu Q2' }
         ] },
         { label: '海外模型', options: [
-          { value: 'veo-3.1', text: '高端 · Veo 3.1（全球最强）' },
-          { value: 'animatediff', text: 'AnimateDiff' },
-          { value: 'animatediff-lite', text: 'AnimateDiff-Lite' }
+          { value: 'veo-3.1', provider: 'veo', text: '高端 · Veo 3.1（全球最强）' },
+          { value: 'animatediff', provider: 'animatediff', text: 'AnimateDiff' },
+          { value: 'animatediff-lite', provider: 'animatediff-lite', text: 'AnimateDiff-Lite' }
         ] },
         { label: '定制模型', options: [
-          { value: 'custom', text: '自定义模型' }
+          { value: 'custom', provider: 'custom', text: '自定义模型' }
         ] }
       ],
-      tier: '国内：可灵 3.0（最强）/ 免费 didi Media　｜　海外：Veo 3.1（最强）/ AnimateDiff / AnimateDiff-Lite　｜　定制：自定义模型',
+      tier: '国内：可灵 3.0（最强）/ 即梦动画 3.0 / 生数 Vidu Q2　｜　海外：Veo 3.1（最强）/ AnimateDiff / AnimateDiff-Lite　｜　定制：自定义模型',
       vps: '',
       media: 'image/*,video/*',
       mediaLabel: '上传素材（可选，图生动画）',
@@ -157,22 +173,26 @@ get_header();
     },
     image: {
       label: '图片剪辑工具',
-      default: 'jimeng',
+      default: 'doubao-seedream-5.0',
       groups: [
         { label: '国内模型', options: [
-          { value: 'didi-mediacut', text: '免费 · didi MediaCut' },
-          { value: 'jimeng', text: 'AI · 即梦 Seedream 5.0（国内最强）' },
-          { value: 'modelscope', text: 'AI · ModelScope（收费）' }
+          { value: 'didi-mediacut', provider: 'didi-mediacut', text: '免费 · didi Media' },
+          { value: 'doubao-seedream-5.0', provider: 'jimeng', text: 'AI · 即梦 Seedream 5.0（国内最强）' },
+          { value: 'qwen-image-2.5', provider: 'qwen', text: 'AI · 通义万相 2.5' },
+          { value: 'hunyuan-image-3.0', provider: 'hunyuan', text: 'AI · 腾讯混元图像 3.0' }
         ] },
         { label: '海外模型', options: [
-          { value: 'gpt-image-2', text: 'AI · GPT Image 2（全球最强）' }
+          { value: 'gpt-image-2', provider: 'openai', text: 'AI · GPT Image 2（全球最强）' },
+          { value: 'gemini-3-pro-image-preview', provider: 'gemini', text: 'AI · Nano Banana 2' },
+          { value: 'flux-1.1-pro', provider: 'flux', text: 'AI · Flux 1.1 Pro' },
+          { value: 'midjourney-v7', provider: 'midjourney', text: 'AI · Midjourney V7' }
         ] },
         { label: '定制模型', options: [
-          { value: 'custom', text: '自定义模型' }
+          { value: 'custom', provider: 'custom', text: '自定义模型' }
         ] }
       ],
-      tier: '国内：免费 didi MediaCut　｜　AI：即梦 Seedream 5.0（最强）/ ModelScope（收费）　｜　海外：GPT Image 2（最强）　｜　定制：自定义模型',
-      vps: '图片剪辑走你自部署的剪辑服务（didi MediaCut / ModelScope / 即梦由该服务执行）',
+      tier: '国内：免费 didi Media / 即梦 Seedream 5.0（最强）/ 通义万相 2.5 / 混元图像 3.0　｜　海外：GPT Image 2（最强）/ Nano Banana 2 / Flux 1.1 Pro / Midjourney V7　｜　定制：自定义模型',
+      vps: '图片剪辑走你自部署的剪辑服务（didi MediaCut / 即梦等由该服务执行）',
       media: 'image/*',
       mediaLabel: '上传图片素材',
       api: 'vps',
@@ -183,18 +203,22 @@ get_header();
       default: 'yinchao-v4',
       groups: [
         { label: '国内模型', options: [
-          { value: 'yinchao-v4', text: '音潮 V4.0（国内最强）' },
-          { value: 'modelscope', text: 'ModelScope（AI 模型：语音识别 / 合成）' }
+          { value: 'didi-mediacut', provider: 'didi-mediacut', text: '免费 · didi Media' },
+          { value: 'yinchao-v4', provider: 'yinchao-v4', text: '音潮 V4.0（国内最强）' },
+          { value: 'hunyuan-audio', provider: 'hunyuan', text: '腾讯混元音频' },
+          { value: 'minimax-music', provider: 'minimax', text: 'MiniMax 音乐' }
         ] },
         { label: '海外模型', options: [
-          { value: 'suno-v5.5', text: 'Suno V5.5（全球最强）' }
+          { value: 'suno-v5.5', provider: 'suno', text: 'Suno V5.5（全球最强）' },
+          { value: 'elevenlabs', provider: 'elevenlabs', text: 'ElevenLabs' },
+          { value: 'udio', provider: 'udio', text: 'Udio' }
         ] },
         { label: '定制模型', options: [
-          { value: 'custom', text: '自定义模型' }
+          { value: 'custom', provider: 'custom', text: '自定义模型' }
         ] }
       ],
-      tier: '国内：音潮 V4.0（最强）/ ModelScope　｜　海外：Suno V5.5（最强）　｜　定制：自定义模型。音频剪辑由你的 VPS 剪辑服务执行',
-      vps: '音频剪辑对接你自部署的剪辑服务（ModelScope 提供 AI 模型）',
+      tier: '国内：免费 didi Media / 音潮 V4.0（最强）/ 腾讯混元音频 / MiniMax 音乐　｜　海外：Suno V5.5（最强）/ ElevenLabs / Udio　｜　定制：自定义模型。音频剪辑由你的 VPS 剪辑服务执行',
+      vps: '音频剪辑对接你自部署的剪辑服务',
       media: 'audio/*',
       mediaLabel: '上传音频素材',
       api: 'vps',
@@ -214,7 +238,7 @@ get_header();
     var cfg = PROVIDERS[t] || PROVIDERS.video;
     var prov = document.getElementById('provider');
     prov.innerHTML = '';
-    var groupList = cfg.groups || [{ label: '', options: cfg.options || [] }];
+    var groupList = (cfg.groups || [{ label: '', options: cfg.options || [] }]);
     groupList.forEach(function(g){
       var parent = prov;
       if (g.label) {
@@ -225,6 +249,7 @@ get_header();
       (g.options || []).forEach(function(o){
         var op = document.createElement('option');
         op.value = o.value; op.textContent = o.text;
+        op.setAttribute('data-provider', o.provider || o.value);
         parent.appendChild(op);
       });
     });
@@ -238,6 +263,7 @@ get_header();
     var customField = document.getElementById('customModelField');
     if (cfg.default && hasEditOption(cfg.default)) prov.value = cfg.default;
     restoreEditModel();
+    syncModeField();
     if (customField) {
       customField.style.display = (prov.value === 'custom') ? '' : 'none';
     }
@@ -249,7 +275,37 @@ get_header();
 
   var provSel = document.getElementById('provider');
   var editCustomInput = document.getElementById('customModel');
-  var EDIT_MODEL_PREFIX = 'didi_model_v1_edit_';
+  var modeField = document.getElementById('modeField');
+  var editModeSel = document.getElementById('editMode');
+  var editParamsField = document.getElementById('editParamsField');
+  var editParamsInput = document.getElementById('editParams');
+  var EDIT_MODEL_PREFIX = 'didi_model_v1_edit_v2_';
+
+  function isMediaCutProvider() {
+    var opt = provSel.options[provSel.selectedIndex];
+    var p = opt ? (opt.getAttribute('data-provider') || opt.value) : '';
+    return p === 'didi-media' || p === 'didi-mediacut';
+  }
+  function syncModeField() {
+    if (!modeField) return;
+    var showMode = type === 'image' && isMediaCutProvider();
+    modeField.style.display = showMode ? '' : 'none';
+    if (editParamsField) {
+      editParamsField.style.display = (showMode && editModeSel && editModeSel.value === 'edit') ? '' : 'none';
+    }
+  }
+  function parseEditParams() {
+    if (!editParamsInput) return null;
+    var raw = editParamsInput.value.trim();
+    if (!raw) return null;
+    try {
+      var o = JSON.parse(raw);
+      return (o && typeof o === 'object' && !Array.isArray(o)) ? o : null;
+    } catch (e) {
+      toast('修图参数不是合法 JSON', 'error');
+      return false;
+    }
+  }
 
   function editModelKey() { return EDIT_MODEL_PREFIX + type; }
   function syncCustomField() {
@@ -286,11 +342,33 @@ get_header();
     syncCustomField();
   }
 
+  function currentEditChoice() {
+    var opt = provSel.options[provSel.selectedIndex];
+    var provider = opt ? (opt.getAttribute('data-provider') || opt.value) : (PROVIDERS[type] || PROVIDERS.video).default;
+    var label = opt ? opt.textContent.trim() : provider;
+    var model = provSel.value;
+    var custom = provider === 'custom';
+    if (custom) {
+      model = editCustomInput.value.trim();
+      if (!model) { toast('请输入自定义模型名称', 'error'); return null; }
+    }
+    var mode = (type === 'image' && isMediaCutProvider() && editModeSel) ? editModeSel.value : '';
+    var editParams = null;
+    if (mode === 'edit') {
+      editParams = parseEditParams();
+      if (editParams === false) return null;
+    }
+    return { provider: provider, model: model, custom: custom, label: label, mode: mode, editParams: editParams };
+  }
+
   provSel.addEventListener('change', function () {
+    if (provSel.value === 'custom' && typeof didiCustomModelLocked === 'function') didiCustomModelLocked();
     syncCustomField();
+    syncModeField();
     saveEditModel();
   });
   editCustomInput.addEventListener('input', saveEditModel);
+  if (editModeSel) editModeSel.addEventListener('change', syncModeField);
 
   // ============ ChatCut MCP · 智能剪辑（52 工具） ============
   var CHATCUT_TOOLS = ['智能转写','说话人识别','口癖删除','静音片段删除','长停顿压缩','自动字幕','双语字幕','关键词高亮','字幕翻译','片头制作','片尾制作','节奏卡点','自动转场','智能抠图','绿幕替换','画中画','背景替换','智能调色','人像美颜','磨皮瘦脸','降噪处理','音量平衡','背景乐匹配','人声增强','变速','慢动作','快进','倒放','裁剪画面','片段分割','片段合并','去水印','加水印','贴纸素材','文字动画','封面生成','章节标记','多轨混音','音频提取','人声分离','伴奏分离','变声处理','音高调整','回声消除','母带处理','响度标准化','视频转码','视频压缩','GIF 生成','视频摘要','智能配音','口型同步'];
@@ -430,43 +508,43 @@ get_header();
 
   document.getElementById('edit-btn').addEventListener('click', async function() {
     var prompt = document.getElementById('prompt').value.trim();
-    if (!prompt) return toast('请输入剪辑指令', 'error');
     if (!mediaUrl) return toast('请先上传素材', 'error');
-    var provider = document.getElementById('provider').value;
     var cfg = PROVIDERS[type] || PROVIDERS.video;
-    var customModel = '';
+    var choice = currentEditChoice();
+    if (!choice) return;
+    var isMc = isMediaCutProvider();
+    var promptOptional = (type === 'image' && (choice.mode === 'matting' || choice.mode === 'enhance'))
+      || (isMc && (type === 'audio' || choice.mode === 'edit'));
+    if (!prompt && !promptOptional) return toast('请输入剪辑指令', 'error');
     if (type === 'video' && chatcutConn()) {
       var chatcutTool = document.getElementById('chatcutSelected').textContent;
       if (chatcutTool && chatcutTool !== '未选择') {
         prompt = '[ChatCut 智能剪辑 · ' + chatcutTool + '] ' + prompt;
       }
     }
-    if (provider === 'custom') {
-      customModel = document.getElementById('customModel').value.trim();
-      if (!customModel) return toast('请输入自定义模型名称', 'error');
-    }
     var btn = document.getElementById('edit-btn');
     btn.disabled = true;
     var output = document.getElementById('output');
-    output.innerHTML = '<div style="text-align:center; color:var(--text-dim); padding:40px;"><div class="loading-spinner" style="margin:0 auto 16px;"></div><p>任务已提交，请稍候...</p><p style="font-size:12px; margin-top:8px;">模式：' + type + ' · 模型：' + (customModel || provider) + '</p></div>';
+    output.innerHTML = '<div style="text-align:center; color:var(--text-dim); padding:40px;"><div class="loading-spinner" style="margin:0 auto 16px;"></div><p>任务已提交，请稍候...</p><p style="font-size:12px; margin-top:8px;">模式：' + type + ' · 模型：' + escapeHtml(choice.label) + '</p></div>';
     try {
       if (cfg.api === 'vps') {
         var data = await didiPost('/wp-json/didi/v1/vps', {
           feature: type,
           action: 'generate',
           path: cfg.vpsPath,
-          data: { type: type, provider: provider, prompt: prompt, mediaUrl: mediaUrl, model: customModel }
+          data: { type: type, provider: choice.provider, prompt: prompt, mediaUrl: mediaUrl, model: choice.model, custom: choice.custom, mode: choice.mode || 'edit', editParams: choice.editParams || null }
         });
         renderVpsResult(data, prompt, type);
       } else if (cfg.api === 'animate') {
         var data = await didiPost('/wp-json/didi/v1/animate', {
           prompt: prompt,
-          provider: provider,
+          provider: choice.provider,
           frames: 16,
           width: 512,
           height: 512,
           imageUrl: mediaUrl || '',
-          model: customModel
+          model: choice.model,
+          custom: choice.custom
         });
         var html = '<div style="width:100%; padding:20px;">'
           + '<h3 style="margin-bottom:10px;">动画任务已提交</h3>'
@@ -482,9 +560,10 @@ get_header();
         var data = await didiPost('/wp-json/didi/v1/edit', {
           type: type,
           prompt: prompt,
-          provider: provider,
+          provider: choice.provider,
           imageUrl: mediaUrl,
-          model: customModel
+          model: choice.model,
+          custom: choice.custom
         });
         var urls = data.result && data.result.urls ? data.result.urls : [];
         var html = '<div style="width:100%; padding:20px;">'
@@ -520,7 +599,10 @@ get_header();
     var html = '<div style="width:100%; padding:20px;">'
       + '<h3 style="margin-bottom:10px;">' + (t === 'audio' ? '音频剪辑结果' : '处理结果') + '</h3>'
       + '<p style="font-size:13.5px; color:var(--text-dim); margin-bottom:14px;">指令：' + escapeHtml(prompt) + '</p>';
-    if (videoUrl){
+    if (t === 'audio' && (videoUrl || urls.length)){
+      var src = videoUrl || urls[0];
+      html += '<audio src="' + escapeHtml(src) + '" controls style="max-width:100%; border-radius:10px;"></audio>';
+    } else if (videoUrl){
       html += '<video src="' + escapeHtml(videoUrl) + '" controls style="max-width:100%; border-radius:10px;"></video>';
     } else if (urls.length){
       urls.forEach(function(u){

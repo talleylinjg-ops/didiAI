@@ -29,3 +29,16 @@ This file records user instructions, preferences, and teachings for reference in
   - **voice/file 页 section 已改为独立值**（`voice`/`file`），不再与提问页共用 `llm`，否则默认模型会相同。
   - `didi_ai_llm_cfg` 已扩展支持全部 9 个 LLM section（llm/code/work/music/write/ppt/avatar/voice/file），每 section 独立 `USER_<SEC>_BASE_URL/API_KEY/MODEL` 环境变量 + 后台「didi AI 配置」页可分别配置；未配置时回退 DeepSeek。专属模型需用户配置对应厂商 key 才能真实调用。
   - siteurl/home 为 `http://localhost:8080`（DB wp_options），改后登录 cookie 会失效需重新登录。
+
+[Project Knowledge Summary]
+- Date: 2026-09-15
+- Context: Discovered by Agent while deploying didiAI 静态镜像层（R2 + KV + Worker）到 Cloudflare 生产环境
+- Category: Operations & Deployment
+- Instructions:
+  - **镜像工程位置**：`/workspace/didiAI-mirror`（`wrangler.toml` / `src/index.ts` / `scripts/mirror.mjs` 采集 / `scripts/apply.mjs` 上传 / `scripts/apply.mjs` / `deploy.sh` 一键 / `seeds.txt` 页面清单）。架构=HTML 快照进 KV、静态资源进 R2、动态请求回源。
+  - **CF 凭据必须用 User API Token**（My Profile → API Tokens），账号页 `Account API Tokens` 给不了 R2/KV（会报 10000 Authentication error）。需 5 项权限：Account 的 Workers Scripts:Edit、Workers R2 Storage:Edit、Workers KV Storage:Edit、Account Settings:Read，以及 User 的 Memberships:Read。凭据存在 `/tmp/opencode/cf.env`（键名 `CF_API_TOKEN`，脚本里需 export 为 `CLOUDFLARE_API_TOKEN`）。
+  - **wrangler v4 本地/远端坑**：`wrangler r2 object put` 与 `wrangler kv key put` 默认写**本地模拟环境**（日志显示 `Resource location: local`），必须显式加 `--remote`；旧命令 `wrangler kv:key put` 在 v4 已移除，新语法为 `wrangler kv key put <key> --binding=HTML_KV --path=<file> --remote`。
+  - **沙箱访问不了 `*.workers.dev`**：本环境对 `*.workers.dev` 的 DNS 被解析到非 CF 地址且 TLS 直接被重置（`SSL_ERROR_SYSCALL`），因此无法在沙箱内直接验证 Worker；只能用 `wrangler ... --remote` 读回 R2/KV 内容 + Cloudflare API 间接确认，最终渲染效果需用户在浏览器打开 `https://didi-ai-mirror.talley-linjg.workers.dev` 查看。
+  - **已部署资源**：R2 桶 `didi-ai-mirror`；KV `didi_ai_mirror_kv` = `4d12b1b4f3f64e3ca992506cf1a452c6`；Worker `didi-ai-mirror`。`wrangler.toml` 的 `ORIGIN` 暂为占位 `https://origin.pending.invalid`（域名未申请），动态/未缓存请求会失败，仅 KV/R2 命中页可访问。
+  - **本地 WP 安装缺 `wp-includes/css/dist/block-library/common.min.css`**：`router.php` 对不存在的静态文件回退到 `index.php`（302→/login，200 HTML）。采集器因此曾把登录页当成 CSS 存进 R2；`mirror.mjs` 已加按 `content-type` 过滤 HTML 回退的护栏（`fetchAsset` 跳过 text/html、CSS 分支要求 content-type 含 css）。
+  - 部署命令：`ORIGIN=<源站> CLOUDFLARE_API_TOKEN=<token> bash /workspace/didiAI-mirror/deploy.sh`；本地抓取校验用 `ORIGIN=http://localhost:8080 node scripts/mirror.mjs seeds.txt`。

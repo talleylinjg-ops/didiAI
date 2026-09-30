@@ -1,0 +1,9 @@
+# 本地探针/临时文件
+__probe.php
+
+# AI 渠道运行时生成的媒体（不入库）
+didiAI/wp-content/uploads/didi-mediacut/
+didiAI/wp-content/uploads/didi-mpt/
+
+# 平台临时文件
+.monkeycode-tmp-files/
