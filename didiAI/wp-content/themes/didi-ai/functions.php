@@ -184,15 +184,15 @@ function didi_ai_admin_page() {
   }
   $all = get_option('didi_ai_config', array());
   $groups = array(
-    'llm'         => '提问（Kimi K3）',
-    'code'        => '代码（通义千问 Qwen3.8-Max）',
-    'work'        => '工作（通义千问 Qwen3.8-Max）',
-    'music'       => '音频（音潮 V4.0）',
-    'write'       => '写作（Kimi K3）',
-    'ppt'         => 'PPT（Kimi K3）',
-    'avatar'      => '数字人（硅基智能 guiji）',
-    'voice'       => '语音（腾讯混元 hunyuan-turbo）',
-    'file'        => '文件（OpenAI GPT-4o）',
+    'llm'         => '提问（智谱 GLM-4.5-Flash）',
+    'code'        => '代码（智谱 GLM-4.5-Flash）',
+    'work'        => '工作（智谱 GLM · ZIPU）',
+    'music'       => '音频（智谱 GLM-4.5-Flash）',
+    'write'       => '写作（智谱 GLM-4.5-Flash）',
+    'ppt'         => 'PPT（智谱 GLM-4.5-Flash）',
+    'avatar'      => '数字人（智谱 GLM-4.5-Flash）',
+    'voice'       => '语音（智谱 GLM-4.5-Flash）',
+    'file'        => '文件（智谱 GLM-4.5-Flash）',
     'video'       => '视频 · 国内低价档（可灵 1.6 / 即梦）',
     'video_intl'  => '视频 · 国际高端档（Runway Gen-3）',
     'animate'     => '动漫（AnimateDiff）',
@@ -315,6 +315,31 @@ function didi_ai_chat_stream($req) {
   }
   $customGuard = didi_ai_guard_custom_model($params);
   if (is_wp_error($customGuard)) return $customGuard;
+  // 音频页 didi Media：文字转语音（免费，由自部署 MediaCut 执行，仅记录使用）
+  $ttsModel = isset($params['model']) ? trim((string) $params['model']) : '';
+  if ($section === 'music' && didi_ai_mediacut_is_provider($ttsModel)) {
+    $ttsText = '';
+    for ($i = count($messages) - 1; $i >= 0; $i--) {
+      if (isset($messages[$i]['role']) && $messages[$i]['role'] === 'user' && isset($messages[$i]['content']) && trim((string) $messages[$i]['content']) !== '') {
+        $ttsText = trim(wp_strip_all_tags((string) $messages[$i]['content']));
+        break;
+      }
+    }
+    if ($ttsText === '') {
+      return new WP_Error('empty_text', '请输入要转成语音的文字', array('status' => 400));
+    }
+    if (is_user_logged_in()) {
+      didi_ai_record_usage('chat', didi_ai_note_from_messages($messages));
+    }
+    $tts = didi_ai_mediacut_tts($params, $ttsText);
+    if (is_wp_error($tts)) {
+      echo 'data: ' . json_encode(array('error' => $tts->get_error_message())) . "\n\n";
+    } else {
+      echo 'data: ' . json_encode(array('audio' => $tts['urls'][0])) . "\n\n";
+    }
+    echo "data: [DONE]\n\n";
+    exit;
+  }
   // 配额预扣：llm=>提问，code=>代码，work=>工作
   $feature = $section === 'code' ? 'code' : ($section === 'work' ? 'work' : 'chat');
   // 发起请求即记录使用（无论后续 API 是否成功），保证使用记录可追踪
@@ -349,10 +374,25 @@ function didi_ai_chat_stream($req) {
       // 统一 OpenAI 兼容流格式：将 choices[0].delta.content / reasoning_content 转换为 delta 字段
       foreach (explode("\n", $chunk) as $line) {
         $line = trim($line);
-        if (strpos($line, 'data:') !== 0) continue;
+        if ($line === '') continue;
+        if (strpos($line, 'data:') !== 0) {
+          // 非流式错误响应（如上游 1113 余额不足）整段是 JSON，转为 error 事件透传给前端
+          $rawObj = json_decode($line, true);
+          if (is_array($rawObj) && isset($rawObj['error'])) {
+            $errMsg = isset($rawObj['error']['message']) ? $rawObj['error']['message'] : (is_string($rawObj['error']) ? $rawObj['error'] : '上游接口返回错误');
+            $errCode = isset($rawObj['error']['code']) ? $rawObj['error']['code'] : '';
+            echo 'data: ' . json_encode(array('error' => '模型服务返回错误' . ($errCode !== '' ? ' [' . $errCode . ']' : '') . ': ' . $errMsg)) . "\n\n";
+          }
+          continue;
+        }
         $payload = trim(substr($line, 5));
         if ($payload === '[DONE]') { echo "data: [DONE]\n\n"; continue; }
         $o = json_decode($payload, true);
+        if (is_array($o) && isset($o['error'])) {
+          $errMsg = isset($o['error']['message']) ? $o['error']['message'] : '上游接口返回错误';
+          echo 'data: ' . json_encode(array('error' => '模型服务返回错误: ' . $errMsg)) . "\n\n";
+          continue;
+        }
         if (is_array($o) && isset($o['choices'][0]['delta'])) {
           $text = isset($o['choices'][0]['delta']['content']) ? $o['choices'][0]['delta']['content'] : '';
           if ($text === '') {
@@ -1209,6 +1249,35 @@ function didi_ai_seo_jsonld($c) {
     $graph[] = array('@type' => 'BreadcrumbList', 'itemListElement' => $crumbs);
   }
 
+  // 首页 FAQ：与站点真实能力一致，供搜索引擎与生成式引擎引用
+  if (is_front_page()) {
+    $graph[] = array(
+      '@type' => 'FAQPage',
+      'mainEntity' => array(
+        array(
+          '@type' => 'Question',
+          'name' => 'didi AI 是免费的吗？',
+          'acceptedAnswer' => array('@type' => 'Answer', 'text' => 'didi AI 内置多项免费能力：didi Media 提供免费的文生图、图生图、修图、抠图、画质增强与文字转语音，门户渠道提供免费的主题一键成片视频。注册登录后即可使用，高级模型按点数计费。'),
+        ),
+        array(
+          '@type' => 'Question',
+          'name' => 'didi AI 默认使用什么模型？',
+          'acceptedAnswer' => array('@type' => 'Answer', 'text' => '对话、代码、写作、PPT 等文本能力默认使用智谱 GLM-4.5-Flash（当前免费可用），可切换智谱全系模型或填写自定义模型；图片与音频由自建 didi Media 渠道执行，视频成片由 MPT 门户渠道执行。'),
+        ),
+        array(
+          '@type' => 'Question',
+          'name' => 'didi AI 支持哪些内容创作？',
+          'acceptedAnswer' => array('@type' => 'Answer', 'text' => '覆盖 AI 对话提问、代码生成、办公写作、PPT、图片生成、视频生成、数字人、动画、音频语音与智能剪辑（视频/图片/音频），一个工作台完成全部内容生产。'),
+        ),
+        array(
+          '@type' => 'Question',
+          'name' => '如何开始使用 didi AI？',
+          'acceptedAnswer' => array('@type' => 'Answer', 'text' => '注册并登录后，在首页选择任一 AI 工具，输入需求即可获得结果；支持中文界面，无需安装任何软件。'),
+        ),
+      ),
+    );
+  }
+
   echo '<script type="application/ld+json">' . wp_json_encode(
     array('@context' => 'https://schema.org', '@graph' => $graph),
     JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES
@@ -1220,6 +1289,7 @@ add_action('wp_head', function () {
   if (is_admin() || is_feed()) return;
   $c = didi_ai_seo_context();
   $icon = get_site_icon_url();
+  $site = $c['site'];
   // 社交分享图：优先站点图标，其次文章特色图
   if (!$icon && is_singular() && has_post_thumbnail()) {
     $icon = get_the_post_thumbnail_url(null, 'full');
@@ -1242,11 +1312,23 @@ add_action('wp_head', function () {
   }
   echo '<meta property="og:locale" content="zh_CN">' . "\n";
   if ($icon) echo '<meta property="og:image" content="' . esc_url($icon) . '">' . "\n";
+  if ($icon) {
+    // 图像尺寸与替代文本：社交平台与生成式引擎的图像理解辅助
+    $up = wp_upload_dir();
+    $iconPath = (strpos($icon, (string) $up['baseurl']) === 0) ? str_replace($up['baseurl'], $up['basedir'], $icon) : '';
+    $dim = $iconPath !== '' && file_exists($iconPath) ? @wp_getimagesize($iconPath) : false;
+    if (is_array($dim)) {
+      echo '<meta property="og:image:width" content="' . (int) $dim[0] . '">' . "\n";
+      echo '<meta property="og:image:height" content="' . (int) $dim[1] . '">' . "\n";
+    }
+    echo '<meta property="og:image:alt" content="' . esc_attr($site . ' 品牌图标') . '">' . "\n";
+  }
 
   echo '<meta name="twitter:card" content="' . ($icon ? 'summary_large_image' : 'summary') . '">' . "\n";
   echo '<meta name="twitter:title" content="' . esc_attr($c['title']) . '">' . "\n";
   echo '<meta name="twitter:description" content="' . esc_attr($c['desc']) . '">' . "\n";
   if ($icon) echo '<meta name="twitter:image" content="' . esc_url($icon) . '">' . "\n";
+  if ($icon) echo '<meta name="twitter:image:alt" content="' . esc_attr($site . ' 品牌图标') . '">' . "\n";
 
   didi_ai_seo_jsonld($c);
 }, 1);
@@ -1308,22 +1390,22 @@ add_action('template_redirect', function () {
   header('X-Robots-Tag: all');
   $home = untrailingslashit(home_url('/'));
   $tools = array(
-    array('AI 提问（多模型对话）', '/ai-chat',  '聚合国内与全球最强对话模型，支持语音、文件与图片输入。'),
-    array('AI 代码',             '/ai-code',  '代码生成、解释与多文件工程编辑。'),
-    array('AI 工作台',           '/ai-work',  '文档撰写、总结、方案与数据整理。'),
-    array('AI 图片生成',         '/ai-image', '即梦 Seedream、GPT Image、Nano Banana 等多模型出图。'),
-    array('AI 视频生成',         '/ai-video', '可灵、Veo、Runway 等文生视频与图生视频。'),
-    array('AI 数字人',           '/ai-avatar','硅基智能、HeyGen 等数字人视频合成。'),
-    array('AI 动画',             '/ai-animate','可灵、Veo、AnimateDiff 图生动画。'),
-    array('AI 音频',             '/ai-music', '音潮、Suno 等音乐与音频生成。'),
-    array('AI 语音',             '/ai-voice', '语音输入转文字，由国产大模型用语音与文字一起回答。'),
-    array('AI 文件',             '/ai-file',  '上传文本文件，AI 提取、总结与分析内容。'),
-    array('AI 写作',             '/ai-write', '长文、公文、营销文案创作。'),
-    array('AI PPT',              '/ai-ppt',   '一键生成演示文稿大纲与页面。'),
-    array('AI 智能剪辑',         '/ai-edit',  '视频、动画、图片、音频的 AI 剪辑。'),
+    array('AI 提问（多模型对话）', '/ai-chat',  '默认智谱 GLM-4.5-Flash（免费可用），支持语音、文件与图片输入。'),
+    array('AI 代码',             '/ai-code',  '智谱 GLM 驱动的代码生成、解释与多文件工程编辑。'),
+    array('AI 工作台',           '/ai-work',  '智谱 GLM 驱动的文档撰写、总结、方案与数据整理。'),
+    array('AI 图片生成',         '/ai-image', '免费 didi Media 文生图/图生图与智谱 CogView-3-Flash，另可选即梦、通义、混元及海外模型。'),
+    array('AI 视频生成',         '/ai-video', '免费门户一键成片（MPT），另可选可灵、即梦、Veo 等文生视频与图生视频。'),
+    array('AI 数字人',           '/ai-avatar','智谱 GLM 驱动的数字人脚本与形象创作。'),
+    array('AI 动画',             '/ai-animate','AnimateDiff 图生动画（自建渠道），另可选可灵、即梦、Veo。'),
+    array('AI 音频',             '/ai-music', '免费 didi Media 文字转语音（TTS），智谱 GLM 辅助歌词与文案创作。'),
+    array('AI 语音',             '/ai-voice', '语音输入转文字，智谱 GLM 用语音与文字一起回答。'),
+    array('AI 文件',             '/ai-file',  '上传文本文件，智谱 GLM 提取、总结与分析内容。'),
+    array('AI 写作',             '/ai-write', '智谱 GLM 长文、公文、营销文案创作。'),
+    array('AI PPT',              '/ai-ppt',   '智谱 GLM 一键生成演示文稿大纲与页面。'),
+    array('AI 智能剪辑',         '/ai-edit',  '视频、动画（AnimateDiff）、图片与音频剪辑，图片/音频剪辑走免费 didi Media。'),
   );
   $out  = "# didi AI\n\n";
-  $out .= "> didi AI 是聚合国内与全球最强 AI 模型的一站式在线工具台，覆盖对话、代码、写作、PPT、图片、视频、数字人、动画、音频与智能剪辑。\n\n";
+  $out .= "> didi AI 是一站式 AI 工具台，覆盖对话、代码、写作、PPT、图片、视频、数字人、动画、音频与智能剪辑；文本能力默认智谱 GLM-4.5-Flash，图片/音频/视频剪辑由自建 didi Media 渠道提供免费支持。\n\n";
   $out .= "## 核心工具\n";
   foreach ($tools as $t) {
     $out .= '- [' . $t[0] . '](' . $home . $t[1] . ')：' . $t[2] . "\n";
@@ -1332,11 +1414,12 @@ add_action('template_redirect', function () {
   $out .= '- [博客](' . $home . '/blog)：AI 模型能力、应用实践与行业观察。' . "\n";
   $out .= '- [论坛](' . $home . '/forum)：AI 使用经验与技巧交流。' . "\n";
   $out .= "\n## 免费能力\n";
-  $out .= "- 图片：文生图、图生图、修图、抠图、画质增强。\n";
-  $out .= "- 视频：主题一键成片（免费素材 + 配音 + 字幕）、图生运镜短片。\n";
-  $out .= "- 音频：语音合成（TTS）、语音识别（ASR）、音频剪辑。\n";
+  $out .= "- 图片（didi Media）：文生图、图生图、修图、抠图、画质增强。\n";
+  $out .= "- 音频（didi Media）：文字转语音（TTS）；语音识别（ASR）；音频剪辑。\n";
+  $out .= "- 视频（MPT 门户）：主题一键成片（免费素材 + 配音 + 字幕）、图生运镜短片。\n";
+  $out .= "- 文本（智谱）：GLM-4.5-Flash 对话、写作、PPT、代码当前免费可用。\n";
   $out .= "\n## 说明\n";
-  $out .= "- 站点语言：简体中文\n- 主要栏目：AI 工具台、博客、论坛\n- Sitemap：" . $home . "/wp-sitemap.xml\n";
+  $out .= "- 站点语言：简体中文\n- 主要栏目：AI 工具台、博客、论坛\n- 默认文本模型：智谱 GLM-4.5-Flash\n- Sitemap：" . $home . "/wp-sitemap.xml\n";
   echo $out;
   exit;
 }, 0);
@@ -1420,9 +1503,9 @@ function didi_ai_sidebar_categories($base_url, $active_slug = '', $title = '分�
 function didi_ai_pricing() {
   return array(
     // 对话 / 代码 / 工作 通用 LLM（计费主键：chat）
-    'chat'          => array('name' => '提问',               'unit' => '点数/千token', 'price' => 1, 'model' => 'Kimi K3'),
-    'code'          => array('name' => '代码',               'unit' => '点数/千token', 'price' => 1, 'model' => 'Qwen3.8-Max'),
-    'work'          => array('name' => '工作',               'unit' => '点数/千token', 'price' => 1, 'model' => 'Qwen3.8-Max'),
+    'chat'          => array('name' => '提问',               'unit' => '点数/千token', 'price' => 1, 'model' => 'GLM-4.5-Flash'),
+    'code'          => array('name' => '代码',               'unit' => '点数/千token', 'price' => 1, 'model' => 'GLM-4.5-Flash'),
+    'work'          => array('name' => '工作',               'unit' => '点数/千token', 'price' => 1, 'model' => 'GLM-4.5-Flash'),
     // 国内对话模型
     'llm_ds'        => array('name' => '提问 · 国内',        'unit' => '点数/次',      'price' => 0.5, 'model' => 'DeepSeek'),
     'llm_qwen'      => array('name' => '提问 · 国内',        'unit' => '点数/次',      'price' => 0.6, 'model' => '通义千问'),
@@ -1437,7 +1520,7 @@ function didi_ai_pricing() {
     'llm_gemini'    => array('name' => '提问 · 海外',        'unit' => '点数/次',      'price' => 3,   'model' => 'Gemini 1.5 Pro'),
     'llm_claude'    => array('name' => '提问 · 海外',        'unit' => '点数/次',      'price' => 4,   'model' => 'Claude 3.5 Sonnet'),
     // 图片
-    'image'         => array('name' => '图片',               'unit' => '点数/张',      'price' => 5,   'model' => '即梦 / OpenAI'),
+    'image'         => array('name' => '图片',               'unit' => '点数/张',      'price' => 5,   'model' => '智谱 CogView-3-Flash'),
     'image_ms'      => array('name' => '图片 · 基础',        'unit' => '点数/张',      'price' => 2,   'model' => 'ModelScope'),
     'image_jimeng'  => array('name' => '图片 · 标准',        'unit' => '点数/张',      'price' => 20,  'model' => '即梦 Jimeng'),
     'image_gemini'  => array('name' => '图片 · 高端',        'unit' => '点数/张',      'price' => 50,  'model' => 'Gemini Banna'),

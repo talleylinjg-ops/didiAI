@@ -28,8 +28,10 @@ get_header();
         <label class="field"><span>图片模型</span>
           <select class="input" id="provider">
             <optgroup label="国内模型">
-              <option value="didi-media" data-provider="didi-media">免费 · didi Media</option>
-              <option value="doubao-seedream-5.0" data-provider="jimeng" selected>标准 · 即梦 Seedream 5.0（国内最强）</option>
+              <option value="didi-media" data-provider="didi-media" selected>免费 · didi Media</option>
+              <option value="cogview-3-flash" data-provider="zipu">免费 · 智谱 CogView-3-Flash（当前可用）</option>
+              <option value="cogview-4" data-provider="zipu">标准 · 智谱 CogView-4（需充值）</option>
+              <option value="doubao-seedream-5.0" data-provider="jimeng">标准 · 即梦 Seedream 5.0</option>
               <option value="qwen-image-2.5" data-provider="qwen">标准 · 通义万相 2.5</option>
               <option value="hunyuan-image-3.0" data-provider="hunyuan">标准 · 腾讯混元图像 3.0</option>
             </optgroup>
@@ -98,7 +100,7 @@ get_header();
   }
   providerSel.addEventListener('change', syncProvider);
   if (typeof didiRememberModel === 'function') {
-    didiRememberModel('image_v2', providerSel, { customValue: 'custom', customInput: document.getElementById('customModel'), onChange: syncProvider });
+    didiRememberModel('image_v4', providerSel, { customValue: 'custom', customInput: document.getElementById('customModel'), onChange: syncProvider });
   }
   function currentChoice() {
     var opt = providerSel.options[providerSel.selectedIndex];

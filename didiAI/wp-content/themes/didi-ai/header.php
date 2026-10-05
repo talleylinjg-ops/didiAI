@@ -10,7 +10,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <?php wp_head(); ?>
 <style id="didi-usage-inline">
-.nav-usage .usage-panel{display:none;position:absolute;top:38px;left:0;min-width:140px;max-width:180px;max-height:70vh;overflow-y:auto;background:#fff;border:1px solid #e5e6eb;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.12);padding:10px 12px;z-index:120}
+.nav-usage .usage-panel{display:none;position:absolute;top:38px;left:0;min-width:140px;max-width:180px;height:calc(100vh - 48px);height:calc(100dvh - 48px);overflow-y:auto;scrollbar-width:none;background:#fff;border:1px solid #e5e6eb;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.12);padding:10px 12px;z-index:120}
+.nav-usage .usage-panel::-webkit-scrollbar{display:none}
 .nav-usage.open .usage-panel{display:block}
 .nav-usage .usage-list{display:flex;flex-direction:column;gap:4px}
 .nav-usage .usage-cat{border-bottom:1px dashed #f2f3f5;padding:6px 0}

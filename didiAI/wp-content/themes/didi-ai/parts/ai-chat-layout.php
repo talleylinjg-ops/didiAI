@@ -25,20 +25,14 @@ $color_json = wp_json_encode($color);
  * 名称与线上保持一致，均为 2026-09 当期最新旗舰；默认取国内最强 */
 $section_models = array(
   'llm' => array(
-    'default' => 'kimi-k3',
+    'default' => 'glm-4.5-flash',
     'domestic' => array(
-      'kimi-k3'                => 'Kimi K3（国内最强）',
-      'deepseek-v4-pro'        => 'DeepSeek V4 Pro',
-      'deepseek-v4.1-flash'    => 'DeepSeek V4.1 Flash',
-      'qwen3.8-max'            => '通义千问 Qwen3.8-Max',
-      'qwen3-max'              => '通义千问 Qwen3-Max',
-      'glm-5.3'                => '智谱 GLM-5.3',
-      'glm-5.2'                => '智谱 GLM-5.2',
-      'minimax-m3'             => 'MiniMax M3',
-      'hy4-preview'            => '腾讯混元 Hy4',
-      'xiaomi/mimo-v2.5-pro'   => '小米 MiMo V2.5 Pro',
-      'stepfun/step-3.7-flash' => '阶跃星辰 Step 3.7',
-      'doubao-pro'             => '字节豆包',
+      'glm-4.5-flash' => '智谱 GLM-4.5-Flash（当前可用·免费）',
+      'glm-4.5-air'   => '智谱 GLM-4.5-Air（需充值）',
+      'glm-5.3'       => '智谱 GLM-5.3 旗舰（需充值）',
+      'glm-5.3-flash' => '智谱 GLM-5.3-Flash（需充值）',
+      'glm-5.2'       => '智谱 GLM-5.2（需充值）',
+      'glm-4.6'       => '智谱 GLM-4.6（需充值）',
     ),
     'intl' => array(
       'claude-fable-5.1'       => 'Claude Fable 5.1（全球最强）',
@@ -53,16 +47,14 @@ $section_models = array(
     ),
   ),
   'code' => array(
-    'default' => 'kimi-k2.7-code',
+    'default' => 'glm-4.5-flash',
     'domestic' => array(
-      'kimi-k2.7-code'           => 'Kimi K2.7 Code（国内编程最强）',
-      'kimi-k2.7-code-highspeed' => 'Kimi K2.7 Code 高速版',
-      'deepseek-v4.1-flash'      => 'DeepSeek V4.1 Flash',
-      'deepseek-v4-pro'          => 'DeepSeek V4 Pro',
-      'qwen3-coder-plus'         => '通义千问 Qwen3-Coder-Plus',
-      'qwen3.8-max'              => '通义千问 Qwen3.8-Max',
-      'glm-5.3'                  => '智谱 GLM-5.3',
-      'minimax-m3'               => 'MiniMax M3',
+      'glm-4.5-flash' => '智谱 GLM-4.5-Flash（当前可用·免费）',
+      'glm-4.5-air'   => '智谱 GLM-4.5-Air（需充值）',
+      'glm-5.3'       => '智谱 GLM-5.3 旗舰（需充值）',
+      'glm-5.3-flash' => '智谱 GLM-5.3-Flash（需充值）',
+      'glm-5.2'       => '智谱 GLM-5.2（需充值）',
+      'glm-4.6'       => '智谱 GLM-4.6（需充值）',
     ),
     'intl' => array(
       'claude-fable-5.1'       => 'Claude Fable 5.1（全球最强）',
@@ -74,16 +66,14 @@ $section_models = array(
     ),
   ),
   'work' => array(
-    'default' => 'qwen3.8-max',
+    'default' => 'glm-4.5-flash',
     'domestic' => array(
-      'qwen3.8-max'            => '通义千问 Qwen3.8-Max（国内最强）',
-      'kimi-k3'                => 'Kimi K3',
-      'deepseek-v4-pro'        => 'DeepSeek V4 Pro',
-      'glm-5.3'                => '智谱 GLM-5.3',
-      'minimax-m3'             => 'MiniMax M3',
-      'hy4-preview'            => '腾讯混元 Hy4',
-      'doubao-pro'             => '字节豆包',
-      'stepfun/step-3.7-flash' => '阶跃星辰 Step 3.7',
+      'glm-4.5-flash' => '智谱 GLM-4.5-Flash（当前可用·免费）',
+      'glm-4.5-air'   => '智谱 GLM-4.5-Air（需充值）',
+      'glm-5.3'       => '智谱 GLM-5.3 旗舰（需充值）',
+      'glm-5.3-flash' => '智谱 GLM-5.3-Flash（需充值）',
+      'glm-5.2'       => '智谱 GLM-5.2（需充值）',
+      'glm-4.6'       => '智谱 GLM-4.6（需充值）',
     ),
     'intl' => array(
       'gpt-6-astra'      => 'GPT-6 Astra（全球最强）',
@@ -94,13 +84,15 @@ $section_models = array(
     ),
   ),
   'music' => array(
-    'default' => 'yinchao-v4',
+    'default' => 'didi-media',
     'domestic' => array(
-      'yinchao-v4'     => '音潮 V4.0（国内最强）',
-      'didi-media'     => 'didi Media（免费）',
-      'kimi-k3'        => 'Kimi K3',
-      'qwen3.8-max'    => '通义千问 Qwen3.8-Max',
-      'glm-5.3'        => '智谱 GLM-5.3',
+      'didi-media'    => '免费 · didi Media（文字转语音）',
+      'glm-4.5-flash' => '智谱 GLM-4.5-Flash（当前可用·免费）',
+      'glm-4.5-air'   => '智谱 GLM-4.5-Air（需充值）',
+      'glm-5.3'       => '智谱 GLM-5.3 旗舰（需充值）',
+      'glm-5.3-flash' => '智谱 GLM-5.3-Flash（需充值）',
+      'glm-5.2'       => '智谱 GLM-5.2（需充值）',
+      'glm-4.6'       => '智谱 GLM-4.6（需充值）',
     ),
     'intl' => array(
       'suno-v5.5'   => 'Suno V5.5（全球最强）',
@@ -109,14 +101,14 @@ $section_models = array(
     ),
   ),
   'write' => array(
-    'default' => 'kimi-k3',
+    'default' => 'glm-4.5-flash',
     'domestic' => array(
-      'kimi-k3'         => 'Kimi K3（国内最强）',
-      'kimi-k2.6'       => 'Kimi K2.6',
-      'deepseek-v4-pro' => 'DeepSeek V4 Pro',
-      'qwen3.8-max'     => '通义千问 Qwen3.8-Max',
-      'glm-5.3'         => '智谱 GLM-5.3',
-      'minimax-m3'      => 'MiniMax M3',
+      'glm-4.5-flash' => '智谱 GLM-4.5-Flash（当前可用·免费）',
+      'glm-4.5-air'   => '智谱 GLM-4.5-Air（需充值）',
+      'glm-5.3'       => '智谱 GLM-5.3 旗舰（需充值）',
+      'glm-5.3-flash' => '智谱 GLM-5.3-Flash（需充值）',
+      'glm-5.2'       => '智谱 GLM-5.2（需充值）',
+      'glm-4.6'       => '智谱 GLM-4.6（需充值）',
     ),
     'intl' => array(
       'claude-fable-5.1' => 'Claude Fable 5.1（全球最强）',
@@ -126,13 +118,14 @@ $section_models = array(
     ),
   ),
   'ppt' => array(
-    'default' => 'kimi-k3',
+    'default' => 'glm-4.5-flash',
     'domestic' => array(
-      'kimi-k3'         => 'Kimi K3（国内最强）',
-      'glm-5.3'         => '智谱 GLM-5.3',
-      'deepseek-v4-pro' => 'DeepSeek V4 Pro',
-      'qwen3.8-max'     => '通义千问 Qwen3.8-Max',
-      'minimax-m3'      => 'MiniMax M3',
+      'glm-4.5-flash' => '智谱 GLM-4.5-Flash（当前可用·免费）',
+      'glm-4.5-air'   => '智谱 GLM-4.5-Air（需充值）',
+      'glm-5.3'       => '智谱 GLM-5.3 旗舰（需充值）',
+      'glm-5.3-flash' => '智谱 GLM-5.3-Flash（需充值）',
+      'glm-5.2'       => '智谱 GLM-5.2（需充值）',
+      'glm-4.6'       => '智谱 GLM-4.6（需充值）',
     ),
     'intl' => array(
       'gpt-6-astra'      => 'GPT-6 Astra（全球最强）',
@@ -158,13 +151,14 @@ $section_models = array(
     ),
   ),
   'voice' => array(
-    'default' => 'hy4-preview',
+    'default' => 'glm-4.5-flash',
     'domestic' => array(
-      'hy4-preview'  => '腾讯混元 Hy4（国内最强）',
-      'hy3'          => '腾讯混元 Hy3',
-      'kimi-k3'      => 'Kimi K3',
-      'qwen3.8-max'  => '通义千问 Qwen3.8-Max',
-      'glm-5.3'      => '智谱 GLM-5.3',
+      'glm-4.5-flash' => '智谱 GLM-4.5-Flash（当前可用·免费）',
+      'glm-4.5-air'   => '智谱 GLM-4.5-Air（需充值）',
+      'glm-5.3'       => '智谱 GLM-5.3 旗舰（需充值）',
+      'glm-5.3-flash' => '智谱 GLM-5.3-Flash（需充值）',
+      'glm-5.2'       => '智谱 GLM-5.2（需充值）',
+      'glm-4.6'       => '智谱 GLM-4.6（需充值）',
     ),
     'intl' => array(
       'gpt-6-astra'      => 'GPT-6 Astra（全球最强）',
@@ -173,14 +167,14 @@ $section_models = array(
     ),
   ),
   'file' => array(
-    'default' => 'kimi-k3',
+    'default' => 'glm-4.5-flash',
     'domestic' => array(
-      'kimi-k3'         => 'Kimi K3（国内最强）',
-      'deepseek-v4-pro' => 'DeepSeek V4 Pro',
-      'qwen3.8-max'     => '通义千问 Qwen3.8-Max',
-      'glm-5.3'         => '智谱 GLM-5.3',
-      'hy4-preview'     => '腾讯混元 Hy4',
-      'minimax-m3'      => 'MiniMax M3',
+      'glm-4.5-flash' => '智谱 GLM-4.5-Flash（当前可用·免费）',
+      'glm-4.5-air'   => '智谱 GLM-4.5-Air（需充值）',
+      'glm-5.3'       => '智谱 GLM-5.3 旗舰（需充值）',
+      'glm-5.3-flash' => '智谱 GLM-5.3-Flash（需充值）',
+      'glm-5.2'       => '智谱 GLM-5.2（需充值）',
+      'glm-4.6'       => '智谱 GLM-4.6（需充值）',
     ),
     'intl' => array(
       'gemini-3.1-pro-preview' => 'Gemini 3.1 Pro（全球最强）',
@@ -195,11 +189,11 @@ $page_default = $sm['default'];
 $domestic_models = $sm['domestic'];
 $intl_models = $sm['intl'];
 
-/* 数字人厂商名 → 实际调用模型映射（沿用原版：全部映射 DeepSeek 后端） */
+/* 数字人厂商名 → 实际调用模型映射（厂商下拉仅作展示，全部映射智谱后端） */
 $page_model_map = array();
 if ($section === 'avatar') {
-  foreach (array_keys($domestic_models) as $mv) { if ($mv !== 'doubao-pro') $page_model_map[$mv] = 'deepseek-chat'; }
-  foreach (array_keys($intl_models) as $mv) { $page_model_map[$mv] = 'deepseek-chat'; }
+  foreach (array_keys($domestic_models) as $mv) { $page_model_map[$mv] = 'glm-4.5-flash'; }
+  foreach (array_keys($intl_models) as $mv) { $page_model_map[$mv] = 'glm-4.5-flash'; }
 }
 $model_map_json = wp_json_encode($page_model_map);
 ?>
@@ -371,10 +365,11 @@ $model_map_json = wp_json_encode($page_model_map);
             var o;
             try { o = JSON.parse(payload); } catch (e) { return; }
             if (o.delta) { acc += o.delta; appendStream(acc); }
+            if (o.audio) { aBubble.innerHTML = '<audio controls preload="metadata" src="' + esc(o.audio) + '" style="width:100%;max-width:420px;display:block;margin:4px 0;"></audio>'; }
             if (o.meta && window.didiRestNonce && document.getElementById('nav-balance')) {
               document.getElementById('nav-balance').textContent = o.meta.balance;
             }
-            if (o.error) { toast(o.error, 'error'); }
+            if (o.error) { toast(o.error, 'error'); if (!acc) { aBubble.innerHTML = '<span style="color:#f53f3f;">' + esc(o.error) + '</span>'; } }
           });
           return pump();
         });

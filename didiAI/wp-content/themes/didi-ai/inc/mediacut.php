@@ -282,7 +282,7 @@ function didi_ai_mediacut_generate_image($params, $prompt) {
   $fields = array('prompt' => $prompt, 'width' => $w, 'height' => $h);
   $model = didi_ai_mediacut_model($conf, $params);
   if ($model) $fields['model'] = $model;
-  $submit = didi_ai_mediacut_submit('/api/v1/ai/t2i', $fields, false, 60);
+  $submit = didi_ai_mediacut_submit('/api/v1/ai/t2i', $fields, true, 60);
   if (is_wp_error($submit)) return $submit;
   $result = didi_ai_mediacut_fetch_task_result($submit['task_id'], 'image');
   if (is_wp_error($result)) return $result;
@@ -325,7 +325,7 @@ function didi_ai_mediacut_video_submit($params, $prompt) {
     if (!empty($params['motion'])) $fields['motion'] = sanitize_text_field($params['motion']);
     if (!empty($params['width'])) $fields['width'] = (int) $params['width'];
     if (!empty($params['height'])) $fields['height'] = (int) $params['height'];
-    $submit = didi_ai_mediacut_submit('/api/v1/ai/video', $fields, false, 60);
+    $submit = didi_ai_mediacut_submit('/api/v1/ai/video', $fields, true, 60);
   }
   return $submit;
 }
@@ -334,7 +334,7 @@ function didi_ai_mediacut_video_submit($params, $prompt) {
 function didi_ai_mediacut_tts($params, $text) {
   $fields = array('text' => $text);
   if (!empty($params['voice'])) $fields['voice'] = sanitize_text_field($params['voice']);
-  $submit = didi_ai_mediacut_submit('/api/v1/ai/tts', $fields, false, 60);
+  $submit = didi_ai_mediacut_submit('/api/v1/ai/tts', $fields, true, 60);
   if (is_wp_error($submit)) return $submit;
   $result = didi_ai_mediacut_fetch_task_result($submit['task_id'], 'audio');
   if (is_wp_error($result)) return $result;

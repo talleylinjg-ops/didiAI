@@ -218,19 +218,13 @@ function didiRememberModel(key, selectEl, opts) {
     var cname = storedCustom();
     if (!v) { apply(); return; }
     if (v === customValue) {
-      if (cname && hasOption(customValue)) {
-        selectEl.value = customValue;
-        ensure();
-        var el = getInput();
-        if (el) el.value = cname;
-      }
-    } else if (hasOption(v)) {
+      try { localStorage.removeItem(storeKey); } catch (e) {}
+      apply(); return;
+    }
+    if (hasOption(v)) {
       selectEl.value = v;
-    } else if (v && hasOption(customValue)) {
-      selectEl.value = customValue;
-      ensure();
-      var el2 = getInput();
-      if (el2) el2.value = v;
+    } else {
+      try { localStorage.removeItem(storeKey); } catch (e) {}
     }
     apply();
   }

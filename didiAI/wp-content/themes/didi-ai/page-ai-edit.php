@@ -149,7 +149,7 @@ get_header();
     },
     animate: {
       label: '动画模型',
-      default: 'kling-3.0',
+      default: 'animatediff',
       groups: [
         { label: '国内模型', options: [
           { value: 'kling-3.0', provider: 'kling', text: '高端 · 可灵 3.0（国内最强）' },
@@ -173,7 +173,7 @@ get_header();
     },
     image: {
       label: '图片剪辑工具',
-      default: 'doubao-seedream-5.0',
+      default: 'didi-mediacut',
       groups: [
         { label: '国内模型', options: [
           { value: 'didi-mediacut', provider: 'didi-mediacut', text: '免费 · didi Media' },
@@ -200,7 +200,7 @@ get_header();
     },
     audio: {
       label: '音频处理模型',
-      default: 'yinchao-v4',
+      default: 'didi-mediacut',
       groups: [
         { label: '国内模型', options: [
           { value: 'didi-mediacut', provider: 'didi-mediacut', text: '免费 · didi Media' },
@@ -279,7 +279,7 @@ get_header();
   var editModeSel = document.getElementById('editMode');
   var editParamsField = document.getElementById('editParamsField');
   var editParamsInput = document.getElementById('editParams');
-  var EDIT_MODEL_PREFIX = 'didi_model_v1_edit_v2_';
+  var EDIT_MODEL_PREFIX = 'didi_model_v1_edit_v3_';
 
   function isMediaCutProvider() {
     var opt = provSel.options[provSel.selectedIndex];

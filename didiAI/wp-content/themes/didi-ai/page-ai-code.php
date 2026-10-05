@@ -18,14 +18,12 @@ $placeholder = '描述任务，例如：帮我创建一个 Python 待办事项�
       <span class="hd-label">选择模型</span>
       <select id="codexModel" class="ai-model-select" title="选择模型">
         <optgroup label="国内模型">
-          <option value="kimi-k2.7-code" selected>Kimi K2.7 Code（国内编程最强）</option>
-          <option value="kimi-k2.7-code-highspeed">Kimi K2.7 Code 高速版</option>
-          <option value="deepseek-v4.1-flash">DeepSeek V4.1 Flash</option>
-          <option value="deepseek-v4-pro">DeepSeek V4 Pro</option>
-          <option value="qwen3-coder-plus">通义千问 Qwen3-Coder-Plus</option>
-          <option value="qwen3.8-max">通义千问 Qwen3.8-Max</option>
-          <option value="glm-5.3">智谱 GLM-5.3</option>
-          <option value="minimax-m3">MiniMax M3</option>
+          <option value="glm-4.5-flash" selected>智谱 GLM-4.5-Flash（当前可用·免费）</option>
+          <option value="glm-4.5-air">智谱 GLM-4.5-Air（需充值）</option>
+          <option value="glm-5.3">智谱 GLM-5.3 旗舰（需充值）</option>
+          <option value="glm-5.3-flash">智谱 GLM-5.3-Flash（需充值）</option>
+          <option value="glm-5.2">智谱 GLM-5.2（需充值）</option>
+          <option value="glm-4.6">智谱 GLM-4.6（需充值）</option>
         </optgroup>
         <optgroup label="海外模型">
           <option value="claude-fable-5.1">Claude Fable 5.1（全球最强）</option>
