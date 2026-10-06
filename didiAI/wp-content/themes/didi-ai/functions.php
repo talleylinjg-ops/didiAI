@@ -296,6 +296,9 @@ function didi_ai_post_json($url, $headers, $body) {
     CURLOPT_TIMEOUT => 120,
     CURLOPT_HTTPHEADER => array_merge(array('Content-Type: application/json'), $headers),
     CURLOPT_POSTFIELDS => json_encode($body),
+    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_2_0,
+    CURLOPT_TCP_NODELAY => true,
+    CURLOPT_DNS_CACHE_TIMEOUT => 300,
   ));
   $text = curl_exec($ch);
   $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -328,6 +331,11 @@ function didi_ai_chat_stream($req) {
     if ($ttsText === '') {
       return new WP_Error('empty_text', '请输入要转成语音的文字', array('status' => 400));
     }
+    header('Content-Type: text/event-stream; charset=utf-8');
+    header('Cache-Control: no-cache');
+    header('X-Accel-Buffering: no');
+    while (ob_get_level() > 0) { @ob_end_flush(); }
+    flush();
     if (is_user_logged_in()) {
       didi_ai_record_usage('chat', didi_ai_note_from_messages($messages));
     }
@@ -358,6 +366,12 @@ function didi_ai_chat_stream($req) {
   $base = rtrim($conf['baseUrl'], '/');
   $headers = array('Authorization: Bearer ' . $conf['apiKey']);
   $model = (isset($params['model']) && trim($params['model']) !== '') ? trim($params['model']) : $conf['model'];
+  // SSE 直冲：明确流头并清空全部输出缓冲，让首字节与每个增量尽快到达访客
+  header('Content-Type: text/event-stream; charset=utf-8');
+  header('Cache-Control: no-cache');
+  header('X-Accel-Buffering: no');
+  while (ob_get_level() > 0) { @ob_end_flush(); }
+  flush();
   $body = array('model' => $model, 'messages' => $messages, 'temperature' => 0.7, 'stream' => true, 'stream_options' => array('include_usage' => true));
 
   $ch = curl_init($base . '/chat/completions');
@@ -369,6 +383,10 @@ function didi_ai_chat_stream($req) {
     CURLOPT_TIMEOUT => 300,
     CURLOPT_HTTPHEADER => array_merge(array('Content-Type: application/json'), $headers),
     CURLOPT_POSTFIELDS => json_encode($body),
+    // 连接提速：HTTP/2 + TCP_NODELAY + DNS 缓存，降低握手与首包延迟
+    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_2_0,
+    CURLOPT_TCP_NODELAY => true,
+    CURLOPT_DNS_CACHE_TIMEOUT => 300,
     CURLOPT_WRITEFUNCTION => function ($ch, $chunk) use (&$chunks, &$gotAnswer) {
       $chunks .= $chunk;
       // 统一 OpenAI 兼容流格式：将 choices[0].delta.content / reasoning_content 转换为 delta 字段
@@ -946,6 +964,9 @@ function didi_ai_post_form($url, $headers, $fields) {
     CURLOPT_TIMEOUT => 180,
     CURLOPT_HTTPHEADER => array_merge(array('Content-Type: multipart/form-data'), $headers),
     CURLOPT_POSTFIELDS => $fields,
+    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_2_0,
+    CURLOPT_TCP_NODELAY => true,
+    CURLOPT_DNS_CACHE_TIMEOUT => 300,
   ));
   $text = curl_exec($ch);
   $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);

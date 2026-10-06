@@ -57,6 +57,9 @@ function didi_ai_mpt_http($path, $body = null, $timeout = 120, $method = '') {
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_TIMEOUT => $timeout,
     CURLOPT_HTTPHEADER => array('x-api-key: ' . $conf['apiKey'], 'Accept: application/json, */*'),
+    CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_2_0,
+    CURLOPT_TCP_NODELAY => true,
+    CURLOPT_DNS_CACHE_TIMEOUT => 300,
     CURLOPT_HEADERFUNCTION => function ($ch, $header) use (&$headersOut) {
       $pos = strpos($header, ':');
       if ($pos !== false) {
