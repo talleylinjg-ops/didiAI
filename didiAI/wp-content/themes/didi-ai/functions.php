@@ -1457,6 +1457,8 @@ function didi_ai_seo_faq() {
 add_action('template_redirect', function () {
   $path = isset($_SERVER['REQUEST_URI']) ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : '';
   if (!preg_match('#/llms\.txt$#', $path)) return;
+  status_header(200);   // llms.txt 无对应 WP 路由，默认被判 404，需显式修正
+  nocache_headers();
   header('Content-Type: text/plain; charset=utf-8');
   header('X-Robots-Tag: all');
   $home = untrailingslashit(home_url('/'));
