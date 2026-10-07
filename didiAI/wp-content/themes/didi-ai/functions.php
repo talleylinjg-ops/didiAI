@@ -1110,6 +1110,11 @@ function didi_ai_seo_context() {
     $raw = trim(preg_replace('/\s+/', ' ', wp_strip_all_tags($raw)));
     $ctx['desc'] = $raw !== '' ? mb_substr($raw, 0, 150) : ($ctx['title'] . '，didi AI 一站式 AI 工具台。');
     $ctx['url']  = get_permalink();
+    // 分页自指：静态页 / 文章分页（page/N）canonical 指向自身
+    $pg = (int) get_query_var('paged');
+    if ($pg > 1) {
+      $ctx['url'] = untrailingslashit($ctx['url']) . '/page/' . $pg . '/';
+    }
     $ctx['type'] = 'article';
     $slug = get_post_field('post_name');
     $ctx['is_tool'] = (get_post_type() === 'page' && strpos((string)$slug, 'ai-') === 0);
@@ -1127,7 +1132,8 @@ function didi_ai_seo_context() {
   } elseif (is_archive()) {
     $ctx['title'] = wp_strip_all_tags(get_the_archive_title()) . ' · ' . $site;
     $ctx['desc']  = 'didi AI 博客与论坛的内容归档，涵盖 AI 应用、模型测评与行业实践。';
-    $ctx['url']   = get_pagenum_link(1);
+    // 分页自指：归档每页 canonical 指向自身（默认取当前页），避免第 2 页起被指回第 1 页
+    $ctx['url']   = get_pagenum_link(max(1, (int) get_query_var('paged')));
   } elseif (is_search()) {
     $ctx['title']  = '搜索：' . get_search_query() . ' · ' . $site;
     $ctx['desc']   = '在 didi AI 中搜索相关内容。';
@@ -1270,33 +1276,27 @@ function didi_ai_seo_jsonld($c) {
     $graph[] = array('@type' => 'BreadcrumbList', 'itemListElement' => $crumbs);
   }
 
-  // 首页 FAQ：与站点真实能力一致，供搜索引擎与生成式引擎引用
+  // 首页：工具清单 + FAQ（与页面可见内容一致，供搜索引擎与生成式引擎引用）
   if (is_front_page()) {
-    $graph[] = array(
-      '@type' => 'FAQPage',
-      'mainEntity' => array(
-        array(
-          '@type' => 'Question',
-          'name' => 'didi AI 是免费的吗？',
-          'acceptedAnswer' => array('@type' => 'Answer', 'text' => 'didi AI 内置多项免费能力：didi Media 提供免费的文生图、图生图、修图、抠图、画质增强与文字转语音，门户渠道提供免费的主题一键成片视频。注册登录后即可使用，高级模型按点数计费。'),
-        ),
-        array(
-          '@type' => 'Question',
-          'name' => 'didi AI 默认使用什么模型？',
-          'acceptedAnswer' => array('@type' => 'Answer', 'text' => '对话、代码、写作、PPT 等文本能力默认使用智谱 GLM-4.5-Flash（当前免费可用），可切换智谱全系模型或填写自定义模型；图片与音频由自建 didi Media 渠道执行，视频成片由 MPT 门户渠道执行。'),
-        ),
-        array(
-          '@type' => 'Question',
-          'name' => 'didi AI 支持哪些内容创作？',
-          'acceptedAnswer' => array('@type' => 'Answer', 'text' => '覆盖 AI 对话提问、代码生成、办公写作、PPT、图片生成、视频生成、数字人、动画、音频语音与智能剪辑（视频/图片/音频），一个工作台完成全部内容生产。'),
-        ),
-        array(
-          '@type' => 'Question',
-          'name' => '如何开始使用 didi AI？',
-          'acceptedAnswer' => array('@type' => 'Answer', 'text' => '注册并登录后，在首页选择任一 AI 工具，输入需求即可获得结果；支持中文界面，无需安装任何软件。'),
-        ),
-      ),
-    );
+    $listItems = array();
+    foreach (didi_ai_seo_tools() as $i => $t) {
+      $listItems[] = array(
+        '@type' => 'ListItem',
+        'position' => $i + 1,
+        'name' => $t[0],
+        'url' => $c['home'] . $t[1],
+      );
+    }
+    $graph[] = array('@type' => 'ItemList', 'name' => 'didi AI 工具列表', 'itemListOrder' => 'https://schema.org/ItemListOrderAscending', 'numberOfItems' => count($listItems), 'itemListElement' => $listItems);
+    $faqEntities = array();
+    foreach (didi_ai_seo_faq() as $qa) {
+      $faqEntities[] = array(
+        '@type' => 'Question',
+        'name' => $qa[0],
+        'acceptedAnswer' => array('@type' => 'Answer', 'text' => $qa[1]),
+      );
+    }
+    $graph[] = array('@type' => 'FAQPage', 'mainEntity' => $faqEntities);
   }
 
   echo '<script type="application/ld+json">' . wp_json_encode(
@@ -1369,6 +1369,27 @@ add_filter('robots_txt', function ($output, $public) {
     'Disallow: /*?s=',
     'Allow: /wp-admin/admin-ajax.php',
     '',
+    '# 生成式引擎（GEO）：明确欢迎主流 AI 爬虫抓取公开内容',
+    'User-agent: GPTBot',
+    'User-agent: OAI-SearchBot',
+    'User-agent: ChatGPT-User',
+    'User-agent: ClaudeBot',
+    'User-agent: Claude-SearchBot',
+    'User-agent: PerplexityBot',
+    'User-agent: Google-Extended',
+    'User-agent: Applebot-Extended',
+    'User-agent: CCBot',
+    'Allow: /',
+    'Disallow: /wp-admin/',
+    'Disallow: /member',
+    'Disallow: /recharge',
+    '',
+    '# 字节爬虫较激进，限制抓取频率',
+    'User-agent: Bytespider',
+    'Crawl-delay: 10',
+    'Allow: /',
+    'Disallow: /wp-admin/',
+    '',
     '# 生成式引擎可读取的站点摘要',
     '# llms.txt: ' . $home . '/llms.txt',
     'Sitemap: ' . $home . '/wp-sitemap.xml',
@@ -1403,14 +1424,9 @@ add_filter('wp_sitemaps_add_provider', function ($provider, $name) {
   return $provider;
 }, 10, 2);
 
-// llms.txt：为生成式引擎（GEO）提供站点结构化摘要
-add_action('template_redirect', function () {
-  $path = isset($_SERVER['REQUEST_URI']) ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : '';
-  if (!preg_match('#/llms\.txt$#', $path)) return;
-  header('Content-Type: text/plain; charset=utf-8');
-  header('X-Robots-Tag: all');
-  $home = untrailingslashit(home_url('/'));
-  $tools = array(
+// SEO/GEO 共享数据：工具清单（JSON-LD ItemList 与 llms.txt 共用）
+function didi_ai_seo_tools() {
+  return array(
     array('AI 提问（多模型对话）', '/ai-chat',  '默认智谱 GLM-4.5-Flash（免费可用），支持语音、文件与图片输入。'),
     array('AI 代码',             '/ai-code',  '智谱 GLM 驱动的代码生成、解释与多文件工程编辑。'),
     array('AI 工作台',           '/ai-work',  '智谱 GLM 驱动的文档撰写、总结、方案与数据整理。'),
@@ -1425,6 +1441,26 @@ add_action('template_redirect', function () {
     array('AI PPT',              '/ai-ppt',   '智谱 GLM 一键生成演示文稿大纲与页面。'),
     array('AI 智能剪辑',         '/ai-edit',  '视频、动画（AnimateDiff）、图片与音频剪辑，图片/音频剪辑走免费 didi Media。'),
   );
+}
+
+// SEO/GEO 共享数据：常见问题（首页可见区块、首页 JSON-LD FAQPage 与 llms.txt 共用）
+function didi_ai_seo_faq() {
+  return array(
+    array('didi AI 是免费的吗？', 'didi AI 内置多项免费能力：didi Media 提供免费的文生图、图生图、修图、抠图、画质增强与文字转语音，门户渠道提供免费的主题一键成片视频。注册登录后即可使用，高级模型按点数计费。'),
+    array('didi AI 默认使用什么模型？', '对话、代码、写作、PPT 等文本能力默认使用智谱 GLM-4.5-Flash（当前免费可用），可切换智谱全系模型或填写自定义模型；图片与音频由自建 didi Media 渠道执行，视频成片由 MPT 门户渠道执行。'),
+    array('didi AI 支持哪些内容创作？', '覆盖 AI 对话提问、代码生成、办公写作、PPT、图片生成、视频生成、数字人、动画、音频语音与智能剪辑（视频/图片/音频），一个工作台完成全部内容生产。'),
+    array('如何开始使用 didi AI？', '注册并登录后，在首页选择任一 AI 工具，输入需求即可获得结果；支持中文界面，无需安装任何软件。'),
+  );
+}
+
+// llms.txt：为生成式引擎（GEO）提供站点结构化摘要
+add_action('template_redirect', function () {
+  $path = isset($_SERVER['REQUEST_URI']) ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : '';
+  if (!preg_match('#/llms\.txt$#', $path)) return;
+  header('Content-Type: text/plain; charset=utf-8');
+  header('X-Robots-Tag: all');
+  $home = untrailingslashit(home_url('/'));
+  $tools = didi_ai_seo_tools();
   $out  = "# didi AI\n\n";
   $out .= "> didi AI 是一站式 AI 工具台，覆盖对话、代码、写作、PPT、图片、视频、数字人、动画、音频与智能剪辑；文本能力默认智谱 GLM-4.5-Flash，图片/音频/视频剪辑由自建 didi Media 渠道提供免费支持。\n\n";
   $out .= "## 核心工具\n";
@@ -1439,6 +1475,10 @@ add_action('template_redirect', function () {
   $out .= "- 音频（didi Media）：文字转语音（TTS）；语音识别（ASR）；音频剪辑。\n";
   $out .= "- 视频（MPT 门户）：主题一键成片（免费素材 + 配音 + 字幕）、图生运镜短片。\n";
   $out .= "- 文本（智谱）：GLM-4.5-Flash 对话、写作、PPT、代码当前免费可用。\n";
+  $out .= "\n## 常见问题\n";
+  foreach (didi_ai_seo_faq() as $qa) {
+    $out .= '### ' . $qa[0] . "\n" . $qa[1] . "\n";
+  }
   $out .= "\n## 说明\n";
   $out .= "- 站点语言：简体中文\n- 主要栏目：AI 工具台、博客、论坛\n- 默认文本模型：智谱 GLM-4.5-Flash\n- Sitemap：" . $home . "/wp-sitemap.xml\n";
   echo $out;

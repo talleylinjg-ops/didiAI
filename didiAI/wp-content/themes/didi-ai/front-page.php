@@ -46,6 +46,12 @@ $apps_left = array(
   body.didi-show-frame .home-module{margin-top:20px;}
   body.didi-show-frame .top-bar{padding:12px 18px;border-radius:22px;}
   body.didi-show-frame .top-bar #searchBtn{display:none;}
+  .home-faq{max-width:760px;margin:34px auto 0;padding:0 20px;text-align:left;}
+  .home-faq h2{font-size:15px;color:#1d2129;margin:0 0 10px;font-weight:700;}
+  .home-faq dl{margin:0;}
+  .home-faq dt{font-size:13px;color:#1d2129;font-weight:600;margin:12px 0 3px;}
+  .home-faq dd{margin:0;font-size:12.5px;line-height:1.65;color:#86909c;}
+  body.didi-show-frame .home-faq{display:none;}
 </style>
 <main>
   <div class="home-hero" id="homeHero">
@@ -65,6 +71,15 @@ $apps_left = array(
     </div>
   </div>
   <div class="ws-frame" id="frameHost"></div>
+  <section class="home-faq" aria-labelledby="homeFaqTitle">
+    <h2 id="homeFaqTitle">常见问题</h2>
+    <dl>
+      <?php foreach (didi_ai_seo_faq() as $qa): ?>
+        <dt><?php echo esc_html($qa[0]); ?></dt>
+        <dd><?php echo esc_html($qa[1]); ?></dd>
+      <?php endforeach; ?>
+    </dl>
+  </section>
 </main>
 <script>
 (function () {

@@ -571,7 +571,7 @@ get_header();
           + '<p style="font-size:13.5px; color:var(--text-dim); margin-bottom:14px;">指令：' + escapeHtml(prompt) + '</p>';
         if (urls.length){
           urls.forEach(function(u){
-            html += '<img src="' + escapeHtml(u) + '" style="max-width:100%; border-radius:10px; margin-bottom:10px;"/>';
+            html += '<img alt="剪辑结果" src="' + escapeHtml(u) + '" style="max-width:100%; border-radius:10px; margin-bottom:10px;"/>';
           });
         } else if (data.result && data.result.taskId){
           html += '<div class="card" style="background:var(--bg-soft);">'
@@ -606,7 +606,7 @@ get_header();
       html += '<video src="' + escapeHtml(videoUrl) + '" controls style="max-width:100%; border-radius:10px;"></video>';
     } else if (urls.length){
       urls.forEach(function(u){
-        html += '<img src="' + escapeHtml(u) + '" style="max-width:100%; border-radius:10px; margin-bottom:10px;"/>';
+        html += '<img alt="剪辑结果" src="' + escapeHtml(u) + '" style="max-width:100%; border-radius:10px; margin-bottom:10px;"/>';
       });
     } else if (taskId){
       html += '<div class="card" style="background:var(--bg-soft);">'
