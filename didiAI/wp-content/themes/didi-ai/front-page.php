@@ -38,7 +38,7 @@ $apps_left = array(
   .top-bar .home-tab.active{color:#1668dc;font-weight:700;border-bottom:2px solid #1668dc}
   .top-bar #searchBtn{width:90px;height:46px;padding:0;border:none;border-radius:16px;background:linear-gradient(180deg,#1668dc,#6a3de8);color:#fff;font-size:20px;font-weight:600;cursor:pointer;transition:opacity .2s;flex-shrink:0}
   .top-bar #searchBtn:hover{opacity:.88}
-  .home-hero{text-align:center;padding:18px 20px 0;margin-top:-182px;}
+  .home-hero{text-align:center;padding:86px 20px 0;margin-top:0;}
   .home-hero .logo{display:inline-block;font-size:64px;letter-spacing:4px;margin-bottom:0;}
   .home-blank-inner{flex-basis:100%;height:65px;}
   body.didi-show-frame .home-hero{display:none;}
