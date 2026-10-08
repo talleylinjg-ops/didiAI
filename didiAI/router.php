@@ -19,9 +19,22 @@ if ( $path !== '/' && file_exists( $file ) && ! is_dir( $file ) ) {
 		header( 'Content-Type: ' . ( isset( $mimeMap[$ext] ) ? $mimeMap[$ext] : 'application/octet-stream' ) );
 		header( 'Cache-Control: public, max-age=' . $maxAge . ', immutable' );
 		header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s', $mtime ) . ' GMT' );
+		header( 'X-Content-Type-Options: nosniff' );
+		header( 'Referrer-Policy: strict-origin-when-cross-origin' );
 		if ( $ims !== false && $ims >= $mtime ) {
 			http_response_code( 304 );
 			exit;
+		}
+		$compressible = preg_match( '#^(css|js|mjs|json|txt|xml|svg)$#', $ext ) === 1;
+		if ( $compressible && strpos( isset( $_SERVER['HTTP_ACCEPT_ENCODING'] ) ? $_SERVER['HTTP_ACCEPT_ENCODING'] : '', 'gzip' ) !== false ) {
+			$gz = gzencode( file_get_contents( $file ), 6 );
+			if ( is_string( $gz ) ) {
+				header( 'Content-Encoding: gzip' );
+				header( 'Vary: Accept-Encoding' );
+				header( 'Content-Length: ' . strlen( $gz ) );
+				echo $gz;
+				exit;
+			}
 		}
 		header( 'Content-Length: ' . filesize( $file ) );
 		readfile( $file );

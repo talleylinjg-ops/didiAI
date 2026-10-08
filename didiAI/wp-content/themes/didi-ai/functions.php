@@ -18,9 +18,16 @@ register_nav_menus(array(
 function didi_ai_enqueue() {
   wp_enqueue_style('didi-ai', get_stylesheet_uri(), array(), filemtime(get_stylesheet_directory() . '/style.css'));
   wp_enqueue_script('didi-ai-common', get_template_directory_uri() . '/js/ai-common.js', array(), filemtime(get_template_directory() . '/js/ai-common.js'), false);
-  wp_enqueue_script('didi-i18n', get_template_directory_uri() . '/js/i18n.js', array(), filemtime(get_template_directory() . '/js/i18n.js'), false);
+  // i18n 仅做 DOM 翻译，移至页尾执行，减少 head 阻塞
+  wp_enqueue_script('didi-i18n', get_template_directory_uri() . '/js/i18n.js', array(), filemtime(get_template_directory() . '/js/i18n.js'), true);
 }
 add_action('wp_enqueue_scripts', 'didi_ai_enqueue');
+
+// 安全响应头（WP 动态页；静态文件由 router.php 输出）
+add_action('send_headers', function () {
+  header('X-Content-Type-Options: nosniff');
+  header('Referrer-Policy: strict-origin-when-cross-origin');
+});
 
 function didi_ai_menu_items() {
   return array(
@@ -310,6 +317,9 @@ function didi_ai_post_json($url, $headers, $body) {
 }
 
 function didi_ai_chat_stream($req) {
+  // SSE 流式输出必须绕过全局 gzip，否则事件会被压缩层缓冲，前端逐字效果失效
+  @ini_set('zlib.output_compression', 'Off');
+  while (ob_get_level() > 0) { @ob_end_clean(); }
   $params = $req->get_json_params();
   $messages = isset($params['messages']) ? $params['messages'] : null;
   $section = isset($params['section']) ? $params['section'] : 'llm';

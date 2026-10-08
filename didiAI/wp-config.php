@@ -1,4 +1,7 @@
 <?php
+// 全局开启 PHP 输出 gzip（SSE 流式接口在运行时自行关闭）
+@ini_set('zlib.output_compression', 'On');
+@ini_set('zlib.output_compression_level', '5');
 /**
  * The base configuration for WordPress
  *
