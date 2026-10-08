@@ -36,6 +36,8 @@ header{display:flex;justify-content:space-between;align-items:center;padding:16p
 .lang-opt .native{color:#86909c;font-size:12px}
 
 main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px 0 200px}
+/* 会员/充值/登录/博客/论坛等模板用内联样式覆盖了 main 的 padding，宽屏下需强制为使用记录面板让位 */
+@media (min-width:901px){main[style]{padding-left:200px !important}}
 .logo{font-size:56px;font-weight:700;letter-spacing:2px;color:#1668dc;margin-bottom:52px}
 @supports ((-webkit-background-clip:text) or (background-clip:text)){.logo{background:linear-gradient(90deg,#1668dc,#6a3de8);-webkit-background-clip:text;background-clip:text;color:transparent}}
 .search-wrap{width:100%;max-width:1080px;position:relative}
