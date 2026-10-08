@@ -730,6 +730,15 @@ function didi_ai_note_short($text) {
   return $text;
 }
 
+// 记录备注清洗：去标签、压平空白、截断，防止 prompt/报错原文污染流水
+function didi_ai_clean_note($note) {
+  $note = trim(wp_strip_all_tags((string) $note));
+  $note = preg_replace('/\s+/u', ' ', $note);
+  if (function_exists('mb_substr')) $note = mb_substr($note, 0, 60, 'UTF-8');
+  else $note = substr($note, 0, 60);
+  return $note;
+}
+
 function didi_ai_record_usage($feature, $note = '') {
   if (!is_user_logged_in()) return;
   $uid = get_current_user_id();
@@ -741,7 +750,7 @@ function didi_ai_record_usage($feature, $note = '') {
   $usage[$module]['last'] = time();
   if ($note !== '') {
     $logs = (isset($usage[$module]['logs']) && is_array($usage[$module]['logs'])) ? $usage[$module]['logs'] : array();
-    array_unshift($logs, array('t' => time(), 'note' => $note));
+    array_unshift($logs, array('t' => time(), 'note' => didi_ai_clean_note($note)));
     if (count($logs) > 20) $logs = array_slice($logs, 0, 20);
     $usage[$module]['logs'] = $logs;
   }
@@ -754,7 +763,7 @@ function didi_ai_billing_log($type, $feature, $cost, $balance, $note = '') {
   $uid = get_current_user_id();
   $logs = get_user_meta($uid, 'didi_billing', true);
   if (!is_array($logs)) $logs = array();
-  array_unshift($logs, array('t' => time(), 'type' => $type, 'feature' => $feature, 'cost' => (float) $cost, 'balance' => (float) $balance, 'note' => $note));
+  array_unshift($logs, array('t' => time(), 'type' => $type, 'feature' => $feature, 'cost' => (float) $cost, 'balance' => (float) $balance, 'note' => didi_ai_clean_note($note)));
   if (count($logs) > 200) $logs = array_slice($logs, 0, 200);
   update_user_meta($uid, 'didi_billing', $logs);
 }

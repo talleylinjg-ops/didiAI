@@ -374,11 +374,12 @@ $expire = $logged_in ? get_user_meta($u->ID, 'didi_membership_expire', true) : '
         var time = ts.getFullYear() + '-' + pad(ts.getMonth() + 1) + '-' + pad(ts.getDate()) + ' ' + pad(ts.getHours()) + ':' + pad(ts.getMinutes());
         var typeLabel = TYPE_MAP[it.type] || it.type;
         var color = COLOR_MAP[it.type] || '#4e5969';
-        var sign = it.cost >= 0 ? '+' : '';
+        var amount = Math.abs(parseFloat(it.cost) || 0);
+        var sign = it.type === 'spend' ? '-' : '+';
         return '<div style="display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid #f7f8fa;">'
           + '<div style="min-width:0;"><div style="font-size:13px;color:#1f2329;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">[' + typeLabel + '] ' + (it.note ? it.note : it.feature) + '</div>'
           + '<div style="font-size:12px;color:#c9cdd4;">' + time + '</div></div>'
-          + '<div style="text-align:right;white-space:nowrap;"><span style="font-size:13px;font-weight:600;color:' + color + ';">' + sign + it.cost + ' 点</span>'
+          + '<div style="text-align:right;white-space:nowrap;"><span style="font-size:13px;font-weight:600;color:' + color + ';">' + sign + amount + ' 点</span>'
           + '<div style="font-size:12px;color:#c9cdd4;">余额 ' + it.balance + '</div></div></div>';
       }).join('');
       billingBox.innerHTML = '<div style="max-height:320px;overflow:auto;">' + rows + '</div>';
