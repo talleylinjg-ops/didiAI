@@ -46,17 +46,13 @@
   </div>
   <div class="nav-right">
     <div class="nav-left">
-      <a class="logo-small" href="<?php echo esc_url(home_url('/')); ?>">didi</a>
+      <a class="logo-small" href="<?php echo esc_url(home_url('/')); ?>">didi AI</a>
       <nav class="nav-links">
         <?php if (is_user_logged_in()) : ?>
-          <a href="<?php echo esc_url(home_url('/blog')); ?>"><span data-i18n="blog"></span></a>
-          <a href="<?php echo esc_url(home_url('/forum')); ?>">论坛</a>
           <a href="<?php echo esc_url(home_url('/recharge')); ?>">充值</a>
           <a href="<?php echo esc_url(home_url('/member')); ?>" style="display:flex;align-items:center;gap:4px;"><span data-i18n="member"></span><b id="nav-balance" style="color:#1668dc;font-size:12px;" title="我的点数"></b></a>
           <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>">退出</a>
         <?php else : ?>
-          <a href="<?php echo esc_url(home_url('/blog')); ?>"><span data-i18n="blog"></span></a>
-          <a href="<?php echo esc_url(home_url('/forum')); ?>">论坛</a>
           <a href="<?php echo esc_url(home_url('/recharge')); ?>">充值</a>
           <a href="<?php echo esc_url(home_url('/member')); ?>"><span data-i18n="member"></span></a>
         <?php endif; ?>
