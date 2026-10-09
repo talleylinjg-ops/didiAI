@@ -7,3 +7,6 @@ didiAI/wp-content/uploads/didi-mpt/
 
 # 平台临时文件
 .monkeycode-tmp-files/
+
+# 含渠道密钥的数据库导出，禁止入 git（VPS 迁移用，手动传输）
+didiAI/database/didi_wp_vps_*.sql

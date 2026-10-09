@@ -96,3 +96,13 @@ This file records user instructions, preferences, and teachings for reference in
   - 静态页必须与原站完全一致：采集后运行 `ORIGIN=... PUBLIC_ORIGIN=... node scripts/verify.mjs` 做逐字节校验（HTML 按采集时相同的地址重写规则还原，静态资源直接比较），差异为 0 才算通过；快照变更后必须重采再上传，否则旧快照会与源站不一致。
   - Worker 回源依赖 `env.ORIGIN`（原为占位符）；`proxyToOrigin` 曾只读 `X-Origin-Override` 请求头导致所有未镜像请求回源失败，现已改为使用 `env.ORIGIN`，ORIGIN 未配置时返回 502。Worker 静态资源按扩展名统一走 R2（不再限 `/wp-content/`），带查询串的请求不走 HTML 快照以免内容错配。
 
+
+[Project Knowledge Summary]
+- Date: 2026-10-08
+- Context: Discovered by Agent while fixing 剪辑/图片页上传素材失败（upload_max_filesize=2M 默认值静默丢弃 $_FILES）
+- Category: Environment Configuration
+- Instructions:
+  - 本地 PHP 服务启动命令已带上传限制参数，重启时必须保留：`PHP_CLI_SERVER_WORKERS=8 php -d upload_max_filesize=15M -d post_max_size=16M -S 0.0.0.0:8080 router.php`（8081 同参数），工作目录 `/workspace/didiAI`。
+  - upload_max_filesize/post_max_size 属 PHP_INI_PERDIR，运行时 ini_set 无效，只能通过 php -d 参数或 php.ini；本环境 `.user.ini` 实测对 php -S 不生效（zlib.output_compression 也不生效），全局输出 gzip 改在 wp-config.php 顶部 ini_set，SSE 接口（chat_stream）运行时关闭。
+  - 两个服务均为受管后台终端：8080=term_1791518451227_24、8081=term_1791518456368_25（重启后 ID 会变，以 background_terminal_list 为准）。
+  - 上传走 `/wp-json/didi/v1/upload`（multipart FormData），前端用 X-WP-Nonce；e2e 时 402 no_quota=登录态/nonce 过期，重新登录并从页面抓 didiRestNonce。
