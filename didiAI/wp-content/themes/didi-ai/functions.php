@@ -2100,8 +2100,17 @@ function didi_ai_vps_proxy($req) {
   }
 
   $base = rtrim(getenv('USER_VPS_BASE_URL') ?: '', '/');
+  $vpsKey = getenv('USER_VPS_API_KEY') ?: '';
   if (!$base) {
-    return new WP_Error('not_configured', 'VPS 剪辑服务未配置：请在服务端环境变量中填写 USER_VPS_BASE_URL 指向你的剪辑服务地址', array('status' => 503));
+    // 回退到后台 didi AI 配置页的 mediacut 渠道（与其它渠道一致的配置方式，免环境变量）
+    $mcConf = didi_ai_mediacut_cfg();
+    if (!empty($mcConf['baseUrl'])) {
+      $base = rtrim((string) $mcConf['baseUrl'], '/');
+      if ($vpsKey === '' && !empty($mcConf['apiKey'])) $vpsKey = (string) $mcConf['apiKey'];
+    }
+  }
+  if (!$base) {
+    return new WP_Error('not_configured', '剪辑服务未配置：请在后台「didi AI 配置」填写 didi Media 的 Base URL 与 API Key，或在服务端环境变量设置 USER_VPS_BASE_URL', array('status' => 503));
   }
   $payload = isset($params['data']) ? $params['data'] : array();
   if (!is_array($payload)) $payload = array();
@@ -2110,7 +2119,6 @@ function didi_ai_vps_proxy($req) {
   if (is_wp_error($customGuard)) return $customGuard;
   $url = $base . '/' . ltrim($path, '/');
   $headers = array();
-  $vpsKey = getenv('USER_VPS_API_KEY') ?: '';
   if ($vpsKey) $headers[] = 'Authorization: Bearer ' . $vpsKey;
   try {
     $res = didi_ai_post_json($url, $headers, $payload);

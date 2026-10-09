@@ -100,7 +100,7 @@ get_header();
         <div class="form-actions">
           <button class="btn primary ai-btn" id="edit-btn" style="flex:1;">didi</button>
         </div>
-        <p class="hint" style="color:var(--text-faint); font-size:12px; margin-top:10px;">视频/动漫走本站服务（USER_EDIT_* / USER_ANIMATE_*）；图片/音频对接你的剪辑服务（USER_VPS_BASE_URL）</p>
+        <p class="hint" style="color:var(--text-faint); font-size:12px; margin-top:10px;">视频/动漫走本站服务（USER_EDIT_* / USER_ANIMATE_*）；图片/音频剪辑走后台「didi AI 配置」中的 didi Media 渠道</p>
       </div>
     </div>
     <div>

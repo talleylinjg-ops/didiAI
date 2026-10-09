@@ -99,7 +99,7 @@ chown -R www-data:www-data /var/www/didiAI/wp-content/uploads
 
 - 智谱（文本 GLM-4.5-Flash / 图片）：已配，当前可用
 - MPT 门户（免费成片）：已配
-- didi Media（MediaCut 新版）：**Key 待用户提供**——图片页/音频页/剪辑页的 didi Media 功能在其提供 Key 前会报 invalid api key
+- didi Media（MediaCut 新版）：**Key 待用户提供**，提供后在后台「didi AI 配置」填写即可；剪辑页第三方模型代理自动回退读取此渠道配置（无需 USER_VPS_BASE_URL 环境变量）
 - 后台「didi AI 配置」页可在线维护各渠道
 
 ## 9. 可选
