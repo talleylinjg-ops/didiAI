@@ -41,7 +41,7 @@ This file records user instructions, preferences, and teachings for reference in
 - Instructions:
   - 重要：域名 `https://moneyprinterturbo.chacha.asia` 属于 MoneyPrinterTurbo v1.3.7（MPT 视频渠道），与 MediaCut 无关，不要错配。
   - MediaCut 服务升级为开发者注册/登录体系（`/api/v1/dev/register`、`/api/v1/dev/client/login`、`/api/v1/dev/key/info`、`/api/v1/dev/client/reset-key`），旧静态 Key 已作废（401 invalid api key）。
-  - 2026-10-05 用户明确：MediaCut 还没配置好，配置完成后用户会提供；此前 Agent 曾临时注册新 key（email=`didi-ai@didi.local`）并写入 DB，已按用户要求退回原值（apiKey=`dd37d0fe...`，baseUrl=`https://8000-5cba46172cd5bd6f.monkeycode-ai.online`）。等待用户提供正式配置。
+  - 2026-10-09 用户已提供正式配置并核对 media.db：Base URL=`https://mediacut.chacha.asia`，Key=`b0a27d13…`（完整值存 DB `didi_ai_config` mediacut 段，勿入 git）。已写入 DB 并重新生成 VPS 导出；沙箱到 `*.chacha.asia` 被 Cloudflare 拦截（HTTP 000），端到端验证需等 VPS 上线后执行。
   - 新版提交一律 multipart/form-data：tts→`text`；t2i→`prompt`（width/height/model 会被忽略）；i2i→`file`+`prompt`；video 无图→`prompt`(+duration/motion/width/height)；chat 有图→`media`+`text`。JSON 提交会 422。
   - 轮询 `GET /api/v1/tasks/{task_id}`、下载 `GET /api/v1/result/{task_id}/{filename}`（result_url 为相对路径）都要 Bearer；状态 pending/running/succeeded/failed。
   - 适配层 `inc/mediacut.php` 已兼容新版（submit 走 multipart，download 自动补 `/api/v1/result/` 前缀）；新 key 就位后音频页 TTS、图片页 t2i 均可端到端跑通。
