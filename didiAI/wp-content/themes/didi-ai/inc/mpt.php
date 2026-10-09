@@ -96,7 +96,11 @@ function didi_ai_mpt_error_message($res) {
   if (isset($data['error'])) return is_string($data['error']) ? $data['error'] : wp_json_encode($data['error']);
   $raw = trim((string) $res['raw']);
   if ($raw !== '' && strlen($raw) < 200) return 'MPT 返回：' . $raw;
-  return 'MPT 请求失败（HTTP ' . $res['status'] . '）';
+  $status = (int) $res['status'];
+  if ($status === 530 || $status >= 520) {
+    return 'MPT 服务离线（HTTP ' . $status . '）：请确认你的 MPT 服务已启动、域名隧道正常后重试';
+  }
+  return 'MPT 请求失败（HTTP ' . $status . '）';
 }
 
 /* ================= 结果落地 ================= */

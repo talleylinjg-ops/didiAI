@@ -279,7 +279,7 @@ get_header();
   var editModeSel = document.getElementById('editMode');
   var editParamsField = document.getElementById('editParamsField');
   var editParamsInput = document.getElementById('editParams');
-  var EDIT_MODEL_PREFIX = 'didi_model_v1_edit_v3_';
+  var EDIT_MODEL_PREFIX = 'didi_model_v1_edit_v4_';
 
   function isMediaCutProvider() {
     var opt = provSel.options[provSel.selectedIndex];

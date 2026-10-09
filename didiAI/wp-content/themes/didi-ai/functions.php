@@ -384,10 +384,17 @@ function didi_ai_chat_stream($req) {
   flush();
   $body = array('model' => $model, 'messages' => $messages, 'temperature' => 0.7, 'stream' => true, 'stream_options' => array('include_usage' => true));
 
-  $ch = curl_init($base . '/chat/completions');
   $chunks = '';
   $gotAnswer = false;
-  curl_setopt_array($ch, array(
+  $err = '';
+  $httpCode = 0;
+  for ($attempt = 0; $attempt < 2; $attempt++) {
+    if ($attempt > 0) sleep(3); // 429/5xx 瞬时故障：退避 3 秒重试一次
+    $chunks = '';
+    $gotAnswer = false;
+    $err = '';
+    $ch = curl_init($base . '/chat/completions');
+    curl_setopt_array($ch, array(
     CURLOPT_RETURNTRANSFER => false,
     CURLOPT_POST => true,
     CURLOPT_TIMEOUT => 300,
@@ -399,20 +406,13 @@ function didi_ai_chat_stream($req) {
     CURLOPT_DNS_CACHE_TIMEOUT => 300,
     CURLOPT_WRITEFUNCTION => function ($ch, $chunk) use (&$chunks, &$gotAnswer) {
       $chunks .= $chunk;
+      // 4xx/5xx 错误响应先缓冲不外发，由外层决定重试或透传
+      if ((int) curl_getinfo($ch, CURLINFO_HTTP_CODE) >= 400) return strlen($chunk);
       // 统一 OpenAI 兼容流格式：将 choices[0].delta.content / reasoning_content 转换为 delta 字段
       foreach (explode("\n", $chunk) as $line) {
         $line = trim($line);
         if ($line === '') continue;
-        if (strpos($line, 'data:') !== 0) {
-          // 非流式错误响应（如上游 1113 余额不足）整段是 JSON，转为 error 事件透传给前端
-          $rawObj = json_decode($line, true);
-          if (is_array($rawObj) && isset($rawObj['error'])) {
-            $errMsg = isset($rawObj['error']['message']) ? $rawObj['error']['message'] : (is_string($rawObj['error']) ? $rawObj['error'] : '上游接口返回错误');
-            $errCode = isset($rawObj['error']['code']) ? $rawObj['error']['code'] : '';
-            echo 'data: ' . json_encode(array('error' => '模型服务返回错误' . ($errCode !== '' ? ' [' . $errCode . ']' : '') . ': ' . $errMsg)) . "\n\n";
-          }
-          continue;
-        }
+        if (strpos($line, 'data:') !== 0) continue;
         $payload = trim(substr($line, 5));
         if ($payload === '[DONE]') { echo "data: [DONE]\n\n"; continue; }
         $o = json_decode($payload, true);
@@ -438,11 +438,27 @@ function didi_ai_chat_stream($req) {
       flush();
       return strlen($chunk);
     },
-  ));
-  curl_exec($ch);
-  $err = curl_error($ch);
-  $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-  curl_close($ch);
+    ));
+    curl_exec($ch);
+    $err = curl_error($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    if ($gotAnswer || ((int) $httpCode < 400 && $err === '')) break;
+  }
+
+  // 上游错误（未流式输出任何内容）：解析错误 JSON 并透传给前端
+  if (!$gotAnswer && ((int) $httpCode >= 400 || $err !== '')) {
+    $rawObj = json_decode(trim($chunks), true);
+    $errMsg = '';
+    if (is_array($rawObj) && isset($rawObj['error'])) {
+      $errMsg = isset($rawObj['error']['message']) ? $rawObj['error']['message'] : (is_string($rawObj['error']) ? $rawObj['error'] : '');
+    }
+    if ($errMsg === '') {
+      $errMsg = $err !== '' ? '连接模型服务失败：' . $err : '模型服务返回错误（HTTP ' . $httpCode . '），请稍后重试';
+    }
+    echo 'data: ' . json_encode(array('error' => $errMsg)) . "\n\n";
+    flush();
+  }
 
   // 解析流中的 usage（OpenAI 兼容最后块含 usage.total_tokens）
   $tokens = 0;
