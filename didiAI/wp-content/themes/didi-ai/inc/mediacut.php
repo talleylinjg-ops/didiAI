@@ -150,10 +150,13 @@ function didi_ai_mediacut_error_message($res) {
   if (isset($data['error'])) return is_string($data['error']) ? $data['error'] : wp_json_encode($data['error']);
   $raw = trim((string) $res['raw']);
   if ($raw !== '' && strlen($raw) < 200) return 'didi Media 返回：' . $raw;
-  if ((int) $res['status'] === 403 && stripos($raw, 'cloudflare') !== false || (int) $res['status'] === 403 && stripos($raw, 'attention required') !== false) {
-    return 'didi Media 请求被 Cloudflare 拦截（403）：请在 CF 控制台为 mediacut 域名的 /api/* 路径关闭浏览器完整性检查/Bot 防御，或将本服务器 IP 加入白名单';
+  $status = (int) $res['status'];
+  if ($status === 403 && (stripos($raw, 'cloudflare') !== false || stripos($raw, 'attention required') !== false)) {
+    return didi_ai_is_admin_user()
+      ? 'didi Media 请求被 Cloudflare 拦截（403）：请在 CF 控制台检查 Bot Fight Mode/WAF 规则，为 /api/* 放行或将本服务器 IP 加白'
+      : 'didi Media 服务暂时不可用，请稍后重试或联系客服';
   }
-  return 'didi Media 请求失败（HTTP ' . $res['status'] . '）';
+  return 'didi Media 请求失败（HTTP ' . $status . '）';
 }
 
 /* ================= 结果落地 ================= */

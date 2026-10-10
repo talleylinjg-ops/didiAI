@@ -98,7 +98,9 @@ function didi_ai_mpt_error_message($res) {
   if ($raw !== '' && strlen($raw) < 200) return 'MPT 返回：' . $raw;
   $status = (int) $res['status'];
   if ($status === 530 || $status >= 520) {
-    return 'MPT 服务离线（HTTP ' . $status . '）：请确认你的 MPT 服务已启动、域名隧道正常后重试';
+    return didi_ai_is_admin_user()
+      ? 'MPT 服务离线（HTTP ' . $status . '）：请确认你的 MPT 服务已启动、域名隧道正常后重试'
+      : '免费视频服务暂时不可用，请稍后重试';
   }
   return 'MPT 请求失败（HTTP ' . $status . '）';
 }

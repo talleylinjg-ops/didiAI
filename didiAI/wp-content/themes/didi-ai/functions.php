@@ -446,7 +446,7 @@ function didi_ai_chat_stream($req) {
     if ($gotAnswer || ((int) $httpCode < 400 && $err === '')) break;
   }
 
-  // 上游错误（未流式输出任何内容）：解析错误 JSON 并透传给前端
+  // 上游错误（未流式输出任何内容）：上游业务错误原样透传；连接类故障管理员看细节、访客看友好提示
   if (!$gotAnswer && ((int) $httpCode >= 400 || $err !== '')) {
     $rawObj = json_decode(trim($chunks), true);
     $errMsg = '';
@@ -454,7 +454,9 @@ function didi_ai_chat_stream($req) {
       $errMsg = isset($rawObj['error']['message']) ? $rawObj['error']['message'] : (is_string($rawObj['error']) ? $rawObj['error'] : '');
     }
     if ($errMsg === '') {
-      $errMsg = $err !== '' ? '连接模型服务失败：' . $err : '模型服务返回错误（HTTP ' . $httpCode . '），请稍后重试';
+      $errMsg = didi_ai_is_admin_user()
+        ? ($err !== '' ? '连接模型服务失败：' . $err : '模型服务返回错误（HTTP ' . $httpCode . '），请稍后重试')
+        : '模型服务暂时不可用，请稍后重试';
     }
     echo 'data: ' . json_encode(array('error' => $errMsg)) . "\n\n";
     flush();
@@ -757,6 +759,11 @@ function didi_ai_note_short($text) {
 }
 
 // 记录备注清洗：去标签、压平空白、截断，防止 prompt/报错原文污染流水
+// 运维细节只给管理员看，访客收到友好提示
+function didi_ai_is_admin_user() {
+  return is_user_logged_in() && function_exists('current_user_can') && current_user_can('manage_options');
+}
+
 function didi_ai_clean_note($note) {
   $note = trim(wp_strip_all_tags((string) $note));
   $note = preg_replace('/\s+/u', ' ', $note);
@@ -2126,7 +2133,9 @@ function didi_ai_vps_proxy($req) {
     }
   }
   if (!$base) {
-    return new WP_Error('not_configured', '剪辑服务未配置：请在后台「didi AI 配置」填写 didi Media 的 Base URL 与 API Key，或在服务端环境变量设置 USER_VPS_BASE_URL', array('status' => 503));
+    return new WP_Error('not_configured', didi_ai_is_admin_user()
+      ? '剪辑服务未配置：请在后台「didi AI 配置」填写 didi Media 的 Base URL 与 API Key，或在服务端环境变量设置 USER_VPS_BASE_URL'
+      : '剪辑服务暂未就绪，请稍后重试或联系客服', array('status' => 503));
   }
   $payload = isset($params['data']) ? $params['data'] : array();
   if (!is_array($payload)) $payload = array();
