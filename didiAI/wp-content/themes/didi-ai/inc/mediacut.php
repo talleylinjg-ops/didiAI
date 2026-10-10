@@ -150,6 +150,9 @@ function didi_ai_mediacut_error_message($res) {
   if (isset($data['error'])) return is_string($data['error']) ? $data['error'] : wp_json_encode($data['error']);
   $raw = trim((string) $res['raw']);
   if ($raw !== '' && strlen($raw) < 200) return 'didi Media 返回：' . $raw;
+  if ((int) $res['status'] === 403 && stripos($raw, 'cloudflare') !== false || (int) $res['status'] === 403 && stripos($raw, 'attention required') !== false) {
+    return 'didi Media 请求被 Cloudflare 拦截（403）：请在 CF 控制台为 mediacut 域名的 /api/* 路径关闭浏览器完整性检查/Bot 防御，或将本服务器 IP 加入白名单';
+  }
   return 'didi Media 请求失败（HTTP ' . $res['status'] . '）';
 }
 
