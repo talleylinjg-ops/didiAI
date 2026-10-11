@@ -88,7 +88,8 @@
   var usageToggle = document.getElementById('usageToggle');
   if (usageBox && usagePanel) {
     if (usageToggle) {
-      if (isLogged) usageBox.classList.add('open');
+      // 首页默认收起使用记录（body class 含 home），其他页面登录态默认展开
+      if (isLogged && !document.body.classList.contains('home')) usageBox.classList.add('open');
       usageToggle.addEventListener('click', function (e) {
         e.stopPropagation();
         usageBox.classList.toggle('open');

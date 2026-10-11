@@ -1330,15 +1330,6 @@ function didi_ai_seo_jsonld($c) {
       );
     }
     $graph[] = array('@type' => 'ItemList', 'name' => 'didi AI 工具列表', 'itemListOrder' => 'https://schema.org/ItemListOrderAscending', 'numberOfItems' => count($listItems), 'itemListElement' => $listItems);
-    $faqEntities = array();
-    foreach (didi_ai_seo_faq() as $qa) {
-      $faqEntities[] = array(
-        '@type' => 'Question',
-        'name' => $qa[0],
-        'acceptedAnswer' => array('@type' => 'Answer', 'text' => $qa[1]),
-      );
-    }
-    $graph[] = array('@type' => 'FAQPage', 'mainEntity' => $faqEntities);
   }
 
   echo '<script type="application/ld+json">' . wp_json_encode(
