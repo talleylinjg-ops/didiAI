@@ -53,7 +53,12 @@ function didi_ai_mediacut_http($path, $fields = null, $multipart = false, $timeo
   $opts = array(
     CURLOPT_RETURNTRANSFER => true,
     CURLOPT_TIMEOUT => $timeout,
-    CURLOPT_HTTPHEADER => array('Authorization: Bearer ' . $conf['apiKey'], 'Accept: application/json, */*'),
+    CURLOPT_HTTPHEADER => array(
+      'Authorization: Bearer ' . $conf['apiKey'],
+      'Accept: application/json, */*',
+      // CF 对默认 curl UA 触发 Bot 拦截（403），带浏览器 UA 直通
+      'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36',
+    ),
     CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_2_0,
     CURLOPT_TCP_NODELAY => true,
     CURLOPT_DNS_CACHE_TIMEOUT => 300,
