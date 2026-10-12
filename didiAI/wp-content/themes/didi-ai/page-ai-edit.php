@@ -69,7 +69,7 @@ get_header();
         <label class="field"><span id="mediaLabel">素材</span>
           <div style="display:flex;gap:10px;">
             <input class="input" type="text" id="mediaUrl" placeholder="粘贴素材 URL，或上传本地文件">
-            <button class="btn primary" id="pickMedia" style="white-space:nowrap;">选择素材</button>
+            <button class="btn primary" id="pickMedia" style="white-space:nowrap;">素材</button>
           </div>
           <input type="file" id="mediaFile" accept="image/*,video/*" style="display:none;">
         </label>
