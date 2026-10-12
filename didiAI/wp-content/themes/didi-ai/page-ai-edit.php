@@ -66,7 +66,7 @@ get_header();
         <label class="field" id="editParamsField" style="display:none;"><span>修图参数（JSON，可选）</span>
           <textarea class="input" id="editParams" style="min-height:70px;font-family:monospace;font-size:12.5px;" placeholder='{"filter":"...","crop":"...","resize":"...","watermark":"...","output_format":"png"}'></textarea>
         </label>
-        <label class="field"><span id="mediaLabel">上传素材（图片或视频）</span>
+        <label class="field"><span id="mediaLabel">素材</span>
           <div style="display:flex;gap:10px;">
             <input class="input" type="text" id="mediaUrl" placeholder="粘贴素材 URL，或上传本地文件">
             <button class="btn primary" id="pickMedia" style="white-space:nowrap;">选择素材</button>
@@ -140,7 +140,7 @@ get_header();
         ] }
       ],
       media: 'image/*,video/*',
-      mediaLabel: '上传素材（图片或视频）',
+      mediaLabel: '素材',
       api: 'edit'
     },
     animate: {
@@ -162,7 +162,7 @@ get_header();
         ] }
       ],
       media: 'image/*,video/*',
-      mediaLabel: '上传素材（可选，图生动画）',
+      mediaLabel: '素材',
       api: 'animate'
     },
     image: {
@@ -186,7 +186,7 @@ get_header();
         ] }
       ],
       media: 'image/*',
-      mediaLabel: '上传图片素材',
+      mediaLabel: '素材',
       api: 'vps',
       vpsPath: '/api/image/edit'
     },
@@ -210,7 +210,7 @@ get_header();
         ] }
       ],
       media: 'audio/*',
-      mediaLabel: '上传音频素材',
+      mediaLabel: '素材',
       api: 'vps',
       vpsPath: '/api/audio/edit'
     }
