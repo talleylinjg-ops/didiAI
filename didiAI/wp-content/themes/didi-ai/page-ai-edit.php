@@ -55,8 +55,6 @@ get_header();
           <select class="input" id="provider">
           </select>
         </label>
-        <div id="tierNote" style="display:none;margin-top:8px;padding:8px 10px;background:var(--bg-soft);border-radius:10px;font-size:12.5px;color:#4e5969;line-height:1.7;"></div>
-        <div id="vpsNote" style="display:none;margin-top:8px;padding:8px 10px;background:linear-gradient(90deg,rgba(22,104,220,.08),rgba(123,104,238,.08));border:1px dashed #c8dbff;border-radius:10px;font-size:12.5px;color:#1668dc;line-height:1.7;"></div>
         <label class="field" id="modeField" style="display:none;"><span>图片处理模式</span>
           <select class="input" id="editMode">
             <option value="edit">修图 · 滤镜 / 裁剪 / 缩放 / 水印 / 格式</option>
@@ -71,7 +69,7 @@ get_header();
         <label class="field"><span id="mediaLabel">上传素材（图片或视频）</span>
           <div style="display:flex;gap:10px;">
             <input class="input" type="text" id="mediaUrl" placeholder="粘贴素材 URL，或上传本地文件">
-            <button class="btn primary" id="pickMedia" style="white-space:nowrap;">上传</button>
+            <button class="btn primary" id="pickMedia" style="white-space:nowrap;">选择素材</button>
           </div>
           <input type="file" id="mediaFile" accept="image/*,video/*" style="display:none;">
         </label>
@@ -141,8 +139,6 @@ get_header();
           { value: 'custom', provider: 'custom', text: '自定义模型' }
         ] }
       ],
-      tier: '国内：豆包 Seedance / 即梦 3.0 / 可灵 3.0（最强）/ Vidu Q2 / 海螺 2.3 / 通义万相 2.5　｜　海外：Veo 3.1（最强）/ Sora 2 / Runway Gen-4 / Pika 2.5　｜　定制：自定义模型',
-      vps: '',
       media: 'image/*,video/*',
       mediaLabel: '上传素材（图片或视频）',
       api: 'edit'
@@ -165,8 +161,6 @@ get_header();
           { value: 'custom', provider: 'custom', text: '自定义模型' }
         ] }
       ],
-      tier: '国内：可灵 3.0（最强）/ 即梦动画 3.0 / 生数 Vidu Q2　｜　海外：Veo 3.1（最强）/ AnimateDiff / AnimateDiff-Lite　｜　定制：自定义模型',
-      vps: '',
       media: 'image/*,video/*',
       mediaLabel: '上传素材（可选，图生动画）',
       api: 'animate'
@@ -191,8 +185,6 @@ get_header();
           { value: 'custom', provider: 'custom', text: '自定义模型' }
         ] }
       ],
-      tier: '国内：免费 didi Media / 即梦 Seedream 5.0（最强）/ 通义万相 2.5 / 混元图像 3.0　｜　海外：GPT Image 2（最强）/ Nano Banana 2 / Flux 1.1 Pro / Midjourney V7　｜　定制：自定义模型',
-      vps: '图片剪辑走你自部署的剪辑服务（didi MediaCut / 即梦等由该服务执行）',
       media: 'image/*',
       mediaLabel: '上传图片素材',
       api: 'vps',
@@ -217,8 +209,6 @@ get_header();
           { value: 'custom', provider: 'custom', text: '自定义模型' }
         ] }
       ],
-      tier: '国内：免费 didi Media / 音潮 V4.0（最强）/ 腾讯混元音频 / MiniMax 音乐　｜　海外：Suno V5.5（最强）/ ElevenLabs / Udio　｜　定制：自定义模型。音频剪辑由你的 VPS 剪辑服务执行',
-      vps: '音频剪辑对接你自部署的剪辑服务',
       media: 'audio/*',
       mediaLabel: '上传音频素材',
       api: 'vps',
@@ -253,10 +243,6 @@ get_header();
         parent.appendChild(op);
       });
     });
-    document.getElementById('tierNote').style.display = cfg.tier ? '' : 'none';
-    document.getElementById('tierNote').textContent = cfg.tier || '';
-    document.getElementById('vpsNote').style.display = cfg.vps ? '' : 'none';
-    document.getElementById('vpsNote').innerHTML = cfg.vps ? '<b>VPS 对接：</b>' + cfg.vps : '';
     document.getElementById('mediaLabel').textContent = cfg.mediaLabel;
     document.getElementById('mediaFile').accept = cfg.media;
     document.getElementById('chatcutHint').style.display = (t === 'video') ? '' : 'none';
