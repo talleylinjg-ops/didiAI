@@ -60,6 +60,8 @@ function didi_ai_mediacut_http($path, $fields = null, $multipart = false, $timeo
       'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36',
     ),
     CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_2_0,
+    CURLOPT_FOLLOWLOCATION => true,
+    CURLOPT_MAXREDIRS => 3,
     CURLOPT_TCP_NODELAY => true,
     CURLOPT_DNS_CACHE_TIMEOUT => 300,
     CURLOPT_HEADERFUNCTION => function ($ch, $header) use (&$headersOut) {
