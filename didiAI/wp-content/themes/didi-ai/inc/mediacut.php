@@ -88,6 +88,16 @@ function didi_ai_mediacut_http($path, $fields = null, $multipart = false, $timeo
   $body = curl_exec($ch);
   $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
   $err = curl_error($ch);
+  // 链路抖动（SSL/连接类失败、请求未达对端）时自动重试一次
+  if ($err && $status === 0 && preg_match('/SSL|connect|timed out|reset/i', $err)) {
+    curl_close($ch);
+    sleep(2);
+    $ch = curl_init($url);
+    curl_setopt_array($ch, $opts);
+    $body = curl_exec($ch);
+    $status = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $err = curl_error($ch);
+  }
   $ctype = isset($headersOut['content-type']) ? $headersOut['content-type'] : '';
   curl_close($ch);
   if ($err) return new WP_Error('mc_network', 'didi Media 网络请求失败：' . $err, array('status' => 502));
