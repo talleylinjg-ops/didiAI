@@ -57,6 +57,18 @@ get_header();
             <option value="1:1">1:1 方形</option>
           </select>
         </label>
+        <label class="field"><span>素材（可选）</span>
+          <div style="display:flex;gap:8px;">
+            <input class="input" type="text" id="mediaUrl" placeholder="粘贴素材 URL，或上传本地文件">
+            <button class="btn" id="pickMedia" style="white-space:nowrap;background:#fff;color:#4e5969;border:1px solid #e5e6eb;font-size:11px;padding:4px 9px;border-radius:8px;">素材</button>
+          </div>
+          <input type="file" id="mediaFile" accept="image/*,video/*" style="display:none;">
+        </label>
+        <div id="mediaPreview" style="margin-top:10px;display:none;position:relative;">
+          <img id="previewImg" style="max-width:100%;max-height:200px;border-radius:10px;border:1px solid #e5e6eb;" alt="素材预览">
+          <video id="previewVid" style="max-width:100%;max-height:200px;border-radius:10px;border:1px solid #e5e6eb;display:none;" controls></video>
+          <button id="removeMedia" style="position:absolute;top:-8px;right:-8px;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,0.55);color:#fff;cursor:pointer;font-size:11px;line-height:1;">&times;</button>
+        </div>
         <div class="form-actions">
           <button class="btn primary ai-btn" id="generate-btn" style="flex:1;">didi</button>
         </div>
@@ -78,6 +90,60 @@ get_header();
   var providerSel = document.getElementById('provider');
   var customModelField = document.getElementById('customModelField');
   var aspectField = document.getElementById('aspectField');
+  var videoMediaUrl = '';
+  function previewUrl(u){
+    try {
+      var a = new URL(u, location.href);
+      return (a.origin === location.origin) ? a.pathname + a.search : u;
+    } catch (e) { return u; }
+  }
+  function showMediaPreview(url, mime){
+    var box = document.getElementById('mediaPreview');
+    var img = document.getElementById('previewImg');
+    var vid = document.getElementById('previewVid');
+    box.style.display = '';
+    if (mime && mime.indexOf('video/') === 0){
+      img.style.display = 'none'; vid.style.display = ''; vid.src = url;
+    } else {
+      vid.style.display = 'none'; img.style.display = ''; img.src = url;
+    }
+  }
+  document.getElementById('pickMedia').addEventListener('click', function(e){
+    e.preventDefault(); document.getElementById('mediaFile').click();
+  });
+  document.getElementById('mediaFile').addEventListener('change', function(){
+    var file = this.files && this.files[0];
+    if (!file) return;
+    var fd = new FormData();
+    fd.append('file', file);
+    fetch('/wp-json/didi/v1/upload', { method: 'POST', body: fd, credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d && d.url) {
+          videoMediaUrl = d.url;
+          showMediaPreview(previewUrl(d.url), file.type);
+          toast('素材已上传，可直接处理', 'success');
+        } else {
+          throw new Error((d && d.message) || '上传失败');
+        }
+      }).catch(function (err) {
+        toast(err.message, 'error');
+      });
+  });
+  document.getElementById('mediaUrl').addEventListener('input', function(){
+    var v = this.value.trim();
+    if (/^https?:\/\//i.test(v)) {
+      videoMediaUrl = v;
+      var mime = v.match(/\.(mp4|webm|mov)/i) ? 'video/mp4' : 'image/*';
+      showMediaPreview(previewUrl(v), mime);
+    }
+  });
+  document.getElementById('removeMedia').addEventListener('click', function(){
+    videoMediaUrl = '';
+    document.getElementById('mediaPreview').style.display = 'none';
+    document.getElementById('mediaUrl').value = '';
+    document.getElementById('mediaFile').value = '';
+  });
   function syncProvider() {
     customModelField.style.display = providerSel.value === 'custom' ? '' : 'none';
     aspectField.style.display = providerSel.value === 'didi-mpt' ? '' : 'none';
@@ -167,6 +233,7 @@ get_header();
     try {
       var payload = { prompt: prompt, provider: choice.provider, tier: choice.tier, model: choice.model, custom: choice.custom };
       if (choice.aspect) payload.aspect = choice.aspect;
+      if (videoMediaUrl) payload.imageUrl = videoMediaUrl;
       var data = await didiPost('/wp-json/didi/v1/video', payload);
       var taskId = (data.result && data.result.taskId) || data.taskId || '';
       var shouldPoll = isFreeAsync || (data.result && data.result.poll) || data.poll;

@@ -78,7 +78,7 @@ get_header();
             <img id="previewImg" style="max-width:100%;max-height:200px;border-radius:10px;border:1px solid #e5e6eb;" alt="素材预览">
             <video id="previewVid" style="max-width:100%;max-height:200px;border-radius:10px;border:1px solid #e5e6eb;display:none;" controls></video>
             <audio id="previewAud" style="max-width:100%;margin-top:6px;display:none;" controls></audio>
-            <button id="removeMedia" style="position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:50%;border:none;background:#f5222d;color:#fff;cursor:pointer;font-size:14px;line-height:1;">&times;</button>
+            <button id="removeMedia" style="position:absolute;top:-8px;right:-8px;width:18px;height:18px;border-radius:50%;border:none;background:rgba(0,0,0,0.55);color:#fff;cursor:pointer;font-size:11px;line-height:1;">&times;</button>
           </div>
         </div>
         <label class="field" id="customModelField" style="display:none;"><span>自定义模型名称</span>
@@ -449,7 +449,7 @@ get_header();
     .then(function (d) {
       if (d.ok && d.url) {
         mediaUrl = d.url;
-        showMedia(d.url, file.type);
+        showMedia(previewUrl(d.url), file.type);
         toast('素材已上传，可直接处理', 'success');
       } else {
         throw new Error((d && d.message) || '上传失败');
@@ -458,6 +458,13 @@ get_header();
       toast(err.message, 'error');
     });
   });
+
+  function previewUrl(u){
+    try {
+      var a = new URL(u, location.href);
+      return (a.origin === location.origin) ? a.pathname + a.search : u;
+    } catch (e) { return u; }
+  }
 
   function showMedia(url, mime){
     var box = document.getElementById('mediaPreview');
@@ -481,7 +488,7 @@ get_header();
     var v = this.value.trim();
     if (/^https?:\/\//i.test(v)) {
       mediaUrl = v;
-      showMedia(v, v.match(/\.(mp4|webm|mov)/i) ? 'video/mp4' : (v.match(/\.(mp3|wav|m4a|aac|flac)/i) ? 'audio/mpeg' : 'image/*'));
+      showMedia(previewUrl(v), v.match(/\.(mp4|webm|mov)/i) ? 'video/mp4' : (v.match(/\.(mp3|wav|m4a|aac|flac)/i) ? 'audio/mpeg' : 'image/*'));
     }
   });
 

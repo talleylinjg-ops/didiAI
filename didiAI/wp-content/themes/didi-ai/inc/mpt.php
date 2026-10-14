@@ -137,6 +137,10 @@ function didi_ai_mpt_submit($params, $prompt) {
     'video_source' => didi_ai_mpt_source($params, $conf),
   );
   if (!empty($params['video_script'])) $body['video_script'] = sanitize_textarea_field($params['video_script']);
+  if (!empty($params['imageUrl'])) {
+    $mediaUrl = esc_url_raw(trim($params['imageUrl']));
+    if ($mediaUrl) $body['video_materials'] = array($mediaUrl);
+  }
   $res = didi_ai_mpt_http('/api/proxy/v1/videos', $body, 60);
   if (is_wp_error($res)) return $res;
   if ($res['status'] >= 400) {
