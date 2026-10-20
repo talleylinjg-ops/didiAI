@@ -10,3 +10,12 @@ didiAI/wp-content/uploads/didi-mpt/
 
 # 含渠道密钥的数据库导出，禁止入 git（VPS 迁移用，手动传输）
 didiAI/database/didi_wp_vps_*.sql
+
+# CJ import runtime data & secrets
+didiAI/scripts/cj-import/.cj_token
+didiAI/scripts/cj-import/state.json
+didiAI/scripts/cj-import/images-state.json
+didiAI/scripts/cj-import/*.jsonl
+didiAI/scripts/cj-import/images-pending*
+didiAI/wp-content/cache/
+didiAI/wp-content/uploads/wc-logs/

@@ -9,9 +9,9 @@ main = "src/index.ts"
 compatibility_date = "2026-09-01"
 
 # 源站（生产环境为 didiAI 公网地址；本地调试可用开发服务器，仅限内网抓取校验）
-# 域名尚未申请，暂用占位；域名就绪后改这里并重新 `wrangler deploy` 即可。
+# 沙箱开发期：指向沙箱 8080 的公网预览域名（全功能动态反代）；正式域名就绪后改回。
 [vars]
-ORIGIN = "https://origin.pending.invalid"
+ORIGIN = "https://8080-4e40fe0ce2a47756.monkeycode-ai.online"
 
 # 静态资源镜像桶：key 为裸路径，例如 wp-content/themes/didi-ai/style.css
 [[r2_buckets]]

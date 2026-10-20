@@ -1330,6 +1330,12 @@ function didi_ai_seo_jsonld($c) {
       );
     }
     $graph[] = array('@type' => 'ItemList', 'name' => 'didi AI 工具列表', 'itemListOrder' => 'https://schema.org/ItemListOrderAscending', 'numberOfItems' => count($listItems), 'itemListElement' => $listItems);
+    $graph[] = array('@type' => 'FAQPage', 'mainEntity' => array(
+      array('@type' => 'Question', 'name' => 'didi AI 是什么？', 'acceptedAnswer' => array('@type' => 'Answer', 'text' => 'didi AI 是一站式 AI 工具平台，提供 AI 对话、AI 绘图、AI 视频、AI 写作等能力，并集成 CJ Dropshipping 商品库，帮助跨境卖家从选品到内容营销全流程提效。')),
+      array('@type' => 'Question', 'name' => 'didi AI 支持哪些 AI 工具？', 'acceptedAnswer' => array('@type' => 'Answer', 'text' => '支持 AI 对话（多模型可选）、AI 图像生成与编辑、AI 视频生成、图生视频、AI 写作与文案模板，覆盖电商内容生产的完整链路。')),
+      array('@type' => 'Question', 'name' => '如何在 didi AI 上架 CJ Dropshipping 商品？', 'acceptedAnswer' => array('@type' => 'Answer', 'text' => '站点已接入 CJ 商品库批量导入，商品自动定价并以草稿入库，图片经全球 CDN 加速；买家下单后由 CJ 完成拣货、包装与跨境配送。')),
+      array('@type' => 'Question', 'name' => 'didi AI 是免费的吗？', 'acceptedAnswer' => array('@type' => 'Answer', 'text' => '注册后赠送体验额度，AI 生成能力按用量计费，可在会员中心充值；博客与论坛内容完全免费开放。')),
+    ));
   }
 
   echo '<script type="application/ld+json">' . wp_json_encode(
@@ -2001,6 +2007,16 @@ function didi_ai_upload_image_endpoint($req) {
   return array('ok' => true, 'id' => $attach_id, 'url' => $url);
 }
 
+// CJ 导入的伪 attachment：外链（CJ CDN / R2）原样返回，避免被拼上本地 uploads 前缀
+add_filter('wp_get_attachment_url', function ($url, $attachId) {
+  if (!$attachId) return $url;
+  $r2 = get_post_meta($attachId, '_cj_r2_url', true);
+  if ($r2) return $r2;
+  $file = get_post_meta($attachId, '_wp_attached_file', true);
+  if ($file && preg_match('#^https?://#i', $file)) return $file;
+  return $url;
+}, 10, 2);
+
 /* ================= 轻剪辑 · 自带 KEY 免费图生视频（阿里云百炼 DashScope wan-i2v） ================= */
 function didi_ai_lite_encrypt($plain) {
   if (!$plain) return '';
@@ -2605,3 +2621,20 @@ function didi_codex_register_routes() {
   ));
 }
 add_action('rest_api_init', 'didi_codex_register_routes');
+
+// 图片懒加载：前端 HTML 输出统一加 loading="lazy"（首屏首图保持同步，利于 LCP）
+function didi_lazy_load_images($html) {
+  if (is_admin() || php_sapi_name() === 'cli' || defined('DOING_AJAX') || defined('REST_REQUEST')) return $html;
+  if (stripos($html, '<html') === false) return $html;
+  $n = 0;
+  return preg_replace_callback('/<img\b[^>]*>/i', function ($m) use (&$n) {
+    $n++;
+    $tag = $m[0];
+    if (stripos($tag, 'loading=') !== false) return $tag;
+    if ($n === 1) return $tag;
+    return str_ireplace('<img', '<img loading="lazy"', $tag);
+  }, $html);
+}
+if (!is_admin() && php_sapi_name() !== 'cli') {
+  ob_start('didi_lazy_load_images');
+}

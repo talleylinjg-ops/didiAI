@@ -35,6 +35,19 @@ This file records user instructions, preferences, and teachings for reference in
 ## Entries
 
 [Project Knowledge Summary]
+- Date: 2026-10-19
+- Context: Discovered by Agent while resuming the CJ Dropshipping bulk import into WooCommerce
+- Category: Operations & Deployment
+- Instructions:
+  - CJ 导入三阶段脚本位于 `didiAI/scripts/cj-import/`（cj-import.php 入口 + import-tasks.php 实现），在 `/workspace/didiAI` 下执行：`list`→抓列表到 staging.jsonl、`import`→详情+WC 导入、`retry`→重跑 state.json failed 数组里的 pid、`images [LIMIT] [shardIdx shardTotal]`→图片下载压缩后传 R2。
+  - 断点续跑：state.json（importCursor/imported/skipped/failed）；staging.jsonl 24172 条已全部导入完成（imported 21282、skipped 16、failed 2874，failed 主因是 CJ API 每日配额耗尽 "Insufficient"，按 UTC 日重置后用 retry 命令恢复）。
+  - 产品导入为 draft、价格 CJ 价 ×1.5、变体挂 pa_cj-variant 属性；图片用伪 attachment（_wp_attached_file 存外链），阶段3把外链替换为 R2 URL（didi-ai-mirror bucket，每产品最多 10 张，GD 压长边 1200/q78）。
+  - 阶段3已改为 ID 列表文件方案（images-pending-{shard}，按 post_id%shardTotal 拆分，处理完即出队即断点），避免 wp_postmeta（1160 万行）meta_query 重复扫描；已加索引 k_mv (meta_key(191), meta_value(32))。
+  - 图片迁移性能要点：GD 未装时原图直传慢 3 倍（已装 php8.2-gd）；CJ CDN 偶发 60s 挂死，下载 timeout 已降 20s+重试 1 次；R2 put 偶发 HTTP 0 已加重试；attachment 外链用单条 UPDATE...CASE 批量替换。4 shard 并行约 2.2s/个，2.4 万产品约 4 小时。
+  - 脚本自身每批（import 500 / images 40）exit(0) 防内存泄漏，需 shell 循环重启续跑；PHP 处理复杂变体产品约 30-40s/个，2873 个重试约需 30 小时（实际 3 小时跑完）。
+  - 系统内存紧张（8GB，available 常 <300MB），导入与图片迁移串行执行，勿并行两个 PHP CLI。
+
+[Project Knowledge Summary]
 - Date: 2026-10-05
 - Context: Discovered by Agent while wiring the 音频页 didi Media TTS default (MediaCut service was upgraded and old key invalidated)
 - Category: Environment Configuration

@@ -93,6 +93,11 @@ export default {
       return proxyToOrigin(request, env);
     }
 
+    // 1.5) 已登录用户（带 WP 登录 cookie）强制走源站动态：静态快照无法表达登录态，
+    //      否则登录用户回首页仍被快照里的 loggedIn=false 踢回登录页形成死循环。
+    const cookie = request.headers.get('Cookie') || '';
+    const isLoggedIn = cookie.includes('wordpress_logged_in');
+
     // 2) 静态资源：按扩展名判定（/wp-content、/wp-includes、uploads 等一视同仁）
     //    R2 镜像命中即返回，否则回源，保证渲染与原站一致
     if (/\.[a-z0-9]+$/i.test(url.pathname)) {
@@ -108,8 +113,8 @@ export default {
       return proxyToOrigin(request, env);
     }
 
-    // 3) HTML 页面快照：仅无查询串的路径命中 KV（快照按键存储），带参请求回源避免内容错配
-    if (url.search === '') {
+    // 3) HTML 页面快照：仅未登录且无查询串的路径命中 KV（快照按键存储），带参请求回源避免内容错配
+    if (!isLoggedIn && url.search === '') {
       const key = normalizeKey(url.pathname);
       const html = await env.HTML_KV.get(key);
       if (html !== null) {
