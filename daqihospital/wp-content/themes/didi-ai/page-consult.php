@@ -35,35 +35,42 @@ $home = home_url();
   .cq-note{font-size:12px;color:#86909c;margin-top:10px;text-align:center;}
 </style>
 <div class="cq-wrap">
-  <div class="cq-head"><span class="cq-emoji"><?php echo $ch['emoji']; ?></span><h1><?php echo esc_html($ch['name']); ?></h1></div>
-  <p class="cq-desc"><?php echo esc_html($ch['desc']); ?></p>
-  <div class="cq-disclaimer">本服务为 AI 辅助预问诊，输出仅供参考，不能替代执业医师的诊断与治疗。如出现胸痛、呼吸困难、意识改变、大出血等急危情况，请立即拨打 <strong>120</strong> 或前往急诊。</div>
+  <div class="cq-head"><span class="cq-emoji"><?php echo $ch['emoji']; ?></span><h1><?php echo esc_html(didi_ai_channel_name($ch)); ?></h1></div>
+  <p class="cq-desc"><?php echo esc_html(didi_ai_channel_desc($ch)); ?></p>
+  <div class="cq-disclaimer"><?php echo daqi_t('本服务为 AI 辅助预问诊，输出仅供参考，不能替代执业医师的诊断与治疗。如出现胸痛、呼吸困难、意识改变、大出血等急危情况，请立即拨打 <strong>120</strong> 或前往急诊。', 'This is an AI-assisted pre-consultation service. Output is for reference only and cannot replace the diagnosis or treatment of a licensed physician. For emergencies such as chest pain, breathing difficulty, altered consciousness or heavy bleeding, call <strong>911/120</strong> or go to the emergency room immediately.'); ?></div>
 
   <div class="cq-card" id="cqFormCard">
     <form id="cqForm">
-      <?php foreach ($ch['fields'] as $f): ?>
+      <?php foreach ($ch['fields'] as $fk => $f): ?>
         <div class="cq-field">
-          <label><?php echo esc_html($f['label']); ?></label>
-          <input type="text" name="<?php echo esc_attr($f['label']); ?>" placeholder="<?php echo esc_attr($f['ph']); ?>" autocomplete="off">
+          <label><?php echo esc_html(didi_ai_channel_field($ch, $fk, 'label')); ?></label>
+          <input type="text" name="<?php echo esc_attr(didi_ai_channel_field($ch, $fk, 'label')); ?>" placeholder="<?php echo esc_attr(didi_ai_channel_field($ch, $fk, 'ph')); ?>" autocomplete="off">
         </div>
       <?php endforeach; ?>
-      <button class="cq-start" type="submit">开始 AI 问诊</button>
+      <button class="cq-start" type="submit"><?php echo esc_html(daqi_t('开始 AI 问诊', 'Start AI consultation')); ?></button>
     </form>
   </div>
 
   <div class="cq-card cq-chat" id="cqChat">
     <div class="cq-log" id="cqLog"></div>
     <div class="cq-inputrow">
-      <textarea id="cqInput" placeholder="描述你的症状或继续追问…"></textarea>
-      <button class="cq-send" id="cqSend">发送</button>
+      <textarea id="cqInput" placeholder="<?php echo esc_attr(daqi_t('描述你的症状或继续追问…', 'Describe your symptoms or ask a follow-up question…')); ?>"></textarea>
+      <button class="cq-send" id="cqSend"><?php echo esc_html(daqi_t('发送', 'Send')); ?></button>
     </div>
-    <div class="cq-note">AI 输出仅供参考 · 急危情况请拨打 120 · <?php echo is_user_logged_in() ? '会员问诊中' : '游客每日 5 次问诊额度'; ?></div>
+    <div class="cq-note"><?php echo daqi_t('AI 输出仅供参考 · 急危情况请拨打 120 · ', 'AI output is for reference only · For emergencies call 911/120 · ') . (is_user_logged_in() ? daqi_t('会员问诊中', 'member consultation') : daqi_t('游客每日 5 次问诊额度', '5 free consultations per day for guests')); ?></div>
   </div>
 </div>
 <script>
 (function () {
   var preset = <?php echo wp_json_encode($key); ?>;
-  var channelName = <?php echo wp_json_encode($ch['name']); ?>;
+  var channelName = <?php echo wp_json_encode(didi_ai_channel_name($ch)); ?>;
+  var L = {
+    history: <?php echo wp_json_encode(daqi_t('病史信息', 'Medical history')); ?>,
+    notProvided: <?php echo wp_json_encode(daqi_t('未提供', 'not provided')); ?>,
+    analyze: <?php echo wp_json_encode(daqi_t('请根据以上信息进行预问诊分析。', 'Please perform a pre-consultation analysis based on the information above.')); ?>,
+    errorPrefix: <?php echo wp_json_encode(daqi_t('错误：', 'Error: ')); ?>,
+    failMsg: <?php echo wp_json_encode(daqi_t('请求失败：', 'Request failed: ') . '' . daqi_t('（游客请稍后再试，或注册会员使用）', ' (Guests please try again later, or register as a member.)')); ?>
+  };
   var form = document.getElementById('cqForm');
   var formCard = document.getElementById('cqFormCard');
   var chatCard = document.getElementById('cqChat');
@@ -104,7 +111,7 @@ $home = home_url();
               if (payload === '[DONE]') { finish(); return; }
               try {
                 var j = JSON.parse(payload);
-                if (j.error) { acc += (acc ? '\n' : '') + '错误：' + j.error; aiEl.textContent = acc; }
+                if (j.error) { acc += (acc ? '\n' : '') + L.errorPrefix + j.error; aiEl.textContent = acc; }
                 else if (j.content) { acc += j.content; aiEl.textContent = acc; log.scrollTop = log.scrollHeight; }
               } catch (e) {}
             });
@@ -119,7 +126,7 @@ $home = home_url();
       }
       return pump();
     }).catch(function (e) {
-      aiEl.textContent = '请求失败：' + e.message + '（游客请稍后再试，或注册会员使用）';
+      aiEl.textContent = L.failMsg + ' ' + e.message;
       sendBtn.disabled = false;
     });
   }
@@ -133,13 +140,13 @@ $home = home_url();
 
   form.addEventListener('submit', function (ev) {
     ev.preventDefault();
-    var parts = ['【' + channelName + ' · 病史信息】'];
+    var parts = ['【' + channelName + ' · ' + L.history + '】'];
     form.querySelectorAll('input').forEach(function (inp) {
       var label = inp.previousElementSibling ? inp.previousElementSibling.textContent : '';
-      parts.push(label + '：' + (inp.value.trim() || '未提供'));
+      parts.push(label + '：' + (inp.value.trim() || L.notProvided));
     });
     parts.push('');
-    parts.push('请根据以上信息进行预问诊分析。');
+    parts.push(L.analyze);
     var first = parts.join('\n');
     formCard.style.display = 'none';
     chatCard.style.display = 'block';

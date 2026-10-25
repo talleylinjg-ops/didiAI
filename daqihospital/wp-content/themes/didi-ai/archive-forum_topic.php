@@ -14,7 +14,7 @@ $q = new WP_Query(array(
 ));
 ?>
 <main style="flex-direction:column;align-items:center;padding:90px 20px 40px;">
-  <h1 style="font-size:30px;margin-bottom:24px;">论坛</h1>
+  <h1 style="font-size:30px;margin-bottom:24px;"><?php echo daqi_t('论坛', 'Community'); ?></h1>
   <div style="display:grid;grid-template-columns:220px 1fr;gap:24px;width:100%;max-width:1080px;align-items:start;">
     <aside style="background:#fff;border:1px solid #e5e6eb;border-radius:12px;padding:16px;position:sticky;top:90px;max-height:calc(100vh - 140px);overflow-y:auto;">
       <?php echo didi_ai_sidebar_categories(home_url('/forum'), $cat_slug, '主题目录'); ?>
@@ -26,19 +26,19 @@ $q = new WP_Query(array(
         <button class="btn-primary" type="submit">搜索</button>
       </form>
       <?php if (is_user_logged_in()) : ?>
-        <a class="btn-primary" href="<?php echo esc_url(home_url('/forum-new')); ?>" style="display:inline-block;margin-bottom:16px;text-decoration:none;">发布新主题</a>
+        <a class="btn-primary" href="<?php echo esc_url(home_url('/forum-new')); ?>" style="display:inline-block;margin-bottom:16px;text-decoration:none;"><?php echo daqi_t('发布新主题', 'New Topic'); ?></a>
       <?php endif; ?>
       <?php if ($q->have_posts()) : while ($q->have_posts()) : $q->the_post(); ?>
         <article style="padding:16px 0;border-bottom:1px solid #f2f3f5;">
           <a href="<?php the_permalink(); ?>" style="font-size:17px;font-weight:600;color:#1f2329;text-decoration:none;"><?php the_title(); ?></a>
           <div style="font-size:12px;color:#86909c;margin:6px 0;">
-            <?php the_author(); ?> · <?php echo esc_html(get_the_date()); ?> · 回复 <?php echo esc_html(get_comments_number()); ?>
+            <?php the_author(); ?> · <?php echo esc_html(get_the_date()); ?> · <?php echo daqi_t('回复', 'Replies'); ?> <?php echo esc_html(get_comments_number()); ?>
           </div>
         </article>
       <?php endwhile;
         $q->the_posts_pagination();
       else : ?>
-        <p>暂无主题</p>
+        <p><?php echo daqi_t('暂无主题', 'No topics yet'); ?></p>
       <?php endif; wp_reset_postdata(); ?>
     </div>
   </div>

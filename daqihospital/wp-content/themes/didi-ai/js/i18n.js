@@ -52,8 +52,11 @@ var ORDER_MAIN = ["zh","en","hi","ar","bn","pt","ru","ur","ja","ko","de","fr","e
 var ORDER_OTHER = ["ro","sw","az","el","he","sv","hu","da","ms","fi","no","cs","sk","kk","ne","bg","hr","sr","lt","sl","lv","et","mr","fil"];
 
 function getLang(){
-  var code = localStorage.getItem("monkeywp_lang") || "zh";
-  return I18N[code] ? code : "zh";
+  var stored = null;
+  try { stored = localStorage.getItem("monkeywp_lang"); } catch (e) {}
+  var def = (typeof window.__SITE_LANG__ === "string") ? window.__SITE_LANG__ : "zh";
+  var code = stored || def;
+  return I18N[code] ? code : def;
 }
 
 function setLang(code){

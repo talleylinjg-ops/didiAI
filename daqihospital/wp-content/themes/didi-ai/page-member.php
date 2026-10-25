@@ -7,7 +7,7 @@
 get_header();
 $logged_in = is_user_logged_in();
 $u = $logged_in ? wp_get_current_user() : null;
-$q = $logged_in ? didi_ai_user_quota() : array('membership' => 'free', 'membership_name' => '免费会员', 'membership_color' => '#14b8a6', 'balance' => 0);
+$q = $logged_in ? didi_ai_user_quota() : array('membership' => 'free', 'membership_name' => daqi_t('免费会员', 'Free Member'), 'membership_color' => '#14b8a6', 'balance' => 0);
 $ms = didi_ai_memberships();
 $pricing = didi_ai_pricing();
 $billing = $logged_in ? didi_ai_billing_items(20) : array();
@@ -31,108 +31,104 @@ $expire = $logged_in ? get_user_meta($u->ID, 'didi_membership_expire', true) : '
 .acct-tip{display:flex;align-items:center;gap:6px;font-size:13px;margin-top:12px;min-height:18px;}
 </style>
 <main style="flex-direction:column;align-items:center;padding:90px 20px 60px;">
-  <h1 style="font-size:30px;margin-bottom:8px;">会员中心</h1>
+  <h1 style="font-size:30px;margin-bottom:8px;"><?php echo daqi_t('会员中心', 'Member Center'); ?></h1>
 
   <?php if ($logged_in): ?>
   <div style="width:100%;max-width:880px;display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
     <div style="border:1px solid #e5e6eb;border-radius:16px;padding:24px;">
-      <h3 style="font-size:16px;margin-bottom:14px;">账户信息</h3>
-      <p style="font-size:14px;color:#4e5969;margin-bottom:8px;">用户名：<b style="color:#1f2329;"><?php echo esc_html($u->display_name ? $u->display_name : $u->user_login); ?></b></p>
-      <p style="font-size:14px;color:#4e5969;margin-bottom:8px;">邮箱：<?php echo esc_html($u->user_email); ?></p>
-      <p style="font-size:14px;color:#4e5969;">注册时间：<?php echo esc_html(date('Y-m-d', strtotime($u->user_registered))); ?></p>
+      <h3 style="font-size:16px;margin-bottom:14px;"><?php echo daqi_t('账户信息', 'Account Info'); ?></h3>
+      <p style="font-size:14px;color:#4e5969;margin-bottom:8px;"><?php echo daqi_t('用户名', 'Username'); ?>：<b style="color:#1f2329;"><?php echo esc_html($u->display_name ? $u->display_name : $u->user_login); ?></b></p>
+      <p style="font-size:14px;color:#4e5969;margin-bottom:8px;"><?php echo daqi_t('邮箱', 'Email'); ?>：<?php echo esc_html($u->user_email); ?></p>
+      <p style="font-size:14px;color:#4e5969;"><?php echo daqi_t('注册时间', 'Registered'); ?>：<?php echo esc_html(date('Y-m-d', strtotime($u->user_registered))); ?></p>
       <?php if ($q['membership'] !== 'free' && $expire): ?>
-      <p style="font-size:13px;color:#16a34a;margin-top:10px;">会员有效期至：<?php echo esc_html($expire); ?></p>
+      <p style="font-size:13px;color:#16a34a;margin-top:10px;"><?php echo daqi_t('会员有效期至', 'Membership valid until'); ?>：<?php echo esc_html($expire); ?></p>
       <?php endif; ?>
     </div>
     <div style="border:1px solid #e5e6eb;border-radius:16px;padding:24px;background:#f7f9ff;">
-      <h3 style="font-size:16px;margin-bottom:14px;">我的资产</h3>
-      <p style="font-size:14px;color:#4e5969;margin-bottom:8px;">当前等级：<b style="color:<?php echo esc_attr($q['membership_color']); ?>;"><?php echo esc_html($q['membership_name']); ?></b></p>
-      <p style="font-size:24px;color:#1668dc;font-weight:700;margin:10px 0;"><?php echo esc_html(number_format($q['balance'])); ?> <span style="font-size:14px;color:#86909c;font-weight:400;">点数</span></p>
-      <p style="font-size:12px;color:#86909c;margin-bottom:16px;">¥1 = 100 点数 · 各模型按定价表扣费</p>
-      <a href="<?php echo esc_url(home_url('/recharge')); ?>" class="btn-primary" style="display:inline-block;margin-right:8px;text-decoration:none;">去充值</a>
-      <a href="<?php echo esc_url(home_url('/')); ?>" style="display:inline-block;padding:10px 20px;border:1px solid #1668dc;border-radius:8px;font-size:14px;color:#1668dc;text-decoration:none;">去使用</a>
+      <h3 style="font-size:16px;margin-bottom:14px;"><?php echo daqi_t('我的资产', 'My Assets'); ?></h3>
+      <p style="font-size:14px;color:#4e5969;margin-bottom:8px;"><?php echo daqi_t('当前等级', 'Current Plan'); ?>：<b style="color:<?php echo esc_attr($q['membership_color']); ?>;"><?php echo esc_html(daqi_membership_name($q['membership_name'])); ?></b></p>
+      <p style="font-size:24px;color:#1668dc;font-weight:700;margin:10px 0;"><?php echo esc_html(number_format($q['balance'])); ?> <span style="font-size:14px;color:#86909c;font-weight:400;"><?php echo daqi_t('点数', 'points'); ?></span></p>
+      <p style="font-size:12px;color:#86909c;margin-bottom:16px;"><?php echo daqi_t('¥1 = 100 点数 · 各模型按定价表扣费', 'CNY 1 = 100 points · usage billed per the pricing table'); ?></p>
+      <a href="<?php echo esc_url(home_url('/recharge')); ?>" class="btn-primary" style="display:inline-block;margin-right:8px;text-decoration:none;"><?php echo daqi_t('去充值', 'Top Up'); ?></a>
+      <a href="<?php echo esc_url(home_url('/')); ?>" style="display:inline-block;padding:10px 20px;border:1px solid #1668dc;border-radius:8px;font-size:14px;color:#1668dc;text-decoration:none;"><?php echo daqi_t('去使用', 'Start Now'); ?></a>
     </div>
   </div>
   <?php else: ?>
   <div style="width:100%;max-width:880px;border:1px solid #e5e6eb;border-radius:16px;padding:24px;text-align:center;background:#f7f9ff;">
-    <a href="<?php echo esc_url(home_url('/login')); ?>" class="btn-primary" style="display:inline-block;text-decoration:none;">登录 / 注册</a>
+    <a href="<?php echo esc_url(home_url('/login')); ?>" class="btn-primary" style="display:inline-block;text-decoration:none;"><?php echo daqi_t('登录 / 注册', 'Log In / Sign Up'); ?></a>
   </div>
   <?php endif; ?>
 
   <div style="width:100%;max-width:880px;margin-top:24px;">
-    <h3 style="font-size:16px;margin-bottom:12px;">会员方案（免费会员注册即用 · 月卡/年卡解锁更多权益）</h3>
+    <h3 style="font-size:16px;margin-bottom:12px;"><?php echo daqi_t('会员方案（免费会员注册即用 · 月卡/年卡解锁更多权益）', 'Plans (Free tier on signup · Monthly/Yearly unlock more benefits)'); ?></h3>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;">
       <div style="border:1px solid #5eead4;border-radius:12px;padding:18px;background:#f0fdfa;position:relative;overflow:hidden;">
-        <div style="position:absolute;top:10px;right:-28px;background:#14b8a6;color:#fff;font-size:11px;padding:3px 32px;transform:rotate(45deg);">免费</div>
-        <p style="font-size:14px;color:#0d9488;">免费会员（最低档）</p>
-        <p style="font-size:28px;font-weight:700;color:#1f2329;margin:6px 0;">免费<span style="font-size:13px;color:#86909c;font-weight:400;"> / 无需充值</span></p>
-        <p style="font-size:12px;color:#16a34a;">注册即可使用全部功能 · 基础每日额度</p>
-        <p style="font-size:12px;color:#86909c;margin-top:8px;">无需充值 · 即刻开始使用</p>
+        <div style="position:absolute;top:10px;right:-28px;background:#14b8a6;color:#fff;font-size:11px;padding:3px 32px;transform:rotate(45deg);"><?php echo daqi_t('免费', 'Free'); ?></div>
+        <p style="font-size:14px;color:#0d9488;"><?php echo daqi_t('免费会员（最低档）', 'Free Member (starter tier)'); ?></p>
+        <p style="font-size:28px;font-weight:700;color:#1f2329;margin:6px 0;"><?php echo daqi_t('免费', 'Free'); ?><span style="font-size:13px;color:#86909c;font-weight:400;"> / <?php echo daqi_t('无需充值', 'no payment needed'); ?></span></p>
+        <p style="font-size:12px;color:#16a34a;"><?php echo daqi_t('注册即可使用全部功能 · 基础每日额度', 'All features on signup · basic daily quota'); ?></p>
+        <p style="font-size:12px;color:#86909c;margin-top:8px;"><?php echo daqi_t('无需充值 · 即刻开始使用', 'No payment needed · start right away'); ?></p>
         <?php if ($logged_in && $q['membership'] === 'free'): ?>
-          <p style="width:100%;margin-top:14px;text-align:center;font-size:12px;color:#0d9488;">当前等级</p>
+          <p style="width:100%;margin-top:14px;text-align:center;font-size:12px;color:#0d9488;"><?php echo daqi_t('当前等级', 'Current plan'); ?></p>
         <?php else: ?>
-          <a href="<?php echo esc_url(home_url('/login')); ?>" style="display:block;text-align:center;margin-top:14px;padding:10px;border-radius:10px;background:#14b8a6;color:#fff;font-size:14px;font-weight:700;text-decoration:none;">注册即免费使用</a>
+          <a href="<?php echo esc_url(home_url('/login')); ?>" style="display:block;text-align:center;margin-top:14px;padding:10px;border-radius:10px;background:#14b8a6;color:#fff;font-size:14px;font-weight:700;text-decoration:none;"><?php echo daqi_t('注册即免费使用', 'Sign up — it is free'); ?></a>
         <?php endif; ?>
       </div>
       <div style="border:1px solid #e5e6eb;border-radius:12px;padding:18px;background:#fff;position:relative;overflow:hidden;">
-        <div style="position:absolute;top:10px;right:-28px;background:#1668dc;color:#fff;font-size:11px;padding:3px 32px;transform:rotate(45deg);">月付</div>
-        <p style="font-size:14px;color:#86909c;">月卡会员</p>
-        <p style="font-size:28px;font-weight:700;color:#1f2329;margin:6px 0;">¥9.99<span style="font-size:13px;color:#86909c;font-weight:400;"> /月</span></p>
-        <p style="font-size:12px;color:#16a34a;">原价充值 · 更高每日额度</p>
-        <p style="font-size:12px;color:#86909c;margin-top:8px;">自定义模型 · 更多次数</p>
+        <div style="position:absolute;top:10px;right:-28px;background:#1668dc;color:#fff;font-size:11px;padding:3px 32px;transform:rotate(45deg);"><?php echo daqi_t('月付', 'Monthly'); ?></div>
+        <p style="font-size:14px;color:#86909c;"><?php echo daqi_t('月卡会员', 'Monthly Member'); ?></p>
+        <p style="font-size:28px;font-weight:700;color:#1f2329;margin:6px 0;">¥9.99<span style="font-size:13px;color:#86909c;font-weight:400;"> /<?php echo daqi_t('月', 'mo'); ?></span></p>
+        <p style="font-size:12px;color:#16a34a;"><?php echo daqi_t('原价充值 · 更高每日额度', 'Billed at list price · higher daily quota'); ?></p>
+        <p style="font-size:12px;color:#86909c;margin-top:8px;"><?php echo daqi_t('自定义模型 · 更多次数', 'Custom models · more uses'); ?></p>
         <?php if ($logged_in && $q['membership'] === 'free'): ?>
-          <button id="btn-join-member" style="width:100%;margin-top:14px;padding:10px;border:none;border-radius:10px;background:linear-gradient(180deg,#1668dc,#6a3de8);color:#fff;font-size:14px;font-weight:700;cursor:pointer;">¥9.99 开通月卡</button>
+          <button id="btn-join-member" style="width:100%;margin-top:14px;padding:10px;border:none;border-radius:10px;background:linear-gradient(180deg,#1668dc,#6a3de8);color:#fff;font-size:14px;font-weight:700;cursor:pointer;"><?php echo daqi_t('¥9.99 开通月卡', '¥9.99 — Get Monthly'); ?></button>
         <?php elseif ($logged_in): ?>
-          <p style="width:100%;margin-top:14px;text-align:center;font-size:12px;color:#86909c;">已开通</p>
+          <p style="width:100%;margin-top:14px;text-align:center;font-size:12px;color:#86909c;"><?php echo daqi_t('已开通', 'Active'); ?></p>
         <?php else: ?>
-          <a href="<?php echo esc_url(home_url('/login')); ?>" style="display:block;text-align:center;margin-top:14px;padding:10px;border-radius:10px;background:linear-gradient(180deg,#1668dc,#6a3de8);color:#fff;font-size:14px;font-weight:700;text-decoration:none;">登录后开通月卡</a>
+          <a href="<?php echo esc_url(home_url('/login')); ?>" style="display:block;text-align:center;margin-top:14px;padding:10px;border-radius:10px;background:linear-gradient(180deg,#1668dc,#6a3de8);color:#fff;font-size:14px;font-weight:700;text-decoration:none;"><?php echo daqi_t('登录后开通月卡', 'Log in to get Monthly'); ?></a>
         <?php endif; ?>
       </div>
       <div style="border:1px solid #f7ba1e;border-radius:12px;padding:18px;background:#fffdf5;position:relative;overflow:hidden;">
-        <div style="position:absolute;top:10px;right:-28px;background:#f7ba1e;color:#fff;font-size:11px;padding:3px 32px;transform:rotate(45deg);">年付</div>
-        <p style="font-size:14px;color:#86909c;">年卡会员</p>
-        <p style="font-size:28px;font-weight:700;color:#1f2329;margin:6px 0;">¥99.99<span style="font-size:13px;color:#86909c;font-weight:400;"> /年</span></p>
-        <p style="font-size:12px;color:#16a34a;">原价充值 · 全部权益</p>
-        <p style="font-size:12px;color:#86909c;margin-top:8px;">推荐 · 约 8 折 · 不限每日额度</p>
+        <div style="position:absolute;top:10px;right:-28px;background:#f7ba1e;color:#fff;font-size:11px;padding:3px 32px;transform:rotate(45deg);"><?php echo daqi_t('年付', 'Yearly'); ?></div>
+        <p style="font-size:14px;color:#86909c;"><?php echo daqi_t('年卡会员', 'Yearly Member'); ?></p>
+        <p style="font-size:28px;font-weight:700;color:#1f2329;margin:6px 0;">¥99.99<span style="font-size:13px;color:#86909c;font-weight:400;"> /<?php echo daqi_t('年', 'yr'); ?></span></p>
+        <p style="font-size:12px;color:#16a34a;"><?php echo daqi_t('原价充值 · 全部权益', 'Billed at list price · all benefits'); ?></p>
+        <p style="font-size:12px;color:#86909c;margin-top:8px;"><?php echo daqi_t('推荐 · 约 8 折 · 不限每日额度', 'Recommended · ~20% off · no daily cap'); ?></p>
         <?php if ($logged_in && $q['membership'] === 'free'): ?>
-          <button id="btn-join-year" style="width:100%;margin-top:14px;padding:10px;border:none;border-radius:10px;background:#f7ba1e;color:#fff;font-size:14px;font-weight:700;cursor:pointer;">¥99.99 开通年卡</button>
+          <button id="btn-join-year" style="width:100%;margin-top:14px;padding:10px;border:none;border-radius:10px;background:#f7ba1e;color:#fff;font-size:14px;font-weight:700;cursor:pointer;"><?php echo daqi_t('¥99.99 开通年卡', '¥99.99 — Get Yearly'); ?></button>
         <?php elseif ($logged_in): ?>
-          <p style="width:100%;margin-top:14px;text-align:center;font-size:12px;color:#86909c;">已开通</p>
+          <p style="width:100%;margin-top:14px;text-align:center;font-size:12px;color:#86909c;"><?php echo daqi_t('已开通', 'Active'); ?></p>
         <?php else: ?>
-          <a href="<?php echo esc_url(home_url('/login')); ?>" style="display:block;text-align:center;margin-top:14px;padding:10px;border-radius:10px;background:#f7ba1e;color:#fff;font-size:14px;font-weight:700;text-decoration:none;">登录后开通年卡</a>
+          <a href="<?php echo esc_url(home_url('/login')); ?>" style="display:block;text-align:center;margin-top:14px;padding:10px;border-radius:10px;background:#f7ba1e;color:#fff;font-size:14px;font-weight:700;text-decoration:none;"><?php echo daqi_t('登录后开通年卡', 'Log in to get Yearly'); ?></a>
         <?php endif; ?>
       </div>
     </div>
     <p id="member-tip" style="font-size:13px;color:#86909c;text-align:center;"></p>
     <?php if ($logged_in && in_array($q['membership'], array('month', 'year'), true)): ?>
-      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px;font-size:13px;color:#16a34a;">您已是 <b><?php echo esc_html($q['membership_name']); ?></b>，全部自定义模型与会员权益已解锁。</div>
+      <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px;font-size:13px;color:#16a34a;"><?php echo daqi_t('您已是', 'You are a'); ?> <b><?php echo esc_html(daqi_membership_name($q['membership_name'])); ?></b><?php echo daqi_t('，全部自定义模型与会员权益已解锁。', ' — all custom models and member benefits unlocked.'); ?></div>
     <?php elseif ($logged_in && $q['membership'] === 'free'): ?>
-      <div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:10px;padding:12px 16px;font-size:13px;color:#0d9488;">免费会员无需充值，注册即可使用全部功能。升级月卡 / 年卡可解锁更高每日额度与更多权益。</div>
+      <div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:10px;padding:12px 16px;font-size:13px;color:#0d9488;"><?php echo daqi_t('免费会员无需充值，注册即可使用全部功能。升级月卡 / 年卡可解锁更高每日额度与更多权益。', 'The Free tier needs no payment — all features are available on signup. Upgrade to Monthly/Yearly for higher daily quotas and more benefits.'); ?></div>
     <?php endif; ?>
   </div>
 
   <div style="width:100%;max-width:880px;margin-top:24px;">
-    <h3 style="font-size:16px;margin-bottom:12px;">会员权益</h3>
+    <h3 style="font-size:16px;margin-bottom:12px;"><?php echo daqi_t('会员权益', 'Membership Benefits'); ?></h3>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
       <?php foreach (array('free', 'month', 'year') as $key): $m = $ms[$key]; $dl = $m['daily']; ?>
       <div style="border:1px solid <?php echo $key === $q['membership'] ? '#1668dc' : '#e5e6eb'; ?>;border-radius:12px;padding:16px;background:<?php echo $key === $q['membership'] ? '#f0f6ff' : '#fff'; ?>;">
-        <p style="font-size:15px;font-weight:600;color:#1f2329;"><?php echo esc_html($m['name']); ?></p>
-        <p style="font-size:12px;color:#86909c;margin:4px 0 10px;">每月 <?php echo esc_html(number_format($m['monthly'])); ?> 点数额度</p>
-        <p style="font-size:13px;color:#4e5969;margin-bottom:4px;">提问 / 代码 / 工作：<?php echo esc_html($dl['chat']); ?> 次/日</p>
-        <p style="font-size:13px;color:#4e5969;margin-bottom:4px;">图片生成：<?php echo esc_html($dl['image']); ?> 张/日</p>
-        <p style="font-size:13px;color:#4e5969;margin-bottom:4px;">视频国内档：<?php echo esc_html($dl['video']); ?> 条/日</p>
-        <p style="font-size:13px;color:#4e5969;margin-bottom:4px;">视频国际档：<?php echo esc_html($dl['video_intl']); ?> 条/日</p>
-        <p style="font-size:13px;color:#4e5969;margin-bottom:4px;">动漫：<?php echo esc_html($dl['animate']); ?> 条/日</p>
-        <p style="font-size:13px;color:#4e5969;">剪辑：<?php echo esc_html($dl['edit']); ?> 次/日</p>
+        <p style="font-size:15px;font-weight:600;color:#1f2329;"><?php echo esc_html(daqi_membership_name($m['name'])); ?></p>
+        <p style="font-size:12px;color:#86909c;margin:4px 0 10px;"><?php echo daqi_t('每月', 'Monthly'); ?> <?php echo esc_html(number_format($m['monthly'])); ?> <?php echo daqi_t('点数额度', 'points allowance'); ?></p>
+        <p style="font-size:13px;color:#4e5969;margin-bottom:4px;"><?php echo daqi_t('AI 问诊', 'AI consultations'); ?>：<?php echo esc_html($dl['chat']); ?> <?php echo daqi_t('次/日', '/day'); ?></p>
+        <p style="font-size:13px;color:#4e5969;margin-bottom:4px;"><?php echo daqi_t('报告解读', 'Report reading'); ?>：<?php echo esc_html($dl['chat']); ?> <?php echo daqi_t('次/日', '/day'); ?></p>
       </div>
       <?php endforeach; ?>
     </div>
     <ul style="margin-top:14px;padding-left:20px;font-size:13px;color:#4e5969;line-height:2;">
-      <li>免费会员注册即用，无需充值，包含全部基础功能</li>
-      <li>月卡 / 年卡会员解锁全部 <b>自定义模型</b>（国内 / 海外 / 自定义网页版）</li>
-      <li>月卡 / 年卡会员不受每日额度限制，按点数余额自由使用全部功能</li>
-      <li>专属客服优先响应 · 新模型抢先体验</li>
-      <li>月卡 / 年卡到期自动降为免费会员（余额保留）</li>
+      <li><?php echo daqi_t('免费会员注册即用，无需充值，包含全部基础功能', 'The Free tier works on signup with no payment and includes all basic features'); ?></li>
+      <li><?php echo daqi_t('月卡 / 年卡会员解锁全部 <b>自定义模型</b>（国内 / 海外 / 自定义网页版）', 'Monthly/Yearly members unlock all <b>custom models</b> (domestic / overseas / custom web endpoints)'); ?></li>
+      <li><?php echo daqi_t('月卡 / 年卡会员不受每日额度限制，按点数余额自由使用全部功能', 'Monthly/Yearly members have no daily quota cap — use everything freely against your points balance'); ?></li>
+      <li><?php echo daqi_t('专属客服优先响应 · 新模型抢先体验', 'Priority support · early access to new models'); ?></li>
+      <li><?php echo daqi_t('月卡 / 年卡到期自动降为免费会员（余额保留）', 'On expiry, Monthly/Yearly plans revert to Free automatically (balance is kept)'); ?></li>
     </ul>
   </div>
 
@@ -144,19 +140,19 @@ $expire = $logged_in ? get_user_meta($u->ID, 'didi_membership_expire', true) : '
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </div>
         <div>
-          <h3>修改用户资料</h3>
-          <p>更新你的昵称与登录邮箱</p>
+          <h3><?php echo daqi_t('修改用户资料', 'Edit Profile'); ?></h3>
+          <p><?php echo daqi_t('更新你的昵称与登录邮箱', 'Update your nickname and login email'); ?></p>
         </div>
       </div>
       <div class="acct-field">
-        <span>昵称</span>
-        <input type="text" id="pf-nickname" value="<?php echo esc_attr($u->display_name ? $u->display_name : $u->user_login); ?>" placeholder="输入昵称">
+        <span><?php echo daqi_t('昵称', 'Nickname'); ?></span>
+        <input type="text" id="pf-nickname" value="<?php echo esc_attr($u->display_name ? $u->display_name : $u->user_login); ?>" placeholder="<?php echo esc_attr(daqi_t('输入昵称', 'Enter nickname')); ?>">
       </div>
       <div class="acct-field">
-        <span>邮箱</span>
-        <input type="email" id="pf-email" value="<?php echo esc_attr($u->user_email); ?>" placeholder="输入邮箱">
+        <span><?php echo daqi_t('邮箱', 'Email'); ?></span>
+        <input type="email" id="pf-email" value="<?php echo esc_attr($u->user_email); ?>" placeholder="<?php echo esc_attr(daqi_t('输入邮箱', 'Enter email')); ?>">
       </div>
-      <button type="button" id="btn-save-profile" class="acct-submit">保存资料</button>
+      <button type="button" id="btn-save-profile" class="acct-submit"><?php echo daqi_t('保存资料', 'Save Profile'); ?></button>
       <p id="pf-tip" class="acct-tip"></p>
     </div>
     <div class="account-card">
@@ -165,23 +161,23 @@ $expire = $logged_in ? get_user_meta($u->ID, 'didi_membership_expire', true) : '
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
         </div>
         <div>
-          <h3>修改密码</h3>
-          <p>定期更换密码更安全</p>
+          <h3><?php echo daqi_t('修改密码', 'Change Password'); ?></h3>
+          <p><?php echo daqi_t('定期更换密码更安全', 'Changing it regularly keeps you safer'); ?></p>
         </div>
       </div>
       <div class="acct-field">
-        <span>当前密码</span>
-        <input type="password" id="pw-old" autocomplete="current-password" placeholder="输入当前密码">
+        <span><?php echo daqi_t('当前密码', 'Current password'); ?></span>
+        <input type="password" id="pw-old" autocomplete="current-password" placeholder="<?php echo esc_attr(daqi_t('输入当前密码', 'Enter current password')); ?>">
       </div>
       <div class="acct-field">
-        <span>新密码</span>
-        <input type="password" id="pw-new" autocomplete="new-password" placeholder="至少 6 位">
+        <span><?php echo daqi_t('新密码', 'New password'); ?></span>
+        <input type="password" id="pw-new" autocomplete="new-password" placeholder="<?php echo esc_attr(daqi_t('至少 6 位', 'At least 6 characters')); ?>">
       </div>
       <div class="acct-field">
-        <span>确认新密码</span>
-        <input type="password" id="pw-confirm" autocomplete="new-password" placeholder="再次输入新密码">
+        <span><?php echo daqi_t('确认新密码', 'Confirm new password'); ?></span>
+        <input type="password" id="pw-confirm" autocomplete="new-password" placeholder="<?php echo esc_attr(daqi_t('再次输入新密码', 'Re-enter new password')); ?>">
       </div>
-      <button type="button" id="btn-change-password" class="acct-submit">确认修改</button>
+      <button type="button" id="btn-change-password" class="acct-submit"><?php echo daqi_t('确认修改', 'Confirm Change'); ?></button>
       <p id="pw-tip" class="acct-tip"></p>
     </div>
     <div class="account-card">
@@ -190,38 +186,37 @@ $expire = $logged_in ? get_user_meta($u->ID, 'didi_membership_expire', true) : '
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         </div>
         <div>
-          <h3>消费记录</h3>
-          <p>点数收支与余额明细</p>
+          <h3><?php echo daqi_t('消费记录', 'Usage & Billing'); ?></h3>
+          <p><?php echo daqi_t('点数收支与余额明细', 'Points transactions and balance details'); ?></p>
         </div>
       </div>
       <div id="billing-list">
-        <div style="text-align:center;padding:24px 0;color:#c9cdd4;">加载中...</div>
+        <div style="text-align:center;padding:24px 0;color:#c9cdd4;"><?php echo daqi_t('加载中...', 'Loading...'); ?></div>
       </div>
     </div>
   </div>
   <?php endif; ?>
 
   <div style="width:100%;max-width:880px;margin-top:24px;">
-    <h3 style="font-size:16px;margin-bottom:12px;">模型定价表（全模型统一公示）</h3>
-    <p style="font-size:12px;color:#86909c;margin-bottom:12px;">以下为各功能全部可用模型的统一定价。价格从低到高排序 · ¥1 = 100 点数 · 免费会员即可使用全部模型。</p>
+    <h3 style="font-size:16px;margin-bottom:12px;"><?php echo daqi_t('模型定价表（全模型统一公示）', 'Model Pricing (uniform, published)'); ?></h3>
+    <p style="font-size:12px;color:#86909c;margin-bottom:12px;"><?php echo daqi_t('以下为各功能全部可用模型的统一定价。价格从低到高排序 · ¥1 = 100 点数 · 免费会员即可使用全部模型。', 'Uniform pricing for all available models, sorted low to high · CNY 1 = 100 points · every model is available to Free members.'); ?></p>
     <div class="card" style="overflow-x:auto;">
       <table style="width:100%;border-collapse:collapse;background:#fff;min-width:640px;">
         <thead>
           <tr>
-            <th style="text-align:left;padding:10px 12px;font-size:13px;color:#86909c;border-bottom:1px solid #f2f3f5;">功能</th>
-            <th style="text-align:left;padding:10px 12px;font-size:13px;color:#86909c;border-bottom:1px solid #f2f3f5;">模型</th>
-            <th style="text-align:left;padding:10px 12px;font-size:13px;color:#86909c;border-bottom:1px solid #f2f3f5;">计费单位</th>
-            <th style="text-align:right;padding:10px 12px;font-size:13px;color:#86909c;border-bottom:1px solid #f2f3f5;">单价</th>
+            <th style="text-align:left;padding:10px 12px;font-size:13px;color:#86909c;border-bottom:1px solid #f2f3f5;"><?php echo daqi_t('功能', 'Feature'); ?></th>
+            <th style="text-align:left;padding:10px 12px;font-size:13px;color:#86909c;border-bottom:1px solid #f2f3f5;"><?php echo daqi_t('模型', 'Model'); ?></th>
+            <th style="text-align:left;padding:10px 12px;font-size:13px;color:#86909c;border-bottom:1px solid #f2f3f5;"><?php echo daqi_t('计费单位', 'Unit'); ?></th>
+            <th style="text-align:right;padding:10px 12px;font-size:13px;color:#86909c;border-bottom:1px solid #f2f3f5;"><?php echo daqi_t('单价', 'Price'); ?></th>
           </tr>
         </thead>
         <tbody>
           <?php
-          $group_order = array('提问' => array('提问', '提问 · 国内', '提问 · 海外'), '代码' => array('代码'), '工作' => array('工作'), '图片' => array('图片', '图片 · 基础', '图片 · 标准', '图片 · 高端'), '视频' => array('视频 · 国内低价档', '视频 · 经济', '视频 · 高端', '视频 · 国际高端档'), '动漫' => array('动漫', '动漫 · 经济'), '剪辑' => array('剪辑（默认）', '剪辑 · 可灵', '剪辑 · 即梦', '剪辑 · OpenAI', '剪辑 · 图片/音频'), '数字人' => array('数字人 · 基础', '数字人 · 标准', '数字人 · 高端', '数字人 · 海外'));
+          $chat_group_names = array('提问', '提问 · 国内', '提问 · 海外');
           $cur_group = '';
           foreach ($pricing as $p):
-            $g = null;
-            foreach ($group_order as $gn => $names) { if (in_array($p['name'], $names, true)) { $g = $gn; break; } }
-            if (!$g) $g = $p['name'];
+            if (!in_array($p['name'], $chat_group_names, true)) continue;
+            $g = daqi_t('AI 问诊', 'AI Consultation');
             $new_group = ($g !== $cur_group);
             $cur_group = $g;
           ?>
@@ -229,9 +224,9 @@ $expire = $logged_in ? get_user_meta($u->ID, 'didi_membership_expire', true) : '
           <tr><td colspan="4" style="padding:8px 12px;font-size:12px;font-weight:700;color:#1668dc;background:#f0f6ff;border-bottom:1px solid #f2f3f5;"><?php echo esc_html($g); ?></td></tr>
           <?php endif; ?>
           <tr>
-            <td style="padding:10px 12px;font-size:14px;color:#1f2329;border-bottom:1px solid #f7f8fa;"><?php echo esc_html($p['name']); ?></td>
-            <td style="padding:10px 12px;font-size:13px;color:#4e5969;border-bottom:1px solid #f7f8fa;"><?php echo esc_html($p['model']); ?></td>
-            <td style="padding:10px 12px;font-size:13px;color:#4e5969;border-bottom:1px solid #f7f8fa;"><?php echo esc_html($p['unit']); ?></td>
+            <td style="padding:10px 12px;font-size:14px;color:#1f2329;border-bottom:1px solid #f7f8fa;"><?php echo esc_html(daqi_t($p['name'] === '提问' ? '提问' : '问诊', daqi_pricing_model($p['name'] === '提问' ? 'Chat (built-in)' : ($p['name'] === '提问 · 国内' ? 'Domestic' : 'Overseas') . ' LLM'))); ?></td>
+            <td style="padding:10px 12px;font-size:13px;color:#4e5969;border-bottom:1px solid #f7f8fa;"><?php echo esc_html(daqi_pricing_model($p['model'])); ?></td>
+            <td style="padding:10px 12px;font-size:13px;color:#4e5969;border-bottom:1px solid #f7f8fa;"><?php echo esc_html(daqi_pricing_unit($p['unit'])); ?></td>
             <td style="padding:10px 12px;font-size:14px;color:#1668dc;font-weight:600;text-align:right;border-bottom:1px solid #f7f8fa;"><?php echo esc_html($p['price']); ?></td>
           </tr>
           <?php endforeach; ?>
@@ -241,7 +236,7 @@ $expire = $logged_in ? get_user_meta($u->ID, 'didi_membership_expire', true) : '
   </div>
 
   <div style="width:100%;max-width:880px;margin-top:24px;border:1px solid #e5e6eb;border-radius:12px;padding:16px;background:#fff;">
-    <p style="font-size:13px;color:#86909c;">如需帮助或退款，请联系客服。当前所有功能已按定价表统一扣费，余额不足时会引导充值。</p>
+    <p style="font-size:13px;color:#86909c;"><?php echo daqi_t('如需帮助或退款，请联系客服。当前所有功能已按定价表统一扣费，余额不足时会引导充值。', 'Contact support for help or refunds. All usage is billed per the pricing table; you will be prompted to top up when your balance runs low.'); ?></p>
   </div>
 </main>
 
@@ -291,9 +286,9 @@ $expire = $logged_in ? get_user_meta($u->ID, 'didi_membership_expire', true) : '
       var oldP = document.getElementById('pw-old').value;
       var newP = document.getElementById('pw-new').value;
       var conf = document.getElementById('pw-confirm').value;
-      if (!oldP || !newP) { pwTip.style.color = '#f53f3f'; pwTip.textContent = '请填写当前密码与新密码'; return; }
-      if (newP.length < 6) { pwTip.style.color = '#f53f3f'; pwTip.textContent = '新密码至少 6 位'; return; }
-      if (newP !== conf) { pwTip.style.color = '#f53f3f'; pwTip.textContent = '两次输入的新密码不一致'; return; }
+      if (!oldP || !newP) { pwTip.style.color = '#f53f3f'; pwTip.textContent = EN ? 'Please fill in the current and new password' : '请填写当前密码与新密码'; return; }
+      if (newP.length < 6) { pwTip.style.color = '#f53f3f'; pwTip.textContent = EN ? 'The new password needs at least 6 characters' : '新密码至少 6 位'; return; }
+      if (newP !== conf) { pwTip.style.color = '#f53f3f'; pwTip.textContent = EN ? 'The two new passwords do not match' : '两次输入的新密码不一致'; return; }
       pwBtn.disabled = true;
       fetch('/wp-json/didi/v1/change-password', {
         method: 'POST',
@@ -304,11 +299,11 @@ $expire = $logged_in ? get_user_meta($u->ID, 'didi_membership_expire', true) : '
       .then(function (res) {
         if (res.ok && res.d.ok) {
           pwTip.style.color = '#16a34a';
-          pwTip.textContent = '密码修改成功，正在跳转重新登录...';
+          pwTip.textContent = EN ? 'Password changed — redirecting to sign in again...' : '密码修改成功，正在跳转重新登录...';
           setTimeout(function () { location.href = '/login'; }, 1200);
         } else {
           pwTip.style.color = '#f53f3f';
-          pwTip.textContent = (res.d && res.d.message) ? res.d.message : '修改失败';
+          pwTip.textContent = (res.d && res.d.message) ? res.d.message : (EN ? 'Change failed' : '修改失败');
         }
       }).catch(function () {
         pwTip.style.color = '#f53f3f';
@@ -326,8 +321,8 @@ $expire = $logged_in ? get_user_meta($u->ID, 'didi_membership_expire', true) : '
     pfBtn.addEventListener('click', function () {
       var nickname = document.getElementById('pf-nickname').value.trim();
       var email = document.getElementById('pf-email').value.trim();
-      if (!nickname) { pfTip.style.color = '#f53f3f'; pfTip.textContent = '昵称不能为空'; return; }
-      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { pfTip.style.color = '#f53f3f'; pfTip.textContent = '邮箱格式不正确'; return; }
+      if (!nickname) { pfTip.style.color = '#f53f3f'; pfTip.textContent = EN ? 'Nickname cannot be empty' : '昵称不能为空'; return; }
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) { pfTip.style.color = '#f53f3f'; pfTip.textContent = EN ? 'Invalid email format' : '邮箱格式不正确'; return; }
       pfBtn.disabled = true;
       fetch('/wp-json/didi/v1/update-profile', {
         method: 'POST',
@@ -338,10 +333,10 @@ $expire = $logged_in ? get_user_meta($u->ID, 'didi_membership_expire', true) : '
       .then(function (res) {
         if (res.ok && res.d.ok) {
           pfTip.style.color = '#16a34a';
-          pfTip.textContent = '资料修改成功';
+          pfTip.textContent = EN ? 'Profile saved' : '资料修改成功';
         } else {
           pfTip.style.color = '#f53f3f';
-          pfTip.textContent = (res.d && res.d.message) ? res.d.message : '保存失败';
+          pfTip.textContent = (res.d && res.d.message) ? res.d.message : (EN ? 'Save failed' : '保存失败');
         }
       }).catch(function () {
         pfTip.style.color = '#f53f3f';

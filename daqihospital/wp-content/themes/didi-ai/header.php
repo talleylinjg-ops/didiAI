@@ -39,17 +39,18 @@
 </head>
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
+<script>window.__SITE_LANG__ = <?php echo wp_json_encode(daqi_site_lang()); ?>;</script>
 <header>
   <div class="nav-right">
     <div class="nav-left">
-      <a class="logo-small" href="<?php echo esc_url(home_url('/')); ?>">大气AI医院</a>
+      <a class="logo-small" href="<?php echo esc_url(home_url('/')); ?>"><?php echo esc_html(daqi_site_name()); ?></a>
       <nav class="nav-links">
         <?php if (is_user_logged_in()) : ?>
-          <a href="<?php echo esc_url(home_url('/recharge')); ?>">充值</a>
-          <a href="<?php echo esc_url(home_url('/member')); ?>" style="display:flex;align-items:center;gap:4px;"><span data-i18n="member"></span><b id="nav-balance" style="color:#1668dc;font-size:12px;" title="我的点数"></b></a>
-          <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>">退出</a>
+          <a href="<?php echo esc_url(home_url('/recharge')); ?>"><?php echo daqi_t('充值', 'Recharge'); ?></a>
+          <a href="<?php echo esc_url(home_url('/member')); ?>" style="display:flex;align-items:center;gap:4px;"><span data-i18n="member"></span><b id="nav-balance" style="color:#1668dc;font-size:12px;" title="<?php echo esc_attr(daqi_t('我的点数', 'My points')); ?>"></b></a>
+          <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>"><?php echo daqi_t('退出', 'Sign out'); ?></a>
         <?php else : ?>
-          <a href="<?php echo esc_url(home_url('/recharge')); ?>">充值</a>
+          <a href="<?php echo esc_url(home_url('/recharge')); ?>"><?php echo daqi_t('充值', 'Recharge'); ?></a>
           <a href="<?php echo esc_url(home_url('/member')); ?>"><span data-i18n="member"></span></a>
         <?php endif; ?>
       </nav>

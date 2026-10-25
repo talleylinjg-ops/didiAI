@@ -7,7 +7,7 @@ get_header();
 $logged = is_user_logged_in();
 $apps_left = array();
 foreach (didi_ai_medical_channels() as $key => $ch) {
-  $apps_left[$key] = array('label' => $ch['name'], 'url' => '/consult-' . $key, 'icon' => $ch['emoji']);
+  $apps_left[$key] = array('label' => didi_ai_channel_name($ch), 'url' => '/consult-' . $key, 'icon' => $ch['emoji']);
 }
 ?>
 <style>
@@ -40,7 +40,7 @@ foreach (didi_ai_medical_channels() as $key => $ch) {
 </style>
 <main>
   <div class="home-hero" id="homeHero">
-    <span class="logo">大气AI医院</span>
+    <span class="logo"><?php echo esc_html(daqi_site_name()); ?></span>
   </div>
   <div class="home-module">
     <div class="search-wrap">
@@ -50,7 +50,7 @@ foreach (didi_ai_medical_channels() as $key => $ch) {
             <a href="javascript:void(0)" class="home-tab" data-key="<?php echo esc_attr($key); ?>" data-url="<?php echo esc_attr(home_url($app['url'])); ?>"><?php echo $app['icon']; ?> <?php echo esc_html($app['label']); ?></a>
           <?php endforeach; ?>
         </div>
-        <button id="searchBtn" type="button">问诊</button>
+        <button id="searchBtn" type="button"><?php echo esc_html(daqi_t('问诊', 'Ask')); ?></button>
         <div class="home-blank-inner"></div>
       </div>
     </div>
@@ -59,17 +59,13 @@ foreach (didi_ai_medical_channels() as $key => $ch) {
 </main>
 <script>
 (function () {
-  var loggedIn = <?php echo is_user_logged_in() ? 'true' : 'false'; ?>;
   var tabs = document.querySelectorAll('.home-tab');
   var frameHost = document.getElementById('frameHost');
   var iframe = null;
   var curUrl = null;
   var iframeReady = false;
-  function gotoLogin() {
-    location.href = <?php echo wp_json_encode(home_url('/login')); ?>;
-  }
   function load(key, url) {
-    if (!loggedIn) { gotoLogin(); return; }
+    // 问诊通道对游客开放，无需登录检查
     curUrl = url;
     iframeReady = false;
     document.body.classList.add('didi-show-frame');
@@ -95,7 +91,6 @@ foreach (didi_ai_medical_channels() as $key => $ch) {
   var firstKey = tabs[0].getAttribute('data-key');
 
   document.getElementById('searchBtn').addEventListener('click', function () {
-    if (!loggedIn) { gotoLogin(); return; }
     if (!iframe) { load(firstKey, firstUrl); }
     postToIframe({ type: 'didi-focus' });
   });

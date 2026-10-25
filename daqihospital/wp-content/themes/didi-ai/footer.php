@@ -3,7 +3,7 @@
  * Footer 模板
  */
 ?>
-<footer>大气AI医院</footer>
+<footer><?php echo esc_html(daqi_site_name()); ?></footer>
 <?php wp_footer(); ?>
 <script>
 initLang();

@@ -7,6 +7,7 @@ if (!defined('ABSPATH')) exit;
 require_once __DIR__ . '/inc/mediacut.php';
 require_once __DIR__ . '/inc/mpt.php';
 require_once __DIR__ . '/inc-medical-presets.php';
+require_once __DIR__ . '/inc-site-lang.php';
 
 add_theme_support('title-tag');
 add_theme_support('post-thumbnails');
@@ -376,7 +377,7 @@ function didi_ai_chat_stream($req) {
       $gk = 'daqi_guest_' . md5($ip) . '_' . gmdate('Ymd');
       $used = (int) get_transient($gk);
       if ($used >= 5) {
-        return new WP_Error('guest_limit', '未登录用户每日限 5 次 AI 问诊，注册会员后畅享不限次', array('status' => 401));
+        return new WP_Error('guest_limit', daqi_t('未登录用户每日限 5 次 AI 问诊，注册会员后畅享不限次', 'Guests get 5 AI consultations per day. Register as a member for unlimited use.'), array('status' => 401));
       }
       set_transient($gk, $used + 1, DAY_IN_SECONDS);
     }
@@ -396,13 +397,13 @@ function didi_ai_chat_stream($req) {
   header('X-Accel-Buffering: no');
   while (ob_get_level() > 0) { @ob_end_flush(); }
   flush();
-  // 医疗问诊通道：服务端 preset 注入 system（前端仅传 id，不可伪造 system 消息）
+  // 医疗问诊通道：服务端 preset 注入 system（前端仅传 id，不可伪造 system 消息），语言随站点域名
   $presetKey = isset($params['preset']) ? sanitize_key($params['preset']) : '';
   if ($presetKey !== '') {
     $mp = didi_ai_medical_preset($presetKey);
     if ($mp) {
       $messages = array_merge(
-        array(array('role' => 'system', 'content' => $mp['system'])),
+        array(array('role' => 'system', 'content' => didi_ai_channel_system($mp))),
         array_values(array_filter($messages, function ($m) { return is_array($m) && isset($m['role']) && $m['role'] !== 'system'; }))
       );
     }
@@ -1129,39 +1130,32 @@ remove_action('wp_head', 'wp_generator');
 
 // 站点核心关键词（含国内/全球模型名，便于生成式引擎检索）
 function didi_ai_seo_keywords() {
-  return '大气AI医院,AI 工具台,AI 对话,AI 提问,AI 代码,AI 写作,AI PPT,AI 生成图片,AI 生成视频,数字人,AI 动画,AI 音频,AI 剪辑,文生视频,图生视频,AI 配音,AI 字幕,免费 AI,免费 AI 视频生成,免费 AI 图片生成,Kimi,通义千问,可灵,即梦,Seedream,Veo,GPT Image,国产大模型';
+  if (daqi_site_lang() === 'en') {
+    return 'DaQi AI Hospital,AI hospital,AI consultation,AI doctor online,AI health advice,AI report reading,AI pre-consultation,TCM consultation,eye care consultation,oral care consultation,medical aesthetics,mental health counseling,maternal and child care,daily wellness,emergency triage,GLM,DeepSeek,GPT-4o,Claude,Gemini,free AI consultation';
+  }
+  return '大气AI医院,AI医院,AI 问诊,AI 预问诊,AI 医生,AI 健康咨询,AI 报告解读,AI 中医问诊,AI 眼科问诊,AI 口腔问诊,AI 医疗美容,AI 心理咨询,AI 妇幼保健,AI 日常保健,AI 危重症分诊,智谱 GLM,DeepSeek,Kimi,通义千问,GPT-4o,Claude,Gemini,免费 AI 问诊';
 }
 
-// 各 AI 工具页的专属描述（用于 meta description 与结构化数据）
+// 各问诊通道的专属描述（用于 meta description 与结构化数据）
 function didi_ai_seo_tool_desc($slug) {
-  $map = array(
-    'ai-chat'    => '大气AI医院 提问：聚合国内与全球最强对话模型，支持语音、文件与图片输入，适合问答、分析与创作。',
-    'ai-code'    => '大气AI医院 代码：代码生成、解释、调试与多文件工程编辑，覆盖主流编程语言与框架。',
-    'ai-work'    => '大气AI医院 工作台：文档撰写、总结、方案策划与数据整理，一站式提升办公效率。',
-    'ai-image'   => '大气AI医院 图片生成：即梦 Seedream、GPT Image、Nano Banana 等多模型文生图，支持图生图、修图、抠图与画质增强。',
-    'ai-video'   => '大气AI医院 视频生成：可灵、即梦、Veo、Runway 等文生视频与图生视频，并提供主题一键成片的免费渠道。',
-    'ai-avatar'  => '大气AI医院 数字人：输入文案即可合成口播数字人视频，适用于讲解、营销与课程内容。',
-    'ai-animate' => '大气AI医院 动画：可灵、Veo、AnimateDiff 图生动画，让静态图片动起来。',
-    'ai-music'   => '大气AI医院 音频：音乐生成、语音合成（TTS）与语音识别（ASR），支持免费音频剪辑。',
-    'ai-voice'   => '大气AI医院 语音：语音输入转文字，由国产大模型用语音与文字一起回答，支持浏览器语音识别与语音合成。',
-    'ai-file'    => '大气AI医院 文件：上传 txt、md、csv、json 等文本文件，AI 自动提取、总结与分析内容。',
-    'ai-write'   => '大气AI医院 写作：长文、公文、营销文案与新媒体内容创作。',
-    'ai-ppt'     => '大气AI医院 PPT：根据主题一键生成演示大纲与页面。',
-    'ai-edit'    => '大气AI医院 智能剪辑：视频、动画、图片、音频的 AI 剪辑与处理，支持图片修图/抠图/增强与音频编辑。',
-  );
-  return isset($map[$slug]) ? $map[$slug] : '';
+  $key = (strpos((string)$slug, 'consult-') === 0) ? substr((string)$slug, 8) : '';
+  if ($key === '') return '';
+  $presets = didi_ai_medical_presets();
+  if (!isset($presets[$key])) return '';
+  $ch = $presets[$key];
+  return didi_ai_channel_desc($ch);
 }
 
 // 当前页面 SEO 上下文
 function didi_ai_seo_context() {
   $home = untrailingslashit(home_url('/'));
   $site = get_bloginfo('name');
-  if (!$site) $site = '大气AI医院';
+  if (!$site) $site = daqi_t('大气AI医院', 'DaQi AI Hospital');
   $ctx = array(
     'site'   => $site,
     'home'   => $home,
-    'title'  => $site . ' · 一站式 AI 工具台',
-    'desc'   => '大气AI医院 聚合国内与全球最强 AI 模型，提供 AI 对话提问、代码生成、办公写作、PPT、图片生成、视频生成、数字人、动画、音频与智能剪辑，一个工作台完成全部内容生产。',
+    'title'  => $site . daqi_t(' · 一站式 AI 问诊平台', ' · One-Stop AI Medical Consultation Platform'),
+    'desc'   => daqi_t('大气AI医院 提供 11 大科室 AI 问诊通道：轻微快诊、中等症状、危重症与疑难杂症、日常保健、妇幼保健、中医、眼科、口腔、医疗美容、心理咨询与报告解读，AI 预问诊收集病史并给出初步分析与就医建议。', 'DaQi AI Hospital offers 11 AI consultation channels: Quick Care, Moderate Symptoms, Emergency & Complex Cases, Daily Wellness, Maternal & Child Health, TCM, Eye, Dental, Aesthetic Medicine, Emotional Support and Report Reading. AI pre-consultation collects your history and gives initial analysis and care advice.'),
     'url'    => $home . '/',
     'type'   => 'website',
     'robots' => 'index,follow,max-image-preview:large,max-snippet:-1,max-video-preview:-1',
@@ -1170,13 +1164,13 @@ function didi_ai_seo_context() {
   );
 
   if (is_front_page()) {
-    $ctx['title'] = '大气AI医院 · 一站式 AI 工具台（对话/代码/写作/图片/视频/数字人/剪辑）';
+    $ctx['title'] = daqi_t('大气AI医院 · 一站式 AI 问诊平台（11 大科室在线问诊）', 'DaQi AI Hospital · One-Stop AI Medical Consultation Platform (11 Online Channels)');
     $ctx['url']   = $home . '/';
   } elseif (is_singular()) {
     $ctx['title'] = get_the_title() . ' · ' . $site;
     $raw = has_excerpt() ? get_the_excerpt() : get_the_content();
     $raw = trim(preg_replace('/\s+/', ' ', wp_strip_all_tags($raw)));
-    $ctx['desc'] = $raw !== '' ? mb_substr($raw, 0, 150) : ($ctx['title'] . '，大气AI医院 一站式 AI 工具台。');
+    $ctx['desc'] = $raw !== '' ? mb_substr($raw, 0, 150) : ($ctx['title'] . daqi_t('，大气AI医院 一站式 AI 问诊平台。', ' — DaQi AI Hospital one-stop AI medical consultation platform.'));
     $ctx['url']  = get_permalink();
     // 分页自指：静态页 / 文章分页（page/N）canonical 指向自身
     $pg = (int) get_query_var('paged');
@@ -1185,7 +1179,7 @@ function didi_ai_seo_context() {
     }
     $ctx['type'] = 'article';
     $slug = get_post_field('post_name');
-    $ctx['is_tool'] = (get_post_type() === 'page' && strpos((string)$slug, 'ai-') === 0);
+    $ctx['is_tool'] = (get_post_type() === 'page' && strpos((string)$slug, 'consult-') === 0);
     if ($ctx['is_tool']) {
       $toolDesc = didi_ai_seo_tool_desc($slug);
       if ($toolDesc) $ctx['desc'] = $toolDesc;
@@ -1193,23 +1187,25 @@ function didi_ai_seo_context() {
   } elseif (is_category() || is_tag() || is_tax()) {
     $term = get_queried_object();
     $tname = ($term && !is_wp_error($term)) ? $term->name : '';
-    $ctx['title'] = $tname . ' · ' . $site . ' 内容聚合';
-    $ctx['desc']  = '大气AI医院 关于「' . $tname . '」的内容聚合，汇集 AI 模型能力、应用实践与行业观察。';
+    $ctx['title'] = $tname . ' · ' . $site . daqi_t(' 内容聚合', ' Content');
+    $ctx['desc']  = daqi_t('大气AI医院 关于「', 'DaQi AI Hospital content about "') . $tname . daqi_t('」的内容聚合，汇集健康科普、问诊指南与社区讨论。', '" — health articles, consultation guides and community discussions.');
     $link = get_term_link($term);
     if (!is_wp_error($link)) $ctx['url'] = $link;
   } elseif (is_archive()) {
-    $ctx['title'] = wp_strip_all_tags(get_the_archive_title()) . ' · ' . $site;
-    $ctx['desc']  = '大气AI医院 博客与论坛的内容归档，涵盖 AI 应用、模型测评与行业实践。';
+    $atitle = wp_strip_all_tags(get_the_archive_title());
+    if (daqi_site_lang() === 'en') $atitle = strtr($atitle, array('论坛主题' => 'Health Community', '健康社区' => 'Health Community'));
+    $ctx['title'] = $atitle . ' · ' . $site;
+    $ctx['desc']  = daqi_t('大气AI医院 博客与论坛的内容归档，涵盖健康科普、问诊指南与社区讨论。', 'Archives of DaQi AI Hospital blog and community — health articles, consultation guides and discussions.');
     // 分页自指：归档每页 canonical 指向自身（默认取当前页），避免第 2 页起被指回第 1 页
     $ctx['url']   = get_pagenum_link(max(1, (int) get_query_var('paged')));
   } elseif (is_search()) {
-    $ctx['title']  = '搜索：' . get_search_query() . ' · ' . $site;
-    $ctx['desc']   = '在 大气AI医院 中搜索相关内容。';
+    $ctx['title']  = daqi_t('搜索：', 'Search: ') . get_search_query() . ' · ' . $site;
+    $ctx['desc']   = daqi_t('在 大气AI医院 中搜索相关内容。', 'Search DaQi AI Hospital for relevant content.');
     $ctx['url']    = get_search_link();
     $ctx['robots'] = 'noindex,follow';
   } elseif (is_404()) {
-    $ctx['title']  = '页面未找到 · ' . $site;
-    $ctx['desc']   = '抱歉，您访问的页面不存在或已被移动，可返回首页使用 大气AI医院 各项 AI 工具。';
+    $ctx['title']  = daqi_t('页面未找到', 'Page Not Found') . ' · ' . $site;
+    $ctx['desc']   = daqi_t('抱歉，您访问的页面不存在或已被移动，可返回首页使用 大气AI医院 各问诊通道。', 'The page you requested does not exist or has moved. Return to the homepage to use the consultation channels.');
     $ctx['url']    = '';
     $ctx['robots'] = 'noindex,follow';
   }
@@ -1230,7 +1226,7 @@ function didi_ai_seo_context() {
 add_action('wp_body_open', function () {
   if (is_admin()) return;
   if (is_front_page()) {
-    echo '<h1 class="didi-sr-only">' . esc_html(get_bloginfo('name')) . ' · 一站式 AI 工具台</h1>' . "\n";
+    echo '<h1 class="didi-sr-only">' . esc_html(get_bloginfo('name')) . daqi_t(' · 一站式 AI 问诊平台', ' · One-Stop AI Medical Consultation Platform') . '</h1>' . "\n";
     return;
   }
   if (!is_page()) return;
@@ -1257,7 +1253,7 @@ function didi_ai_seo_jsonld($c) {
     '@id'   => $org_id,
     'name'  => $c['site'],
     'url'   => $home,
-    'description' => '大气AI医院 是聚合国内与全球最强 AI 模型的一站式在线工具台。',
+    'description' => daqi_t('大气AI医院 是聚合国内与全球领先 AI 模型的一站式在线问诊平台。', 'DaQi AI Hospital is a one-stop online AI medical consultation platform powered by leading AI models at home and abroad.'),
   );
   if ($icon) {
     $org['logo'] = array('@type' => 'ImageObject', 'url' => $icon);
@@ -1271,7 +1267,7 @@ function didi_ai_seo_jsonld($c) {
       '@id'   => $web_id,
       'url'   => $home,
       'name'  => $c['site'],
-      'inLanguage' => 'zh-CN',
+      'inLanguage' => daqi_site_lang() === 'en' ? 'en-US' : 'zh-CN',
       'publisher'  => array('@id' => $org_id),
       'potentialAction' => array(
         '@type' => 'SearchAction',
@@ -1289,7 +1285,7 @@ function didi_ai_seo_jsonld($c) {
       'name'  => $c['title'],
       'description' => $c['desc'],
       'isPartOf' => array('@id' => $web_id),
-      'inLanguage' => 'zh-CN',
+      'inLanguage' => daqi_site_lang() === 'en' ? 'en-US' : 'zh-CN',
     );
   }
 
@@ -1298,7 +1294,7 @@ function didi_ai_seo_jsonld($c) {
       '@type' => 'SoftwareApplication',
       'name'  => $c['title'],
       'url'   => $c['url'],
-      'applicationCategory' => 'AIApplication',
+      'applicationCategory' => 'MedicalApplication',
       'operatingSystem' => 'Web',
       'description' => $c['desc'],
       'offers' => array('@type' => 'Offer', 'price' => '0', 'priceCurrency' => 'CNY'),
@@ -1317,26 +1313,26 @@ function didi_ai_seo_jsonld($c) {
       'mainEntityOfPage' => array('@id' => $c['url']),
       'datePublished' => get_the_date('c', $pid),
       'dateModified'  => get_the_modified_date('c', $pid),
-      'inLanguage' => 'zh-CN',
+      'inLanguage' => daqi_site_lang() === 'en' ? 'en-US' : 'zh-CN',
       'author' => array('@type' => 'Person', 'name' => get_the_author_meta('display_name', (int) get_post_field('post_author', $pid))),
       'publisher' => array('@id' => $org_id),
     );
     $thumb = get_the_post_thumbnail_url($pid, 'full');
     if ($thumb) $art['image'] = $thumb;
     $cats = get_the_category($pid);
-    if (!empty($cats) && !is_wp_error($cats)) $art['articleSection'] = $cats[0]->name;
+    if (!empty($cats) && !is_wp_error($cats)) $art['articleSection'] = daqi_term_name($cats[0]->name, $cats[0]->term_id);
     $graph[] = $art;
   }
 
   // 面包屑
   if (!empty($c['url']) && is_singular()) {
-    $crumbs = array(array('@type' => 'ListItem', 'position' => 1, 'name' => '首页', 'item' => $home));
+    $crumbs = array(array('@type' => 'ListItem', 'position' => 1, 'name' => daqi_t('首页', 'Home'), 'item' => $home));
     if (is_singular('post')) {
       $cats = get_the_category(get_queried_object_id());
       if (!empty($cats) && !is_wp_error($cats)) {
         $clink = get_category_link($cats[0]->term_id);
         if (!is_wp_error($clink)) {
-          $crumbs[] = array('@type' => 'ListItem', 'position' => 2, 'name' => $cats[0]->name, 'item' => $clink);
+          $crumbs[] = array('@type' => 'ListItem', 'position' => 2, 'name' => daqi_term_name($cats[0]->name, $cats[0]->term_id), 'item' => $clink);
         }
       }
     }
@@ -1355,13 +1351,12 @@ function didi_ai_seo_jsonld($c) {
         'url' => $c['home'] . $t[1],
       );
     }
-    $graph[] = array('@type' => 'ItemList', 'name' => '大气AI医院 问诊通道', 'itemListOrder' => 'https://schema.org/ItemListOrderAscending', 'numberOfItems' => count($listItems), 'itemListElement' => $listItems);
-    $graph[] = array('@type' => 'FAQPage', 'mainEntity' => array(
-      array('@type' => 'Question', 'name' => '大气AI医院 是什么？', 'acceptedAnswer' => array('@type' => 'Answer', 'text' => '大气AI医院 是 AI 预问诊平台，按病情严重程度与科室分为 11 条问诊通道。AI 通过收集病史给出初步分析与就医建议，结果仅供健康参考，不能替代执业医师诊断；出现呼吸困难、胸痛、意识障碍等危急症状请立即拨打 120。')),
-      array('@type' => 'Question', 'name' => '大气AI医院 有哪些问诊通道？', 'acceptedAnswer' => array('@type' => 'Answer', 'text' => '共 11 条：轻微快诊、中等症状、危重症/疑难杂症、日常保健、妇幼保健、中医问诊、眼科问诊、口腔问诊、医疗美容、心理咨询、报告解读。游客可免登录体验（每 IP 每日 5 次），注册会员享受更多问诊额度。')),
-      array('@type' => 'Question', 'name' => 'AI 问诊的流程是怎样的？', 'acceptedAnswer' => array('@type' => 'Answer', 'text' => '选择与症状匹配的通道，填写主要不适、持续时间、既往病史等简要信息后，AI 会结合病史进行预问诊分析，并持续追问细节给出建议；全程对话式，可随时补充描述。')),
-      array('@type' => 'Question', 'name' => 'AI 问诊结果可靠吗？', 'acceptedAnswer' => array('@type' => 'Answer', 'text' => 'AI 预问诊由大语言模型驱动，用于初步分诊与健康科普，不构成医疗诊断或处方依据。平台在每条通道展示免责声明，AI 遇到危急征象会主动提示就医或拨打 120。')),
-    ));
+    $graph[] = array('@type' => 'ItemList', 'name' => daqi_t('大气AI医院 问诊通道', 'DaQi AI Hospital consultation channels'), 'itemListOrder' => 'https://schema.org/ItemListOrderAscending', 'numberOfItems' => count($listItems), 'itemListElement' => $listItems);
+    $faqEntities = array();
+    foreach (didi_ai_seo_faq() as $qa) {
+      $faqEntities[] = array('@type' => 'Question', 'name' => $qa[0], 'acceptedAnswer' => array('@type' => 'Answer', 'text' => $qa[1]));
+    }
+    $graph[] = array('@type' => 'FAQPage', 'mainEntity' => $faqEntities);
   }
 
   echo '<script type="application/ld+json">' . wp_json_encode(
@@ -1396,7 +1391,7 @@ add_action('wp_head', function () {
   if (!empty($c['url']) && !is_wp_error($c['url'])) {
     echo '<meta property="og:url" content="' . esc_url($c['url']) . '">' . "\n";
   }
-  echo '<meta property="og:locale" content="zh_CN">' . "\n";
+  echo '<meta property="og:locale" content="' . (daqi_site_lang() === 'en' ? 'en_US' : 'zh_CN') . '">' . "\n";
   if ($icon) echo '<meta property="og:image" content="' . esc_url($icon) . '">' . "\n";
   if ($icon) {
     // 图像尺寸与替代文本：社交平台与生成式引擎的图像理解辅助
@@ -1489,17 +1484,25 @@ add_filter('wp_sitemaps_add_provider', function ($provider, $name) {
   return $provider;
 }, 10, 2);
 
-// SEO/GEO 共享数据：问诊通道清单（JSON-LD ItemList 与 llms.txt 共用）
+// SEO/GEO 共享数据：问诊通道清单（JSON-LD ItemList 与 llms.txt 共用，按站点语言输出）
 function didi_ai_seo_tools() {
   $out = array();
   foreach (didi_ai_medical_presets() as $key => $ch) {
-    $out[] = array($ch['emoji'] . ' ' . $ch['name'], '/consult-' . $key, $ch['desc']);
+    $out[] = array(didi_ai_channel_name($ch), '/consult-' . $key, didi_ai_channel_desc($ch));
   }
   return $out;
 }
 
-// SEO/GEO 共享数据：常见问题（首页可见区块、首页 JSON-LD FAQPage 与 llms.txt 共用）
+// SEO/GEO 共享数据：常见问题（首页可见区块、首页 JSON-LD FAQPage 与 llms.txt 共用，按站点语言输出）
 function didi_ai_seo_faq() {
+  if (daqi_site_lang() === 'en') {
+    return array(
+      array('Is DaQi AI Hospital free?', 'All 11 consultation channels are open to guests with 5 free consultations per IP per day. Registered members enjoy more consultations; health articles and the community are completely free.'),
+      array('Which AI model does DaQi AI Hospital use?', 'Consultations are powered by Zhipu GLM-4.5-Flash. Each channel\'s pre-consultation prompts are maintained server-side to keep consultation style and safety rules consistent.'),
+      array('What can DaQi AI Hospital do?', 'It triages consultations by severity and specialty: Quick Care, Moderate Symptoms, Emergency/Complex Cases, Daily Wellness, Maternal & Child Health, TCM, Eye, Dental, Aesthetic Medicine, Emotional Support and Report Reading. The AI collects your history and gives initial analysis and care advice.'),
+      array('Are AI consultation results reliable?', 'AI pre-consultation is for health reference only and never constitutes a medical diagnosis or prescription. Emergency signs such as breathing difficulty, chest pain or altered consciousness require calling 911/120 or going to the ER immediately.'),
+    );
+  }
   return array(
     array('大气AI医院 是免费的吗？', '11 条问诊通道对游客开放免费体验（每 IP 每日 5 次），注册会员享受更多问诊额度；健康科普与社区内容完全免费。'),
     array('大气AI医院 默认使用什么模型？', '问诊对话默认使用智谱 GLM-4.5-Flash，各通道的预问诊提示词在服务端维护，保证问诊风格与安全规则一致。'),
@@ -1518,6 +1521,28 @@ add_action('template_redirect', function () {
   header('X-Robots-Tag: all');
   $home = untrailingslashit(home_url('/'));
   $tools = didi_ai_seo_tools();
+  if (daqi_site_lang() === 'en') {
+    $out  = "# DaQi AI Hospital\n\n";
+    $out .= "> DaQi AI Hospital is an AI pre-consultation platform with 11 consultation channels triaged by severity and specialty. The AI collects your medical history through conversation and gives initial analysis and care advice. Results are for health reference only and never replace a licensed physician; in an emergency call 911/120.\n\n";
+    $out .= "## Consultation channels\n";
+    foreach ($tools as $t) {
+      $out .= '- [' . $t[0] . '](' . $home . $t[1] . ')：' . $t[2] . "\n";
+    }
+    $out .= "\n## How to use\n";
+    $out .= "- Guests: try consultation channels without login, 5 uses per IP per day.\n";
+    $out .= "- Members: register and log in for more consultations, with recharge and membership options.\n";
+    $out .= "\n## Content\n";
+    $out .= '- [Health articles](' . $home . '/blog): plain-language articles on common conditions, chronic disease management, maternal & child health, TCM wellness and mental health.' . "\n";
+    $out .= '- [Community](' . $home . '/forum): experience exchange by specialty sections.' . "\n";
+    $out .= "\n## FAQ\n";
+    foreach (didi_ai_seo_faq() as $qa) {
+      $out .= '### ' . $qa[0] . "\n" . $qa[1] . "\n";
+    }
+    $out .= "\n## Notes\n";
+    $out .= "- Language: English (Chinese site: ai.daqihospital.net)\n- Sections: AI consultation channels, health articles, community\n- Consultation model: Zhipu GLM-4.5-Flash\n- Sitemap: " . $home . "/wp-sitemap.xml\n- Disclaimer: DaQi AI Hospital provides AI pre-consultation for health reference only; it does not constitute medical diagnosis, treatment advice or prescriptions. For emergencies call 911/120.\n";
+    echo $out;
+    exit;
+  }
   $out  = "# 大气AI医院\n\n";
   $out .= "> 大气AI医院 是 AI 预问诊平台，按病情严重程度与科室分为 11 条问诊通道。AI 通过对话收集病史，给出初步分析与就医建议；结果仅供健康参考，不能替代执业医师诊断，危急症状请拨打 120。\n\n";
   $out .= "## 问诊通道\n";
