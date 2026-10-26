@@ -17,11 +17,11 @@ $q = new WP_Query(array(
   <h1 style="font-size:30px;margin-bottom:24px;"><?php echo daqi_t('论坛', 'Community'); ?></h1>
   <div style="display:grid;grid-template-columns:220px 1fr;gap:24px;width:100%;max-width:1080px;align-items:start;">
     <aside style="background:#fff;border:1px solid #e5e6eb;border-radius:12px;padding:16px;position:sticky;top:90px;max-height:calc(100vh - 140px);overflow-y:auto;">
-      <?php echo didi_ai_sidebar_categories(home_url('/forum'), $cat_slug, '主题目录'); ?>
+      <?php echo didi_ai_sidebar_categories(home_url('/forum'), $cat_slug, daqi_t('主题目录', 'Sections')); ?>
     </aside>
     <div>
       <form method="get" style="display:flex;gap:10px;margin-bottom:20px;">
-        <input class="search-input" type="text" name="q" placeholder="搜索主题..." value="<?php echo esc_attr(isset($_GET['q']) ? $_GET['q'] : ''); ?>">
+        <input class="search-input" type="text" name="q" placeholder="<?php echo esc_attr(daqi_t('搜索主题...', 'Search topics...')); ?>" value="<?php echo esc_attr(isset($_GET['q']) ? $_GET['q'] : ''); ?>">
         <?php if ($cat_slug) : ?><input type="hidden" name="cat" value="<?php echo esc_attr($cat_slug); ?>"><?php endif; ?>
         <button class="btn-primary" type="submit">搜索</button>
       </form>

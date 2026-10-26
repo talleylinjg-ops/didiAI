@@ -1169,6 +1169,14 @@ function didi_ai_seo_context() {
   } elseif (is_singular()) {
     $ctx['title'] = get_the_title() . ' · ' . $site;
     $raw = has_excerpt() ? get_the_excerpt() : get_the_content();
+    if (daqi_site_lang() === 'en') {
+      $enX = get_post_meta(get_the_ID(), '_en_excerpt', true);
+      if ($enX !== '' && $enX !== null) $raw = $enX;
+      else {
+        $enC = get_post_meta(get_the_ID(), '_en_content', true);
+        if ($enC !== '' && $enC !== null) $raw = $enC;
+      }
+    }
     $raw = trim(preg_replace('/\s+/', ' ', wp_strip_all_tags($raw)));
     $ctx['desc'] = $raw !== '' ? mb_substr($raw, 0, 150) : ($ctx['title'] . daqi_t('，大气AI医院 一站式 AI 问诊平台。', ' — DaQi AI Hospital one-stop AI medical consultation platform.'));
     $ctx['url']  = get_permalink();
@@ -1567,7 +1575,8 @@ add_action('template_redirect', function () {
 
 
 /* ================= 侧边栏分类目录（博客/论坛共用，$show_hot 控制是否显示全球行业热点） ================= */
-function didi_ai_sidebar_categories($base_url, $active_slug = '', $title = '分类目录', $show_hot = true) {
+function didi_ai_sidebar_categories($base_url, $active_slug = '', $title = '', $show_hot = true) {
+  if ($title === '') $title = daqi_t('分类目录', 'Categories');
   $html = '<h3 style="font-size:14px;color:#4e5969;margin-bottom:12px;">' . esc_html($title) . '</h3>';
 
   // 精选分类
@@ -1576,7 +1585,7 @@ function didi_ai_sidebar_categories($base_url, $active_slug = '', $title = '分�
     $active = ($active_slug === $c->slug);
     $html .= '<a href="' . esc_url(add_query_arg(array('cat' => $c->slug), $base_url)) . '"'
       . ' style="display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-radius:8px;margin-bottom:4px;font-size:14px;color:' . ($active ? '#1668dc' : '#4e5969') . ';background:' . ($active ? '#eef4ff' : 'transparent') . ';font-weight:' . ($active ? '600' : '400') . ';text-decoration:none;">'
-      . '<span>' . esc_html($c->name) . '</span>'
+      . '<span>' . esc_html(daqi_term_name($c->name, $c->term_id)) . '</span>'
       . '<span style="font-size:12px;color:#86909c;">' . esc_html($c->count) . '</span>'
       . '</a>';
   }
@@ -1585,12 +1594,12 @@ function didi_ai_sidebar_categories($base_url, $active_slug = '', $title = '分�
   if (!$show_hot) {
     $tags = get_terms(array('taxonomy' => 'post_tag', 'orderby' => 'count', 'order' => 'DESC', 'number' => 30, 'hide_empty' => true));
     if (!is_wp_error($tags) && !empty($tags)) {
-      $html .= '<div style="font-size:12px;color:#86909c;padding:14px 12px 8px;border-top:1px solid #f2f3f5;margin-top:10px;">热门标签</div>';
+      $html .= '<div style="font-size:12px;color:#86909c;padding:14px 12px 8px;border-top:1px solid #f2f3f5;margin-top:10px;">' . daqi_t('热门标签', 'Popular Tags') . '</div>';
       $html .= '<div style="padding:6px 12px;display:flex;flex-wrap:wrap;gap:6px;">';
       foreach ($tags as $t) {
         $html .= '<a href="' . esc_url(add_query_arg(array('tag' => $t->slug), $base_url)) . '"'
           . ' style="font-size:12px;color:#4e5969;background:#f2f3f5;padding:4px 10px;border-radius:20px;text-decoration:none;">'
-          . esc_html($t->name) . ' <span style="color:#86909c;">' . $t->count . '</span></a>';
+          . esc_html(daqi_term_name($t->name, $t->term_id)) . ' <span style="color:#86909c;">' . $t->count . '</span></a>';
       }
       $html .= '</div>';
     }
@@ -1599,8 +1608,23 @@ function didi_ai_sidebar_categories($base_url, $active_slug = '', $title = '分�
 
   // 全球行业热点（父分类，仅论坛）
   $parent = get_term_by('slug', 'national-hot', 'category');
+  if (!$parent) {
+    // 医疗站：无 national-hot 父分类时直接展示分区分类（按主题数排序）
+    $kids = get_terms(array('taxonomy' => 'category', 'hide_empty' => false, 'exclude' => array(1)));
+    $kids = is_wp_error($kids) ? array() : $kids;
+    usort($kids, function($a, $b) { return $b->count - $a->count; });
+    foreach (array_slice($kids, 0, 20) as $c) {
+      $active = ($active_slug === $c->slug);
+      $html .= '<a href="' . esc_url(add_query_arg(array('cat' => $c->slug), $base_url)) . '"'
+        . ' style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:8px;margin-bottom:2px;font-size:13px;color:' . ($active ? '#1668dc' : '#4e5969') . ';background:' . ($active ? '#eef4ff' : 'transparent') . ';font-weight:' . ($active ? '600' : '400') . ';text-decoration:none;">'
+        . '<span>' . esc_html(daqi_term_name($c->name, $c->term_id)) . '</span>'
+        . '<span style="font-size:12px;color:#86909c;">' . esc_html($c->count) . '</span>'
+        . '</a>';
+    }
+    return $html;
+  }
   if ($parent) {
-    $html .= '<div style="font-size:12px;color:#86909c;padding:14px 12px 8px;border-top:1px solid #f2f3f5;margin-top:10px;">全球行业热点</div>';
+    $html .= '<div style="font-size:12px;color:#86909c;padding:14px 12px 8px;border-top:1px solid #f2f3f5;margin-top:10px;">' . daqi_t('全球行业热点', 'Industry Hotspots') . '</div>';
 
     $per_page = 20;
     $cpage = isset($_GET['cpage']) ? max(1, intval($_GET['cpage'])) : 1;
@@ -1617,7 +1641,7 @@ function didi_ai_sidebar_categories($base_url, $active_slug = '', $title = '分�
       $active = ($active_slug === $c->slug);
       $html .= '<a href="' . esc_url(add_query_arg(array('cat' => $c->slug), $base_url)) . '"'
         . ' style="display:flex;justify-content:space-between;align-items:center;padding:8px 12px;border-radius:8px;margin-bottom:2px;font-size:13px;color:' . ($active ? '#1668dc' : '#4e5969') . ';background:' . ($active ? '#eef4ff' : 'transparent') . ';font-weight:' . ($active ? '600' : '400') . ';text-decoration:none;">'
-        . '<span>' . esc_html($c->name) . '</span>'
+        . '<span>' . esc_html(daqi_term_name($c->name, $c->term_id)) . '</span>'
         . '<span style="font-size:12px;color:#86909c;">' . esc_html($c->count) . '</span>'
         . '</a>';
     }

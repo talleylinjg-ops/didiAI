@@ -17,14 +17,14 @@ $q = new WP_Query(array(
 ));
 ?>
 <main style="flex-direction:column;align-items:center;padding:90px 20px 40px;">
-  <h1 style="font-size:30px;margin-bottom:24px;">博客</h1>
+  <h1 style="font-size:30px;margin-bottom:24px;"><?php echo daqi_t('博客', 'Blog'); ?></h1>
   <div style="display:grid;grid-template-columns:220px 1fr;gap:24px;width:100%;max-width:1080px;align-items:start;">
     <aside style="background:#fff;border:1px solid #e5e6eb;border-radius:12px;padding:16px;position:sticky;top:90px;max-height:calc(100vh - 140px);overflow-y:auto;">
-      <?php echo didi_ai_sidebar_categories(home_url('/blog'), $cat_slug, '分类目录', false); ?>
+      <?php echo didi_ai_sidebar_categories(home_url('/blog'), $cat_slug, daqi_t('分类目录', 'Categories'), false); ?>
     </aside>
     <div>
       <form method="get" style="display:flex;gap:10px;margin-bottom:20px;">
-        <input class="search-input" type="text" name="q" placeholder="搜索文章..." value="<?php echo esc_attr(isset($_GET['q']) ? $_GET['q'] : ''); ?>">
+        <input class="search-input" type="text" name="q" placeholder="<?php echo esc_attr(daqi_t('搜索文章...', 'Search articles...')); ?>" value="<?php echo esc_attr(isset($_GET['q']) ? $_GET['q'] : ''); ?>">
         <?php if ($cat_slug) : ?><input type="hidden" name="cat" value="<?php echo esc_attr($cat_slug); ?>"><?php endif; ?>
         <button class="btn-primary" type="submit">搜索</button>
       </form>
@@ -32,7 +32,12 @@ $q = new WP_Query(array(
         <article style="padding:18px 0;border-bottom:1px solid #f2f3f5;">
           <a href="<?php the_permalink(); ?>" style="font-size:18px;font-weight:600;color:#1f2329;text-decoration:none;"><?php the_title(); ?></a>
           <div style="font-size:12px;color:#86909c;margin:6px 0;">
-            <?php the_author(); ?> · <?php echo esc_html(get_the_date()); ?> · <?php echo esc_html(get_the_category_list(', ')); ?>
+            <?php the_author(); ?> · <?php echo esc_html(get_the_date()); ?> · <?php
+              $bcats = get_the_category();
+              $bnames = array();
+              foreach ($bcats as $bc) $bnames[] = daqi_term_name($bc->name, $bc->term_id);
+              echo esc_html(implode(', ', $bnames));
+            ?>
           </div>
           <p style="font-size:14px;color:#4e5969;"><?php echo esc_html(wp_trim_words(get_the_excerpt(), 40)); ?></p>
         </article>
