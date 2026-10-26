@@ -118,4 +118,28 @@ This file records user instructions, preferences, and teachings for reference in
   - 本地 PHP 服务启动命令已带上传限制参数，重启时必须保留：`PHP_CLI_SERVER_WORKERS=8 php -d upload_max_filesize=15M -d post_max_size=16M -S 0.0.0.0:8080 router.php`（8081 同参数），工作目录 `/workspace/didiAI`。
   - upload_max_filesize/post_max_size 属 PHP_INI_PERDIR，运行时 ini_set 无效，只能通过 php -d 参数或 php.ini；本环境 `.user.ini` 实测对 php -S 不生效（zlib.output_compression 也不生效），全局输出 gzip 改在 wp-config.php 顶部 ini_set，SSE 接口（chat_stream）运行时关闭。
   - 两个服务均为受管后台终端：8080=term_1791518451227_24、8081=term_1791518456368_25（重启后 ID 会变，以 background_terminal_list 为准）。
-  - 上传走 `/wp-json/didi/v1/upload`（multipart FormData），前端用 X-WP-Nonce；e2e 时 402 no_quota=登录态/nonce 过期，重新登录并从页面抓 didiRestNonce。
+   - 上传走 `/wp-json/didi/v1/upload`（multipart FormData），前端用 X-WP-Nonce；e2e 时 402 no_quota=登录态/nonce 过期，重新登录并从页面抓 didiRestNonce。
+
+[Project Knowledge Summary]
+- Date: 2026-10-22
+- Context: Discovered by Agent while building the daqihospital (大气AI医院) WordPress site
+- Category: Operations & Deployment
+- Instructions:
+  - 双站布局：`/workspace/didiAI`（php -S 8080，库 wp_db）与 `/workspace/daqihospital`（8081，库 daqi_hosp_db），共用 MySQL 用户 wp_user/wp_pass_2026；`mysql -uroot` 免密可用。daqihospital 管理 admin/Daqi2026!。
+  - daqihospital 复用 didiAI 主题（目录名仍 didi-ai、REST didi/v1），品牌文案已全量替换为大气AI医院；核心差异在 inc-medical-presets.php（11 条问诊通道预设，服务端 system prompt 含免责与 120 红旗规则）+ page-consult.php（病史表单+SSE 问诊页 /consult-{key}）。
+  - 问诊游客限免：functions.php chat_stream 对 preset 请求免登录，按 IP 每日 5 次（transient daqi_guest_{md5(ip)}_{Ymd}）；守卫白名单需含 /consult- 前缀。
+  - 模型配置迁移：didiAI 库 option didi_ai_config（GLM-4.5-Flash llm/code/work、cogview-3-flash image）已 mysqli 直连复制到 daqi_hosp_db，不打印 key；新站未配 USER_LLM_* 环境变量，靠 DB 兜底。
+  - 坑：根目录静态 llms.txt 会被 php -S router 直接命中，挡住 template_redirect 动态 handler（输出旧版）；两站根目录 llms.txt 均已归档至 wp-content/uploads/_old/，以 handler 版为准。
+  - 内容结构：博客列表页是 slug=blog 的普通页面（page-blog.php 模板，page_for_posts=0）；论坛 topic 是 forum_topic post type + category 分类法；文章根级 URL 游客被守卫 302（爬虫 UA 放行），两站一致。
+   - daqihospital 预览：https://8081-*.monkeycode-ai.online（reverse-proxy mu-plugin 动态 siteurl 跟随访问域）；router.php 启动参数与 8080 相同（PHP_CLI_SERVER_WORKERS=8 + upload 限制）。
+
+[Project Knowledge Summary]
+- Date: 2026-10-25
+- Context: Discovered by Agent while building the daqihospital bilingual layer (EN site ai.daqihospital.com / ZH site ai.daqihospital.net)
+- Category: Environment Configuration
+- Instructions:
+  - 双域单站语言机制：`inc-site-lang.php` 的 `daqi_site_lang()` 按 Host 判定（含 `daqihospital.com` 且非 `.net` → en，否则 zh；`?lang=en|zh` 可覆盖，localStorage 仍优先）。`daqi_t($zh,$en)` 是唯一文案开关；动态中文名用 `daqi_membership_name/daqi_pricing_unit/daqi_pricing_model/daqi_term_name` 映射。
+  - 内容翻译走 `_en_title/_en_content/_en_excerpt` postmeta + `_en_name` termmeta（the_title/the_content/excerpt filter 读取）；`/tmp/opencode/daqi-translate.php` 用 GLM 翻译（幂等，注意脚本不能加 `WP_INSTALLING=true`——会跳过主题加载导致 `didi_ai_llm_cfg` 未定义）。
+  - `<title>` 由内核 `wp_get_document_title()` 输出（Rank Math 未接管 title，其 frontend/* filters 在该安装里不被调用；meta/JSON-LD 实际由主题 `didi_ai_seo_*` 函数输出）。EN title 靠 `document_title_parts` filter + `_en_title` meta；`/forum/` URL 命中 forum_topic post type archive（与页面冲突），title part 是「论坛主题」，需 strtr 兜底。
+  - page-cache key 含 HTTP_HOST（双域缓存互不污染，验证过 X-Cache HIT）；改 SEO/语言代码后验证需换新查询串防旧缓存。
+  - `page-member.php` 权益表与定价表已医疗化（只渲染问诊类条目，pricing 循环过滤 chat 组）；`/wp-json/didi/v1/recharge` 是模拟充值（直接加余额），上线需接真实支付渠道并向用户披露。
