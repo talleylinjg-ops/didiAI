@@ -143,3 +143,12 @@ This file records user instructions, preferences, and teachings for reference in
   - `<title>` 由内核 `wp_get_document_title()` 输出（Rank Math 未接管 title，其 frontend/* filters 在该安装里不被调用；meta/JSON-LD 实际由主题 `didi_ai_seo_*` 函数输出）。EN title 靠 `document_title_parts` filter + `_en_title` meta；`/forum/` URL 命中 forum_topic post type archive（与页面冲突），title part 是「论坛主题」，需 strtr 兜底。
   - page-cache key 含 HTTP_HOST（双域缓存互不污染，验证过 X-Cache HIT）；改 SEO/语言代码后验证需换新查询串防旧缓存。
   - `page-member.php` 权益表与定价表已医疗化（只渲染问诊类条目，pricing 循环过滤 chat 组）；`/wp-json/didi/v1/recharge` 是模拟充值（直接加余额），上线需接真实支付渠道并向用户披露。
+
+[Project Knowledge Summary]
+- Date: 2026-10-27
+- Context: Discovered by Agent while verifying R2 image accessibility from the sandbox (workers.dev DNS is poisoned)
+- Category: Troubleshooting & Debugging
+- Instructions:
+  - 沙箱 DNS 污染：`*.workers.dev` 被解析到无关 IP（Facebook 网段），本地 curl 直连失败；`*.monkeycode-ai.online` 也曾被 Cloudflare 拦截（HTTP 000）。
+  - 绕过方法：先用 DoH 查真实 CF IP（`curl "https://dns.google/resolve?name=<domain>&type=A"` 或 1.1.1.1 的 dns-query），再用 `curl --resolve <domain>:443:<real-ip>` 强制直连，HTTPS SNI 正常即可命中 Cloudflare 边缘（实测 workers.dev 图片 200 OK）。
+  - 已验证：didiAI CJ 图片迁移后 R2 链路端到端可用（随机 7 张抽样全部 HTTP 200，content-type image/jpeg，cache-control 1 年 immutable）；VPS 上线后仅需浏览器肉眼复核商品页。
