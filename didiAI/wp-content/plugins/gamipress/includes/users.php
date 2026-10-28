@@ -24,7 +24,7 @@ function gamipress_register_users_metas() {
             'single'            => true,
             'show_in_rest'      => true,
             'sanitize_callback' => 'absint',
-            'auth_callback'     => '__return_true'
+            'auth_callback'     => 'gamipress_user_metas_auth_callback'
         );
 
         /**
@@ -49,7 +49,7 @@ function gamipress_register_users_metas() {
             'single'            => true,
             'show_in_rest'      => true,
             'sanitize_callback' => 'absint',
-            'auth_callback'     => '__return_true'
+            'auth_callback'     => 'gamipress_user_metas_auth_callback'
         );
 
         /**
@@ -68,6 +68,21 @@ function gamipress_register_users_metas() {
 
 }
 add_action( 'init', 'gamipress_register_users_metas' );
+
+/**
+ * User's meta auth callback
+ *
+ * @since 8.0.6
+ *
+ * @param bool      $allowed
+ * @param string    $meta_key
+ * @param int       $user_id
+ *
+ * @return bool
+ */
+function gamipress_user_metas_auth_callback( $allowed, $meta_key, $user_id ) {
+    return current_user_can( gamipress_get_manager_capability() );
+}
 
 /**
  * Remove all user logs and earnings when is deleted from the database.
@@ -110,11 +125,6 @@ add_action( 'delete_user', 'gamipress_on_delete_user', 10, 2 );
  * @return array       An array of all the achievement objects that matched our parameters, or empty if none
  */
 function gamipress_get_user_achievements( $args = array() ) {
-
-	// If not properly upgrade to required version fallback to compatibility function
-	if( ! is_gamipress_upgraded_to( '1.2.8' ) ) {
-		return gamipress_get_user_achievements_old( $args );
-	}
 
 	// Setup our default args
 	$defaults = array(
@@ -236,11 +246,6 @@ function gamipress_get_user_achievements( $args = array() ) {
  * @return bool 		The updated umeta ID on success, false on failure
  */
 function gamipress_update_user_achievements( $args = array() ) {
-
-	// If not properly upgrade to required version fallback to compatibility function
-	if( ! is_gamipress_upgraded_to( '1.2.8' ) ) {
-		return gamipress_update_user_achievements_old( $args );
-	}
 
 	// Setup our default args
 	$defaults = array(

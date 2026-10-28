@@ -93,6 +93,13 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_p
  */
 function gamipress_presto_player_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'presto_player_percent'     => '',
+        'presto_player_min_percent' => '',
+        'presto_player_max_percent' => '',
+        'presto_player_platform'    => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_presto_player_watch_video_min_percent'
             || $requirement['trigger_type'] === 'gamipress_presto_player_watch_specific_video_min_percent' ) ) {

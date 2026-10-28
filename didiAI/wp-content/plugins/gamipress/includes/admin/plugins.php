@@ -56,15 +56,10 @@ function gamipress_plugin_row_meta( $input, $file ) {
     if ( $file != 'gamipress/gamipress.php' )
         return $input;
 
-    $link = esc_url( add_query_arg( array(
-            'utm_source'   => 'plugins-page',
-            'utm_medium'   => 'plugin-row',
-            'utm_campaign' => 'admin',
-        ), 'https://gamipress.com/add-ons/' )
-    );
-
     $links = array(
-        '<a href="' . $link . '">' . esc_html__( 'Add-ons', 'gamipress' ) . '</a>',
+        '<a href="https://gamipress.com/add-ons/">' . esc_html__( 'Add-ons', 'gamipress' ) . '</a>',
+        '<a href="https://gamipress.com/docs/">' . esc_html__( 'Docs', 'gamipress' ) . '</a>',
+        '<a href="https://gamipress.com/contact-us/">' . esc_html__( 'Support', 'gamipress' ) . '</a>',
     );
 
     $input = array_merge( $input, $links );

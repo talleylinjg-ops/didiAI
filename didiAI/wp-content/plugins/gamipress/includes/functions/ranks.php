@@ -50,11 +50,6 @@ function gamipress_is_rank( $post = null ) {
  */
 function gamipress_get_ranks( $args = array() ) {
 
-    // If not properly upgrade to required version fallback to compatibility function
-    if( ! is_gamipress_upgraded_to( '1.5.1' ) ) {
-        return gamipress_get_ranks_old( $args );
-    }
-
     // Setup our defaults
     $defaults = array(
         'post_type'         => array_merge( gamipress_get_rank_types_slugs(), gamipress_get_requirement_types_slugs() ),
@@ -783,11 +778,6 @@ add_action( 'gamipress_update_user_rank', 'gamipress_log_user_rank', 10, 5 );
  */
 function gamipress_get_rank_requirement_rank( $rank_requirement_id = 0 ) {
 
-    // If not properly upgrade to required version fallback to compatibility function
-    if( ! is_gamipress_upgraded_to( '1.5.1' ) ) {
-        return gamipress_get_rank_requirement_rank_old( $rank_requirement_id );
-    }
-
     // Grab the current post ID if no rank requirement ID was specified
     if ( ! $rank_requirement_id ) {
         global $post;
@@ -842,12 +832,6 @@ function gamipress_get_rank_earned_time( $user_id = 0, $rank_type = '' ) {
  * @return array                    An array of post objects with the rank requirements
  */
 function gamipress_get_rank_requirements( $rank_id = 0, $post_status = 'publish' ) {
-
-    // If not properly upgrade to required version fallback to compatibility function
-    if( ! is_gamipress_upgraded_to( '1.5.1' ) ) {
-        // gamipress_get_assigned_requirements() has backward compatibility and merge new and old results
-        return gamipress_get_assigned_requirements( $rank_id, 'rank-requirement', $post_status );
-    }
 
     // Grab the current post ID if no rank_id was specified
     if ( ! $rank_id ) {
@@ -1028,25 +1012,25 @@ function gamipress_get_rank_earners( $rank_id = 0, $args = array() ) {
 
     $args = wp_parse_args( $args, $defaults );
 
+    // Sanitization
+    $args['limit'] = (int) $args['limit'];
+    $args['order'] = gamipress_validate_from_array( strtoupper( $args['order'] ), array( 'ASC', 'DESC' ), 'DESC' );
+
     // Setup FROM
-    if( ! empty( $args['from'] ) ) {
+    if( ! empty( $args['from'] ) )
         $from .= $args['from'];
-    }
 
     // Setup WHERE
-    if( ! empty( $args['where'] ) ) {
+    if( ! empty( $args['where'] ) )
         $where .= $args['where'];
-    }
 
     // Setup LIMIT
-    if( $args['limit'] > 0 ) {
+    if( $args['limit'] > 0 )
         $limit = '0, ' . $args['limit'];
-    }
 
     // Setup ORDER BY
-    if( ! empty( $args['orderby'] ) ) {
+    if( ! empty( $args['orderby'] ) )
         $order_by = $args['orderby'] . ' ' .  $args['order'];
-    }
 
     $earners = $wpdb->get_col(
         "SELECT u.user_id

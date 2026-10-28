@@ -65,6 +65,11 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_e
  */
 function gamipress_everest_forms_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'everest_forms_field_name'  => '',
+        'everest_forms_field_value' => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
     && ( $requirement['trigger_type'] === 'gamipress_everest_forms_field_value_submission'
         || $requirement['trigger_type'] === 'gamipress_everest_forms_specific_field_value_submission' ) ) {

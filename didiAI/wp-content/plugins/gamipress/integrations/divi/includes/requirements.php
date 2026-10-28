@@ -75,6 +75,12 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_d
  */
 function gamipress_divi_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'divi_form_id'      => '',
+        'divi_field_name'   => '',
+        'divi_field_value'  => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_divi_specific_new_form_submission'
             || $requirement['trigger_type'] === 'gamipress_divi_specific_field_value_submission' ) ) {

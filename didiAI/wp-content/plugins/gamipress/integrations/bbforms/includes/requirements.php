@@ -95,6 +95,13 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_b
  */
 function gamipress_bbforms_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'bbforms_category'      => '',
+        'bbforms_tag'           => '',
+        'bbforms_field_name'    => '',
+        'bbforms_field_value'   => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_bbforms_form_specific_category_submission' ) ) {
 

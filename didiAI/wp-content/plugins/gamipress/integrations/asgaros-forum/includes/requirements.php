@@ -81,6 +81,11 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_a
  */
 function gamipress_asgaros_forum_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'asgaros_forum' => '',
+        'asgaros_topic' => '',
+    ) );
+
     // Forums
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_asgaros_forum_specific_forum_new_post'

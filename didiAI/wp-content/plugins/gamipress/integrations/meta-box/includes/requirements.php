@@ -127,6 +127,13 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_m
  */
 function gamipress_meta_box_ajax_update_requirement( $requirement_id, $requirement ) {
     
+    $requirement = wp_parse_args( $requirement, array(
+        'mb_field_name'             => '',
+        'mb_field_name_user'        => '',
+        'mb_field_value_condition'  => '',
+        'mb_field_value'            => '',
+    ) );
+
     // Specific Field Any Value
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_meta_box_update_specific_post_field_any_value' ) ) {

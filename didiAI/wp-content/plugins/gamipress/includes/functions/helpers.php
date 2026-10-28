@@ -212,9 +212,8 @@ function gamipress_condition_options() {
  */
 function gamipress_condition_matches( $a, $b, $condition ) {
 
-    if( empty( $condition ) ) {
+    if( empty( $condition ) )
         $condition = 'equal';
-    }
 
     $matches = false;
 
@@ -332,9 +331,8 @@ function gamipress_is_string_condition( $condition ) {
  */
 function gamipress_get_the_post_thumbnail( $post = null, $size = 'post-thumbnail', $attr = '' ) {
 
-    if( ! gamipress_has_post_thumbnail( $post ) ) {
+    if( ! gamipress_has_post_thumbnail( $post ) )
         return '';
-    }
 
     return get_the_post_thumbnail( $post, $size, $attr );
 
@@ -353,19 +351,91 @@ function gamipress_get_the_post_thumbnail( $post = null, $size = 'post-thumbnail
 function gamipress_has_post_thumbnail( $post ) {
 
     $post = get_post( $post );
-
-    if ( ! $post ) {
-        return false;
-    }
+    if ( ! $post ) return false;
 
     $thumbnail_id = get_post_meta( $post->ID, '_thumbnail_id', true );
 
-    if( ! is_wp_error( $thumbnail_id ) ) {
+    if( ! is_wp_error( $thumbnail_id ) )
         $thumbnail_id = absint( $thumbnail_id );
-    }
 
     $thumbnail_id = apply_filters( 'post_thumbnail_id', $thumbnail_id, $post );
 
     return ( is_wp_error( $thumbnail_id ) ? false : absint( $thumbnail_id ) );
+
+}
+
+/**
+ * Get all public post types slugs
+ *
+ * @since 8.0.0
+ *
+ * @return array
+ */
+function gamipress_get_post_types_slugs() {
+    $post_types = get_post_types( array( 'public' => true ), 'objects' );
+
+    return is_array( $post_types ) ? array_keys( $post_types ) : array();
+}
+
+/**
+ * Validates if value is in array ensuring to return a valid entry from the array
+ *
+ * @since 8.0.0
+ *
+ * @param string $value
+ * @param array $array
+ * @param mixed $default
+ *
+ * @return mixed
+ */
+function gamipress_validate_from_array( $value, $array, $default = '' ) {
+    return is_array( $array ) && in_array( $value, $array ) ? $value : $default;
+}
+
+/**
+ * Get a random array entry for associative arrays
+ * For arrays without keys, use PHP array_rand() instead
+ *
+ * @since 8.0.0
+ *
+ * @param array $array
+ * @param mixed $default
+ *
+ * @return mixed
+ */
+function gamipress_assoc_array_rand( $array, $default = false ) {
+
+    if( is_array( $array ) && count( $array ) ) {
+        $keys = array_keys( $array );
+
+        if( count( $keys ) === 1 ) {
+            return $array[ $keys[0] ];
+        } else {
+            return $array[ $keys[ array_rand( $keys ) ] ];
+        }
+    }
+
+    return $default;
+}
+
+/**
+ * Join a string with a natural language conjunction at the end (one, two, three or four).
+ *
+ * @since 8.0.0
+ *
+ * @param array $array Array of words
+ * @param string $join and|or
+ *
+ * @return string
+ */
+function gamipress_join_words( $array, $join = '' ) {
+
+    if( $join === '' ) $join = __( 'and', 'gamipress' );
+
+    $last = array_pop($array);
+
+    if ($array) return implode(', ', $array) . ' ' . $join . ' ' . $last;
+
+    return $last;
 
 }

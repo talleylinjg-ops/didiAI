@@ -75,6 +75,12 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_c
  * @param $requirement
  */
 function gamipress_cf_ajax_update_requirement( $requirement_id, $requirement ) {
+    
+    $requirement = wp_parse_args( $requirement, array(
+        'caldera_form'      => '',
+        'cf_field_name'     => '',
+        'cf_field_value'    => '',
+    ) );
 
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_cf_specific_new_form_submission'

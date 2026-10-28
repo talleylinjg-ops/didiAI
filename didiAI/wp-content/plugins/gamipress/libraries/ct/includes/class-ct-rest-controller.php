@@ -137,7 +137,7 @@ class CT_REST_Controller extends WP_REST_Controller {
     public function get_items_permissions_check( $request ) {
 
         if ( 'edit' === $request['context'] && ! current_user_can( $this->table->cap->edit_items ) ) {
-            return new WP_Error( 'rest_forbidden_context', __( 'Sorry, you are not allowed to edit items of this type.' ), array( 'status' => rest_authorization_required_code() ) );
+            return new WP_Error( 'rest_forbidden_context', ct_get_table_label( $this->table->name, 'edit_items_not_allowed' ), array( 'status' => rest_authorization_required_code() ) );
         }
 
         return true;
@@ -375,11 +375,11 @@ class CT_REST_Controller extends WP_REST_Controller {
      */
     public function create_item_permissions_check( $request ) {
         if ( ! empty( $request['id'] ) ) {
-            return new WP_Error( 'rest_item_exists', __( 'Cannot create existing item.' ), array( 'status' => 400 ) );
+            return new WP_Error( 'rest_item_exists', __( 'Cannot create existing item.', 'ct' ), array( 'status' => 400 ) );
         }
 
         if ( ! current_user_can( $this->table->cap->create_items ) ) {
-            return new WP_Error( 'rest_cannot_create', __( 'Sorry, you are not allowed to create items as this user.' ), array( 'status' => rest_authorization_required_code() ) );
+            return new WP_Error( 'rest_cannot_create', __( 'Sorry, you are not allowed to create items as this user.', 'ct' ), array( 'status' => rest_authorization_required_code() ) );
         }
 
         return true;
@@ -395,7 +395,7 @@ class CT_REST_Controller extends WP_REST_Controller {
      */
     public function create_item( $request ) {
         if ( ! empty( $request['id'] ) ) {
-            return new WP_Error( 'rest_item_exists', __( 'Cannot create existing item.' ), array( 'status' => 400 ) );
+            return new WP_Error( 'rest_item_exists', __( 'Cannot create existing item.', 'ct' ), array( 'status' => 400 ) );
         }
 
         ct_setup_table( $this->name );
@@ -678,7 +678,7 @@ class CT_REST_Controller extends WP_REST_Controller {
         }
 
         if ( ! $result ) {
-            return new WP_Error( 'rest_cannot_delete', __( 'The item cannot be deleted.' ), array( 'status' => 500 ) );
+            return new WP_Error( 'rest_cannot_delete', __( 'The item cannot be deleted.', 'ct' ), array( 'status' => 500 ) );
         }
 
         /**

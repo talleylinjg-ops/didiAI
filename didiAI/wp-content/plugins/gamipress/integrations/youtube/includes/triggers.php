@@ -96,13 +96,8 @@ function gamipress_youtube_log_extra_data_fields( $fields, $log_id, $type ) {
 
     $prefix = '_gamipress_';
 
-    // TODO: To remove, added just to backward compatibility
-    if( ! is_gamipress_upgraded_to( '1.4.7' ) ) {
-        $trigger = ct_get_object_meta( $log_id, '_gamipress_trigger_type', true );
-    } else {
-        $log = ct_get_object( $log_id );
-        $trigger = $log->trigger_type;
-    }
+    $log = ct_get_object( $log_id );
+    $trigger = $log->trigger_type;
 
     if( $type !== 'event_trigger' ) {
         return $fields;

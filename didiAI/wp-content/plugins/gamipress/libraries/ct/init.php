@@ -13,6 +13,8 @@
  * @version   1.1.1
  * @link      https://gamipress.com
  */
+// Exit if accessed directly
+if( !defined( 'ABSPATH' ) ) exit;
 
 /*
  * Copyright (c) GamiPress (contact@gamipress.com), Ruben Garcia (rubengcdev@gmail.com)

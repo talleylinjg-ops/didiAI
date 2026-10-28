@@ -152,6 +152,16 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_h
  */
 function gamipress_h5p_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'h5p_content_type'      => '',
+        'h5p_score'             => '',
+        'h5p_min_score'         => '',
+        'h5p_max_score'         => '',
+        'h5p_percentage'        => '',
+        'h5p_min_percentage'    => '',
+        'h5p_max_percentage'    => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_h5p_complete_specific_content_type'
             || $requirement['trigger_type'] === 'gamipress_h5p_max_complete_specific_content_type'

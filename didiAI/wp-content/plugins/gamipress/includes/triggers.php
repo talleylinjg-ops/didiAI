@@ -1530,11 +1530,6 @@ function gamipress_get_user_triggers( $user_id = 0, $site_id = 0 ) {
  */
 function gamipress_get_user_trigger_count( $user_id, $trigger, $since = 0, $site_id = 0, $args = array() ) {
 
-	// If not properly upgrade to required version fallback to compatibility function
-	if( ! is_gamipress_upgraded_to( '1.4.7' ) ) {
-		return gamipress_get_user_trigger_count_old_147(  $user_id, $trigger, $since, $site_id, $args );
-	}
-
 	// Set to current site id
 	if ( ! $site_id ) {
 		$site_id = get_current_blog_id();

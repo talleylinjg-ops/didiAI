@@ -170,13 +170,10 @@ function gamipress_query_logs( $args ) {
         'trigger_type',
         'access',
         'user_id',
-        'date'
+        'date',
+        'points',
+        'points_type',
     );
-
-    if( is_gamipress_upgraded_to( '6.9.4' ) ) {
-        $log_fields[] = 'points';
-        $log_fields[] = 'points_type';
-    }
 
     // Initialize query definitions
     $select     = array();
@@ -448,11 +445,6 @@ function gamipress_get_user_logs( $user_id = 0, $where = array(), $since = 0 ) {
  */
 function gamipress_get_user_log_count( $user_id = 0, $where = array(), $since = 0 ) {
 
-    // If not properly upgrade to required version fallback to compatibility function
-    if( ! is_gamipress_upgraded_to( '1.2.8' ) ) {
-        return gamipress_get_user_log_count_old( $user_id, $where );
-    }
-
     return gamipress_query_logs( array(
         'select' => 'COUNT(*)',
         'user_id' => $user_id,
@@ -516,14 +508,6 @@ function gamipress_insert_log( $type = '', $user_id = 0, $access = 'public', $tr
         unset( $log_meta['trigger_type'] );
     }
 
-    // If not properly upgrade to required version fallback to compatibility function
-    if( ! is_gamipress_upgraded_to( '1.4.7' ) ) {
-
-        $log_meta['trigger_type'] = $trigger_type;
-
-        return gamipress_insert_log_old_147( $type, $user_id, $access, $log_meta );
-    }
-
     // Setup table
     $ct_table = ct_setup_table( 'gamipress_logs' );
 
@@ -537,10 +521,8 @@ function gamipress_insert_log( $type = '', $user_id = 0, $access = 'public', $tr
         'date'	        => date( 'Y-m-d H:i:s', current_time( 'timestamp' ) ),
     );
 
-    if( is_gamipress_upgraded_to( '6.9.4' ) ) {
-        $log_data['points'] = ( isset( $log_meta['points'] ) ) ? $log_meta['points'] : 0;
-        $log_data['points_type'] = ( isset( $log_meta['points_type'] ) ) ? $log_meta['points_type'] : '';
-    }
+    $log_data['points'] = ( isset( $log_meta['points'] ) ) ? $log_meta['points'] : 0;
+    $log_data['points_type'] = ( isset( $log_meta['points_type'] ) ) ? $log_meta['points_type'] : '';
 
     // Auto-generated post title
     $log_data['title'] = gamipress_parse_log_pattern( $log_meta['pattern'], $log_data, $log_meta );
@@ -596,20 +578,6 @@ function gamipress_insert_log( $type = '', $user_id = 0, $access = 'public', $tr
  */
 function gamipress_parse_log_pattern( $log_pattern = '',  $log_data = array(), $log_meta = array()) {
 
-    // If not properly upgrade to required version fallback to compatibility function
-    if( ! is_gamipress_upgraded_to( '1.2.8' ) ) {
-
-        if( isset( $log_data['user_id'] ) ) {
-            $log_data['post_author'] = $log_data['user_id'];
-        }
-
-        if( isset( $log_data['type'] ) ) {
-            $log_meta['type'] = $log_data['type'];
-        }
-
-        return gamipress_parse_log_pattern_old( $log_pattern, $log_data, $log_meta );
-    }
-
     global $gamipress_pattern_replacements;
 
     // Setup site pattern replacements
@@ -656,21 +624,6 @@ function gamipress_parse_log_pattern( $log_pattern = '',  $log_data = array(), $
  */
 function gamipress_parse_achievement_log_pattern( $log_data, $log_meta ) {
 
-    // If not properly upgrade to required version fallback to compatibility function
-    if( ! is_gamipress_upgraded_to( '1.2.8' ) ) {
-
-        if( isset( $log_data['user_id'] ) ) {
-            $log_data['post_author'] = $log_data['user_id'];
-        }
-
-        if( isset( $log_data['type'] ) ) {
-            $log_meta['type'] = $log_data['type'];
-        }
-
-        gamipress_parse_achievement_log_pattern_old( $log_data, $log_meta );
-        return;
-    }
-
     // If log has assigned an achievement, then add achievement pattern replacements
     if( isset( $log_meta['achievement_id'] ) ) {
 
@@ -710,34 +663,13 @@ add_action( 'gamipress_before_parse_log_pattern', 'gamipress_parse_achievement_l
  */
 function gamipress_parse_points_log_pattern( $log_data, $log_meta ) {
 
-    // If not properly upgrade to required version fallback to compatibility function
-    if( ! is_gamipress_upgraded_to( '1.2.8' ) ) {
-
-        if( isset( $log_data['user_id'] ) ) {
-            $log_data['post_author'] = $log_data['user_id'];
-        }
-
-        if( isset( $log_data['type'] ) ) {
-            $log_meta['type'] = $log_data['type'];
-        }
-
-        gamipress_parse_points_log_pattern_old( $log_data, $log_meta );
-        return;
-    }
-
     // If log is a points based entry, then add points pattern replacements
     if( $log_data['type'] === 'points_award' || $log_data['type'] === 'points_revoke' || $log_data['type'] === 'points_earn' || $log_data['type'] === 'points_deduct' ) {
 
         global $gamipress_pattern_replacements;
 
-        // If not properly upgrade to required version fallback to compatibility function
-        if( is_gamipress_upgraded_to( '6.9.4' ) ) {
-            $points = absint( $log_data['points'] );
-            $points_type = $log_data['points_type'];
-        } else {
-            $points = absint( $log_meta['points'] );
-            $points_type = $log_meta['points_type'];
-        }
+        $points = absint( $log_data['points'] );
+        $points_type = $log_data['points_type'];
 
         $points_types = gamipress_get_points_types();
 
@@ -905,12 +837,6 @@ function gamipress_get_log_meta_data_defaults( $log_meta, $log_id, $log_data ) {
 
     if( $log_data['type'] === 'event_trigger' ) {
         // Event trigger meta data
-
-        // If not upgraded to 1.4.7 yet, return trigger_type as a meta data
-        if( ! is_gamipress_upgraded_to( '1.4.7' ) ) {
-            $meta_keys[] = 'trigger_type';
-        }
-
         $meta_keys[] = 'count';
     } else if( $log_data['type'] === 'achievement_earn' || $log_data['type'] === 'achievement_award' ) {
         // Achievement earn meta data

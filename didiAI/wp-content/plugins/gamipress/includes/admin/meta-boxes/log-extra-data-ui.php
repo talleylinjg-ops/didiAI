@@ -143,7 +143,7 @@ function gamipress_log_extra_data_ui_html( $object, $object_id, $type ) {
                 'name' 	=> __( 'Trigger', 'gamipress' ),
                 'tooltip'   =>  __( 'The event user has triggered.', 'gamipress' ),
                 'label_cb' => 'cmb_tooltip_label_cb',
-                'id'   	=> ( ( ! is_gamipress_upgraded_to( '1.4.7' ) ) ? $prefix : '' ) . 'trigger_type',
+                'id'   	=> 'trigger_type',
                 'type' 	=> 'advanced_select',
                 'options' 	=> gamipress_get_activity_triggers(),
             ),
@@ -156,11 +156,7 @@ function gamipress_log_extra_data_ui_html( $object, $object_id, $type ) {
             ),
         );
 
-        if( ! is_gamipress_upgraded_to( '1.4.7' ) ) {
-            $trigger = ct_get_object_meta( $object_id, $prefix . 'trigger_type', true );
-        } else {
-            $trigger = $object->trigger_type;
-        }
+        $trigger = $object->trigger_type;
 
         // If is a specific activity trigger, then add the achievement_post field
         if( in_array( $trigger, array_keys( gamipress_get_specific_activity_triggers() ) ) ) {
@@ -312,6 +308,10 @@ function gamipress_log_extra_data_ui_html( $object, $object_id, $type ) {
 function gamipress_get_log_extra_data_ui_ajax_handler() {
     // Security check, forces to die if not security passed
     check_ajax_referer( 'gamipress_admin', 'nonce' );
+
+    // Check user capabilities
+    if( ! current_user_can( gamipress_get_manager_capability() ) )
+        wp_send_json_error( __( 'You are not allowed to perform this action.', 'gamipress' ) );
 
     ct_setup_table( 'gamipress_logs' );
 

@@ -251,6 +251,20 @@ function gamipress_ld_taxonomy_fields( $requirement_id, $element ) {
  */
 function gamipress_ld_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'ld_score'              => '',
+        'ld_min_score'          => '',
+        'ld_max_score'          => '',
+        'ld_course_category_id' => '',
+        'ld_course_tag_id'      => '',
+        'ld_topic_category_id'  => '',
+        'ld_topic_tag_id'       => '',
+        'ld_lesson_category_id' => '',
+        'ld_lesson_tag_id'      => '',
+        'ld_quiz_category_id'   => '',
+        'ld_quiz_tag_id'        => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_ld_complete_quiz_grade'
             || $requirement['trigger_type'] === 'gamipress_ld_complete_specific_quiz_grade'

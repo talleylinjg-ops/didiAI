@@ -19,8 +19,9 @@ $a = $gamipress_template_args; ?>
         <?php echo gamipress_inline_achievement_shortcode( $a ); ?>
 
         <?php // Separator ?>
+        <?php if( $a['title'] === 'yes' ) : ?>
         <?php echo ( $index !== ( count( $a['achievements'] ) -1 ) ? '<span class="gamipress-inline-achievements-separator">, </span>' : '' ); ?>
-
+        <?php endif; ?>
      <?php endforeach; ?>
 
 </span>

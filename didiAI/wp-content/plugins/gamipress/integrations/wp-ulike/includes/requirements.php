@@ -64,6 +64,10 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_w
  */
 function gamipress_wp_ulike_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'wp_ulike_post_type' => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_wp_ulike_post_type_like'
             || $requirement['trigger_type'] === 'gamipress_wp_ulike_get_post_type_like' ) ) {

@@ -74,6 +74,10 @@ function cmb2_sample_metabox() {
 
 ## Changelog
 
+### 1.0.5
+
+* Added the attribute tabs_speed.
+
 ### 1.0.4
 
 * Ensure that all tab parameters has been passed correctly.

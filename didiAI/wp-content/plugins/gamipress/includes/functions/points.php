@@ -39,14 +39,8 @@ function gamipress_get_user_points( $user_id = 0, $points_type = '', $args = arr
     if( ( isset( $date_query['before'] ) && ! empty( $date_query['before'] ) )
         || ( isset( $date_query['after'] ) && ! empty( $date_query['after'] ) ) ) {
 
-		$field = 'lm0.meta_value';
-		
-		if ( is_gamipress_upgraded_to( '6.9.4' ) ) {
-			$field = 'l.points';
-		}
-
         return absint( gamipress_query_logs( array(
-            'select' => 'GREATEST( IFNULL( SUM( '. $field .' ), 0 ), 0 )',
+            'select' => 'GREATEST( IFNULL( SUM( l.points ), 0 ), 0 )',
             'get_var' => true,
             'user_id' => $user_id,
             'where' => array(
@@ -295,14 +289,8 @@ function gamipress_get_site_points( $points_type = '', $args = array() ) {
     if( ( isset( $date_query['before'] ) && ! empty( $date_query['before'] ) )
         || ( isset( $date_query['after'] ) && ! empty( $date_query['after'] ) ) ) {
 
-		$field = 'lm0.meta_value';
-		
-		if ( is_gamipress_upgraded_to( '6.9.4' ) ) {
-			$field = 'l.points';
-		}
-
         return absint( gamipress_query_logs( array(
-            'select' => 'GREATEST( IFNULL( SUM( '. $field .' ), 0 ), 0 )',
+            'select' => 'GREATEST( IFNULL( SUM( l.points ), 0 ), 0 )',
             'get_var' => true,
             'where' => array(
                 array(
@@ -970,12 +958,6 @@ function gamipress_get_points_type_points_awards( $points_type = 0, $post_status
 		$points_type = $post->ID;
 	}
 
-    // If not properly upgrade to required version fallback to compatibility function
-    if( ! is_gamipress_upgraded_to( '1.5.1' ) ) {
-        // gamipress_get_assigned_requirements() has backward compatibility and merge new and old results
-        return gamipress_get_assigned_requirements( $points_type, 'points-award', $post_status );
-    }
-
     $cache = gamipress_get_cache( 'points_type_points_awards', array(), false );
 
     // If result already cached, return it
@@ -1019,11 +1001,6 @@ function gamipress_get_points_type_points_awards( $points_type = 0, $post_status
  * @return object|bool                 The post object of the points type, or false if none
  */
 function gamipress_get_points_award_points_type( $points_award_id = 0 ) {
-
-    // If not properly upgrade to required version fallback to compatibility function
-    if( ! is_gamipress_upgraded_to( '1.5.1' ) ) {
-        return gamipress_get_points_award_points_type_old( $points_award_id );
-    }
 
 	// Grab the current post ID if no points_award_id was specified
 	if ( ! $points_award_id ) {
@@ -1072,12 +1049,6 @@ function gamipress_get_points_type_points_deducts( $points_type = 0, $post_statu
 		$points_type = $post->ID;
 	}
 
-    // If not properly upgrade to required version fallback to compatibility function
-    if( ! is_gamipress_upgraded_to( '1.5.1' ) ) {
-        // gamipress_get_assigned_requirements() has backward compatibility and merge new and old results
-        return gamipress_get_assigned_requirements( $points_type, 'points-deduct', $post_status );
-    }
-
     $cache = gamipress_get_cache( 'points_type_points_deducts', array(), false );
 
     // If result already cached, return it
@@ -1121,11 +1092,6 @@ function gamipress_get_points_type_points_deducts( $points_type = 0, $post_statu
  * @return object|bool                 The post object of the points type, or false if none
  */
 function gamipress_get_points_deduct_points_type( $points_deduct_id = 0 ) {
-
-    // If not properly upgrade to required version fallback to compatibility function
-    if( ! is_gamipress_upgraded_to( '1.5.1' ) ) {
-        return gamipress_get_points_deduct_points_type_old( $points_deduct_id );
-    }
 
     // Grab the current post ID if no points_award_id was specified
     if ( ! $points_deduct_id ) {

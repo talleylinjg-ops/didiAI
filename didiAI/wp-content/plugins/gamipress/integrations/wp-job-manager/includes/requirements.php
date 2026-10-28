@@ -81,6 +81,10 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_w
  */
 function gamipress_wp_job_manager_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'wp_job_manager_type_id' => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && in_array( $requirement['trigger_type'], array(
             'gamipress_wp_job_manager_publish_job_specific_type',

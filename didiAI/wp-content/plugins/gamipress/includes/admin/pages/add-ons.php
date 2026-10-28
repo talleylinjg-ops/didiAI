@@ -35,6 +35,7 @@ function gamipress_add_ons_page() {
         <div class="wp-filter">
             <ul class="filter-links">
                 <li class="plugins-premium"><a href="#" data-target="gamipress-premium-add-on" class="current"><?php echo gamipress_dashicon( 'gamipress', 'span' ); ?> <?php _e( 'Premium', 'gamipress' ); ?></a></li>
+                <li class="plugins-assets"><a href="#" data-target="gamipress-asset-add-on"><?php echo gamipress_dashicon( 'awards', 'span' ); ?> <?php _e( 'Assets', 'gamipress' ); ?></a></li>
                 <li class="plugins-free"><a href="#" data-target="gamipress-free-add-on"><?php echo gamipress_dashicon( 'heart', 'span' ); ?> <?php _e( 'Free', 'gamipress' ); ?></a></li>
                 <li class="plugins-integrations"><a href="#" data-target="gamipress-integration-add-on"><?php echo gamipress_dashicon( 'admin-plugins', 'span' ); ?> <?php _e( 'Integrations', 'gamipress' ); ?></a></li>
                 <li class="plugins-third-party"><a href="#" data-target="gamipress-third-party-add-on"><?php echo gamipress_dashicon( 'star-filled', 'span' ); ?> <?php _e( '3rd Party', 'gamipress' ); ?></a></li>
@@ -59,7 +60,7 @@ function gamipress_add_ons_page() {
             foreach ( $plugins as $plugin ) {
 
                 // Skip if is an asset or pass
-                if( gamipress_is_plugin_asset( $plugin ) || gamipress_is_plugin_pass( $plugin ) )
+                if( gamipress_is_plugin_pass( $plugin ) )
                     continue;
 
                 gamipress_render_plugin_card( $plugin );
@@ -130,13 +131,13 @@ function gamipress_render_plugin_card( $plugin ) {
         $class = 'gamipress-third-party-add-on';
 
         // "More Information" action
-        $action_links[] = '<a href="https://gamipress.com/add-ons/' . $plugin->info->slug . '" class="button" target="_blank">' . __( 'More Information', 'gamipress' ) . '</a>';
+        $action_links[] = '<a href="https://gamipress.com/add-ons/' . $plugin->info->slug . '" class="button button-primary" target="_blank">' . __( 'More Information', 'gamipress' ) . '</a>';
 
     } else if( gamipress_plugin_has_category( $plugin, 'integrations' ) ) {
         $class = 'gamipress-integration-add-on';
 
         // "More Information" action
-        $action_links[] = '<a href="https://gamipress.com/add-ons/' . $plugin->info->slug . '" class="button" target="_blank">' . __( 'More Information', 'gamipress' ) . '</a>';
+        $action_links[] = '<a href="https://gamipress.com/add-ons/' . $plugin->info->slug . '" class="button button-primary" target="_blank">' . __( 'More Information', 'gamipress' ) . '</a>';
     } else if( $plugin->wp_info ) {
         // Free add-ons
 
@@ -155,13 +156,13 @@ function gamipress_render_plugin_card( $plugin ) {
             switch ( $status['status'] ) {
                 case 'install':
                     if ( $status['url'] ) {
-                        $action_links[] = '<a class="install-now button" data-slug="' . esc_attr( $slug ) . '" href="' . esc_url( $status['url'] ) . '" aria-label="' . esc_attr( sprintf( __( 'Install %s now' ), $name ) ) . '" data-name="' . esc_attr( $name ) . '">' . __( 'Install Now' ) . '</a>';
+                        $action_links[] = '<a class="install-now button button-primary" data-slug="' . esc_attr( $slug ) . '" href="' . esc_url( $status['url'] ) . '" aria-label="' . esc_attr( sprintf( __( 'Install %s now' ), $name ) ) . '" data-name="' . esc_attr( $name ) . '">' . __( 'Install Now' ) . '</a>';
                     }
                     break;
 
                 case 'update_available':
                     if ( $status['url'] ) {
-                        $action_links[] = '<a class="update-now button aria-button-if-js" data-plugin="' . esc_attr( $status['file'] ) . '" data-slug="' . esc_attr( $slug ) . '" href="' . esc_url( $status['url'] ) . '" aria-label="' . esc_attr( sprintf( __( 'Update %s now' ), $name ) ) . '" data-name="' . esc_attr( $name ) . '">' . __( 'Update Now' ) . '</a>';
+                        $action_links[] = '<a class="update-now button button-primary aria-button-if-js" data-plugin="' . esc_attr( $status['file'] ) . '" data-slug="' . esc_attr( $slug ) . '" href="' . esc_url( $status['url'] ) . '" aria-label="' . esc_attr( sprintf( __( 'Update %s now' ), $name ) ) . '" data-name="' . esc_attr( $name ) . '">' . __( 'Update Now' ) . '</a>';
                     }
                     break;
 
@@ -185,7 +186,7 @@ function gamipress_render_plugin_card( $plugin ) {
                         }
 
                         $action_links[] = sprintf(
-                            '<a href="%1$s" class="button activate-now" aria-label="%2$s">%3$s</a>',
+                            '<a href="%1$s" class="button button-primary activate-now" aria-label="%2$s">%3$s</a>',
                             esc_url( $activate_url ),
                             esc_attr( sprintf( $button_label, $name ) ),
                             $button_text
@@ -254,7 +255,7 @@ function gamipress_render_plugin_card( $plugin ) {
 
                 // "Activate" action
                 $action_links[] = sprintf(
-                    '<a href="%1$s" class="button activate-now" aria-label="%2$s">%3$s</a>',
+                    '<a href="%1$s" class="button button-primary activate-now" aria-label="%2$s">%3$s</a>',
                     esc_url( $activate_url ),
                     esc_attr( sprintf( $button_label, $name ) ),
                     $button_text
@@ -278,11 +279,6 @@ function gamipress_render_plugin_card( $plugin ) {
             $action_links[] = '<a href="https://gamipress.com/add-ons/' . $plugin->info->slug . '" class="button button-primary" target="_blank">' . __( 'Get this add-on', 'gamipress' ) . '</a>';
 
         }
-    }
-
-    if(  ! gamipress_plugin_has_category( $plugin, '3rd-party' ) &&  ! gamipress_plugin_has_category( $plugin, 'integrations' ) ) {
-        // "More Details" action
-        // $action_links[] = '<a href="https://gamipress.com/add-ons/' . $plugin->info->slug . '" class="more-details" aria-label="' . esc_attr( sprintf( __( 'More information about %s' ), $name ) ) . '" data-title="' . esc_attr( $name ) . '" target="_blank">' . __( 'More Details' ) . '</a>';
     }
 
     /**
@@ -700,4 +696,60 @@ function gamipress_plugin_has_category( $plugin, $category ) {
 
     return false;
 
+}
+
+/**
+ * Helper function to determine if give plugin has the passes category
+ *
+ * @since   1.6.9.2
+ *
+ * @param stdClass $plugin
+ *
+ * @return bool
+ */
+function gamipress_is_plugin_pass( $plugin ) {
+
+    // Check if plugin has categories
+    if( is_array( $plugin->info->category ) && count( $plugin->info->category ) ) {
+
+        // Loop plugin categories
+        foreach( $plugin->info->category as $category ) {
+
+            // Passes category found
+            if( $category->slug === 'passes' ) {
+                return true;
+            }
+        }
+
+    }
+
+    return false;
+}
+
+/**
+ * Helper function to determine if give plugin has the asset tag
+ *
+ * @since  1.6.0
+ *
+ * @param stdClass $plugin
+ *
+ * @return bool
+ */
+function gamipress_is_plugin_asset( $plugin ) {
+
+    // Check if plugin has tags
+    if( is_array( $plugin->info->tags ) && count( $plugin->info->tags ) ) {
+
+        // Loop plugin tags
+        foreach( $plugin->info->tags as $tag ) {
+
+            // asset tag found
+            if( $tag->slug === 'asset' ) {
+                return true;
+            }
+        }
+
+    }
+
+    return false;
 }

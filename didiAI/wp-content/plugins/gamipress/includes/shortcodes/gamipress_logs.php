@@ -131,11 +131,6 @@ add_action( 'init', 'gamipress_register_logs_shortcode' );
  */
 function gamipress_logs_shortcode( $atts = array(), $content = '' ) {
 
-    // If not properly upgrade to required version fallback to compatibility function
-    if( ! is_gamipress_upgraded_to( '1.2.8' ) ) {
-        return gamipress_logs_shortcode_old( $atts );
-    }
-
     global $gamipress_template_args;
 
     // Initialize GamiPress template args global

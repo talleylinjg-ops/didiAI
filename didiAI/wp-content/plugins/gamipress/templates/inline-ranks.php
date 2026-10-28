@@ -19,8 +19,9 @@ $a = $gamipress_template_args; ?>
         <?php echo gamipress_inline_rank_shortcode( $a ); ?>
 
         <?php // Separator ?>
+        <?php if( $a['title'] === 'yes' ) : ?>
         <?php echo ( $index !== ( count( $a['ranks'] ) -1 ) ? '<span class="gamipress-inline-ranks-separator">, </span>' : '' ); ?>
-
+        <?php endif; ?>
      <?php endforeach; ?>
 
 </span>

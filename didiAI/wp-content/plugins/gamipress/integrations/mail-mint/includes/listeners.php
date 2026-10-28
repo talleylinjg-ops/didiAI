@@ -233,4 +233,4 @@ function gamipress_mail_mint_register_contact( $contact_id, $params ) {
     do_action( 'gamipress_mail_mint_register_contact', $user_id );
 
 }
-add_action( 'mailmint_contacts_saved', 'gamipress_mail_mint_submit_form', 10, 2 );
+add_action( 'mailmint_contacts_saved', 'gamipress_mail_mint_register_contact', 10, 2 );

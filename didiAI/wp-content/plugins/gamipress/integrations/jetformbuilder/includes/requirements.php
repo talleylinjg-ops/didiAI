@@ -65,6 +65,11 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_j
  */
 function gamipress_jetformbuilder_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'jetformbuilder_field_name'     => '',
+        'jetformbuilder_field_value'    => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_jetformbuilder_field_value_submission'
             || $requirement['trigger_type'] === 'gamipress_jetformbuilder_specific_field_value_submission' ) ) {

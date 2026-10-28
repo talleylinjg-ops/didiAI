@@ -68,7 +68,7 @@
 .menu-top.toplevel_page_gamipress .wp-submenu li:nth-child(6),
 .menu-top.toplevel_page_gamipress .wp-submenu li:nth-child(8),
 .menu-top.toplevel_page_gamipress .wp-submenu li:nth-child(11),
-.menu-top.toplevel_page_gamipress .wp-submenu li:nth-child(14) {
+.menu-top.toplevel_page_gamipress .wp-submenu li:nth-child(13) {
 	border-top: 1px solid #666;
 }
 
@@ -1158,13 +1158,14 @@ body.wp-customizer > .gamipress-select2 {
 
 .gamipress-select2 .select2-selection--multiple .select2-selection__rendered li {
 	border-radius: 0;
-	padding: 2px 5px 2px;
+	padding: 2px 5px 2px 22px;
 	vertical-align: middle;
 	margin-bottom: 0 !important;
 }
 
 .gamipress-select2 .select2-selection--multiple .select2-selection__choice__remove {
-	line-height: 10px;
+	line-height: 18px;
+	padding-bottom: 2px !important;
 	font-size: 18px;
 	vertical-align: top;
 	margin-top: 1px;
@@ -2126,6 +2127,7 @@ body.toplevel_page_gamipress {
 	cursor: auto;
 	user-select: auto;
 	font-size: 16px;
+	padding: 8px 10px !important;
 }
 
 .gamipress-dashboard .postbox .hndle .button {
@@ -2288,12 +2290,14 @@ body.toplevel_page_gamipress {
 }
 
 .gamipress-dashboard .gamipress-dashboard-video .gamipress-dashboard-video-image {
-	height: 59px;
+	height: 60px;
 	overflow: hidden;
+	margin-right: 6px;
 }
 
 .gamipress-dashboard .gamipress-dashboard-video .gamipress-dashboard-video-image img {
 	margin-top: -13px;
+	margin-left: -10px;
 }
 
 .gamipress-dashboard .gamipress-dashboard-video .gamipress-dashboard-video-details .gamipress-dashboard-video-title {
@@ -2386,6 +2390,11 @@ body.toplevel_page_gamipress {
 	.gamipress-dashboard .plugin-card:nth-child(3n+1) {
 		clear: none;
 	}
+}
+
+/* Docs */
+.gamipress-dashboard .gamipress-dashboard-docs-section .postbox-header .hndle {
+	padding-bottom: 0 !important;
 }
 
 /* Plugins */
@@ -3699,7 +3708,7 @@ body.toplevel_page_gamipress {
 	opacity: 1;
 }
 
-	/* Badge Builder Icons */
+/* Badge Builder Icons */
 .gamipress-badge-builder .dashicons-image-rotate.dashicons-image-rotate-right {
     transform: rotateY(180deg);
 }
@@ -3853,4 +3862,9 @@ body.toplevel_page_gamipress {
 
 .gamipress-sortable-multicheck .cmb2-list li.ui-sortable-helper::before {
     cursor: move;
+}
+
+/* Badge Builder: Fix notices */
+.gamipress-badge-builder .notice {
+	display: none !important;
 }

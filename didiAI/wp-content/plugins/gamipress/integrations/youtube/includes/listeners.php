@@ -21,6 +21,10 @@ function gamipress_youtube_track_watch_video_listener() {
     $duration           = ( isset( $_REQUEST['duration'] ) ? sanitize_text_field( $_REQUEST['duration'] ) : '' );
     $post_id            = ( isset( $_REQUEST['post_id'] ) ? sanitize_text_field( $_REQUEST['post_id'] ) : '' );
 
+    if ( ! current_user_can( gamipress_get_manager_capability() ) ) {
+        $user_id = get_current_user_id();
+    }
+
     // Check valid video_id
     if ( ! gamipress_youtube_check_video_id_format( $video_id ) ) {
         wp_send_json_error( __( 'Invalid video ID', 'gamipress' ) );

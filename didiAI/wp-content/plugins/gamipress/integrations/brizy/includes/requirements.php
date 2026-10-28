@@ -82,6 +82,12 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_b
  */
 function gamipress_brizy_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'brizy_form'        => '',
+        'brizy_field_name'  => '',
+        'brizy_field_value' => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_brizy_specific_new_form_submission'
             || $requirement['trigger_type'] === 'gamipress_brizy_specific_field_value_submission' ) ) {

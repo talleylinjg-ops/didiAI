@@ -93,6 +93,10 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_w
  */
 function gamipress_wishlist_member_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'wishlist_member_level_id' => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] ) ) {
 
         if( in_array( $requirement['trigger_type'], array(

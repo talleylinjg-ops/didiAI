@@ -53,15 +53,15 @@ if ( ! class_exists( 'CT_List_Table' ) ) :
             if ( ! empty( $_REQUEST['orderby'] ) ) {
                 if ( is_array( $_REQUEST['orderby'] ) ) {
                     foreach ( $_REQUEST['orderby'] as $key => $value ) {
-                        echo '<input type="hidden" name="orderby[' . esc_attr( $key ) . ']" value="' . esc_attr( $value ) . '" />';
+                        echo '<input type="hidden" name="orderby[' . esc_attr( sanitize_text_field( wp_unslash( $key ) ) ) . ']" value="' . esc_attr( sanitize_text_field( wp_unslash( $value ) ) ) . '" />';
                     }
                 } else {
-                    echo '<input type="hidden" name="orderby" value="' . esc_attr( $_REQUEST['orderby'] ) . '" />';
+                    echo '<input type="hidden" name="orderby" value="' . esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['orderby'] ) ) ) . '" />';
                 }
             }
 
             if ( ! empty( $_REQUEST['order'] ) ) {
-                echo '<input type="hidden" name="order" value="' . esc_attr( sanitize_text_field( $_REQUEST['order'] ) ) . '" />';
+                echo '<input type="hidden" name="order" value="' . esc_attr( sanitize_text_field( wp_unslash( $_REQUEST['order'] ) ) ) . '" />';
             }
             ?>
             <p class="search-box">
@@ -126,7 +126,7 @@ if ( ! class_exists( 'CT_List_Table' ) ) :
                 $current = '';
 
                 if( isset( $_GET['_ctviewnonce'] ) && wp_verify_nonce( sanitize_text_field( wp_unslash ( $_GET['_ctviewnonce'] ) ), 'ct_views_filter' ) ) {
-                    $current = isset( $_GET[$field_id] ) ? sanitize_text_field( $_GET[$field_id] ) : '';
+                    $current = isset( $_GET[$field_id] ) ? sanitize_text_field( wp_unslash( $_GET[$field_id] ) ) : '';
                 }
 
                 // Setup the 'All' view
@@ -199,6 +199,8 @@ if ( ! class_exists( 'CT_List_Table' ) ) :
              *
              * @param string $which The location of the extra table nav markup: 'top' or 'bottom'.
              */
+            do_action( "ct_manage_{$ct_table->name}_extra_tablenav", $which );
+            // Backward compatibility
             do_action( "manage_{$ct_table->name}_extra_tablenav", $which );
 
         }
@@ -238,7 +240,9 @@ if ( ! class_exists( 'CT_List_Table' ) ) :
              * @param array  $posts_columns An array of column names.
              * @param CT_Table $ct_table    The table object.
              */
-            return apply_filters( "manage_{$ct_table->name}_columns", $columns, $ct_table );
+            // Backward Compatibility
+            $columns = apply_filters( "manage_{$ct_table->name}_columns", $columns, $ct_table );
+            return apply_filters( "ct_manage_{$ct_table->name}_columns", $columns, $ct_table );
         }
 
         /**
@@ -267,7 +271,9 @@ if ( ! class_exists( 'CT_List_Table' ) ) :
              * @param array     $sortable_columns   An array of column names.
              * @param CT_Table  $ct_table           The table object.
              */
-            return apply_filters( "manage_{$ct_table->name}_sortable_columns", $sortable_columns, $ct_table );
+            // Backward Compatibility
+            $sortable_columns = apply_filters( "manage_{$ct_table->name}_sortable_columns", $sortable_columns, $ct_table );
+            return apply_filters( "ct_manage_{$ct_table->name}_sortable_columns", $sortable_columns, $ct_table );
         }
 
         /**
@@ -300,6 +306,8 @@ if ( ! class_exists( 'CT_List_Table' ) ) :
              * @param stdClass  $object      The current object.
              * @param CT_Table  $ct_table    The CT table object.
              */
+            do_action( "ct_manage_{$ct_table->name}_custom_column", $column_name, $item->$primary_key, $item, $ct_table );
+            // Backward Compatibility
             do_action( "manage_{$ct_table->name}_custom_column", $column_name, $item->$primary_key, $item, $ct_table );
             $custom_output = ob_get_clean();
 
@@ -320,6 +328,7 @@ if ( ! class_exists( 'CT_List_Table' ) ) :
                 // Turns first column into a text link with url to edit the item
                 $value = sprintf( '<strong><a href="%s" aria-label="%s">%s</a></strong>',
                     esc_attr( ct_get_edit_link( $ct_table->name, $item->$primary_key ) ),
+                    // translators: %s: value
                     esc_attr( sprintf( __( 'Edit &#8220;%s&#8221;' ), $value ) ),
                     $value
                 );
@@ -406,17 +415,15 @@ if ( ! class_exists( 'CT_List_Table' ) ) :
 
             if ( current_user_can( $ct_table->cap->edit_items ) ): ?>
                 <label class="screen-reader-text" for="cb-select-<?php echo esc_attr( $item->$primary_key ); ?>"><?php
-                    echo sprintf( __( 'Select Item #%d' ), $item->$primary_key );
+                    // translators: %d: item ID
+                    echo esc_html( sprintf( ct_get_table_label( $ct_table->name, 'select_item' ), $item->$primary_key ) );
                     ?></label>
                 <input id="cb-select-<?php echo esc_attr( $item->$primary_key ); ?>" type="checkbox" name="item[]" value="<?php echo esc_attr( $item->$primary_key ); ?>" />
                 <div class="locked-indicator">
                     <span class="locked-indicator-icon" aria-hidden="true"></span>
                     <span class="screen-reader-text"><?php
-                        echo esc_html( sprintf(
                         /* translators: %d: item ID */
-                            __( '&#8220;Item #%d&#8221; is locked' ),
-                            $item->$primary_key
-                        ) );
+                        echo esc_html( sprintf( ct_get_table_label( $ct_table->name, 'item_locked' ), $item->$primary_key ) );
                         ?></span>
                 </div>
             <?php endif;

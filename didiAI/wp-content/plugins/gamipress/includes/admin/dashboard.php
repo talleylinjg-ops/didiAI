@@ -141,11 +141,6 @@ function gamipress_dashboard_widget() {
 
     <?php
 
-    if( ! is_gamipress_upgraded_to( '1.2.8' ) ) {
-        gamipress_dashboard_widget_logs_old();
-        return;
-    }
-
     // Setup table
     ct_setup_table( 'gamipress_user_earnings' );
 

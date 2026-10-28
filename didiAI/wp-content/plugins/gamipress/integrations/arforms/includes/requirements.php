@@ -65,6 +65,11 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_a
  */
 function gamipress_arforms_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'arforms_field_name'    => '',
+        'arforms_field_value'   => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_arforms_field_value_submission'
             || $requirement['trigger_type'] === 'gamipress_arforms_specific_field_value_submission' ) ) {

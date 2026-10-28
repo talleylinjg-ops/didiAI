@@ -69,7 +69,7 @@ jQuery(document).ready(function ($) {
 
         // remove and set the Wordpress active tab class on the tab navigation
         $('.' + cls.tab).removeClass(cls.wpactive);
-        $('#' + id).addClass(cls.wpactive).blur();
+        $('#' + id).addClass(cls.wpactive).trigger('blur');
 
         // set the current active tab
         activetab = id;

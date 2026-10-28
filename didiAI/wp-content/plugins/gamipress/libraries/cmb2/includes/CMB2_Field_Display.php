@@ -10,6 +10,7 @@
  * @license   GPL-2.0+
  * @link      https://cmb2.io
  */
+#[AllowDynamicProperties] // phpcs:ignore PHPCompatibility.Attributes.NewAttributes -- Back-compat: allow dynamic props (PHP 8.2+) on this class + subclasses.
 class CMB2_Field_Display {
 
 	/**
@@ -154,7 +155,6 @@ class CMB2_Field_Display {
 				foreach ( $this->field->value as $val ) {
 					$this->value = $val;
 					echo '<li>', $this->_display(), '</li>';
-					;
 				}
 				echo '</ul>';
 			}
@@ -318,25 +318,26 @@ class CMB2_Display_Text_Date_Timezone extends CMB2_Field_Display {
 	 * @since 2.2.2
 	 */
 	protected function _display() {
-		$field = $this->field;
-
 		if ( empty( $this->value ) ) {
 			return;
 		}
 
-		$datetime = maybe_unserialize( $this->value );
-		$this->value = $tzstring = '';
-
-		if ( $datetime && $datetime instanceof DateTime ) {
-			$tz       = $datetime->getTimezone();
-			$tzstring = $tz->getName();
-			$this->value    = $datetime->getTimestamp();
+		$datetime = CMB2_Utils::get_datetime_from_value( $this->value );
+		if ( ! $datetime || ! $datetime instanceof DateTime ) {
+			return;
 		}
 
-		$date = $this->field->get_timestamp_format( 'date_format', $this->value );
-		$time = $this->field->get_timestamp_format( 'time_format', $this->value );
+		$date     = $datetime->format( stripslashes( $this->field->args( 'date_format' ) ) );
+		$time     = $datetime->format( stripslashes( $this->field->args( 'time_format' ) ) );
+		$timezone = $datetime->getTimezone()->getName();
 
-		echo $date, ( $time ? ' ' . $time : '' ), ( $tzstring ? ', ' . $tzstring : '' );
+		echo $date;
+		if ( $time ) {
+			echo ' ' . $time;
+		}
+		if ( $timezone ) {
+			echo ', ' . $timezone;
+		}
 	}
 }
 
@@ -361,7 +362,7 @@ class CMB2_Display_Taxonomy_Radio extends CMB2_Field_Display {
 
 		if ( $term ) {
 			$link = get_edit_term_link( $term->term_id, $taxonomy );
-			echo '<a href="', esc_url( $link ), '">', esc_html( $term->name ), '</a>';
+			echo '<a href="', esc_url( $link ? $link : '' ), '">', esc_html( $term->name ), '</a>';
 		}
 	}
 }
@@ -394,7 +395,7 @@ class CMB2_Display_Taxonomy_Multicheck extends CMB2_Field_Display {
 			$links = array();
 			foreach ( $terms as $term ) {
 				$link = get_edit_term_link( $term->term_id, $taxonomy );
-				$links[] = '<a href="' . esc_url( $link ) . '">' . esc_html( $term->name ) . '</a>';
+				$links[] = '<a href="' . esc_url( $link ? $link : '' ) . '">' . esc_html( $term->name ) . '</a>';
 			}
 			// Then loop and output.
 			echo '<div class="cmb2-taxonomy-terms-', esc_attr( sanitize_html_class( $taxonomy ) ), '">';
@@ -481,6 +482,7 @@ class CMB2_Display_File_List extends CMB2_Display_File {
 	}
 }
 
+// phpcs:ignore PEAR.NamingConventions.ValidClassName.Invalid -- "oEmbed" is the correct brand casing; renaming this public class is a BC break.
 class CMB2_Display_oEmbed extends CMB2_Field_Display {
 	/**
 	 * Display oembed value.

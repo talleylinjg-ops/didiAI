@@ -38,7 +38,7 @@ function ct_ajax_list_table_add_listeners( table ) {
         ct_ajax_list_table_paginate_table( $(this).closest('.ct-ajax-list-table'), paged );
     });
 
-    table.find('.paging-input .current-page').change(function(e) {
+    table.find('.paging-input .current-page').on("change", function(e) {
         var paged = $(this).val();
 
         var total_pages = parseInt( $(this).closest('.ct-ajax-list-table').find('.tablenav.top .paging-input .total-pages').text() );

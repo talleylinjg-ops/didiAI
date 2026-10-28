@@ -73,6 +73,11 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_a
  */
 function gamipress_acf_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'acf_field_value_condition' => '',
+        'acf_field_value'           => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_acf_update_any_post_field_specific_value'
             || $requirement['trigger_type'] === 'gamipress_acf_update_any_user_field_specific_value'

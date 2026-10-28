@@ -61,6 +61,10 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_w
  */
 function gamipress_wplms_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'wplms_score' => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_wplms_complete_course_minimum_mark'
             || $requirement['trigger_type'] === 'gamipress_wplms_complete_specific_course_minimum_mark'

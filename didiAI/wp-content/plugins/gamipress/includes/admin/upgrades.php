@@ -9,19 +9,6 @@
 // Exit if accessed directly
 if( !defined( 'ABSPATH' ) ) exit;
 
-require_once GAMIPRESS_DIR . 'includes/admin/upgrades/1.1.0.php';
-require_once GAMIPRESS_DIR . 'includes/admin/upgrades/1.2.7.php';
-require_once GAMIPRESS_DIR . 'includes/admin/upgrades/1.2.8.php';
-require_once GAMIPRESS_DIR . 'includes/admin/upgrades/1.3.0.php';
-require_once GAMIPRESS_DIR . 'includes/admin/upgrades/1.3.1.php';
-require_once GAMIPRESS_DIR . 'includes/admin/upgrades/1.3.7.php';
-require_once GAMIPRESS_DIR . 'includes/admin/upgrades/1.4.3.php';
-require_once GAMIPRESS_DIR . 'includes/admin/upgrades/1.4.7.php';
-require_once GAMIPRESS_DIR . 'includes/admin/upgrades/1.5.1.php';
-require_once GAMIPRESS_DIR . 'includes/admin/upgrades/1.8.7.php';
-require_once GAMIPRESS_DIR . 'includes/admin/upgrades/2.3.7.php';
-require_once GAMIPRESS_DIR . 'includes/admin/upgrades/6.9.4.php';
-
 /**
  * GamiPress upgrades
  *

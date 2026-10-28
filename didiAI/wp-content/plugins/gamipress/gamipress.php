@@ -3,7 +3,7 @@
  * Plugin Name:     	GamiPress
  * Plugin URI:      	https://gamipress.com
  * Description:     	The most flexible and powerful gamification system for WordPress.
- * Version:         	7.9.9.5
+ * Version:         	8.0.9
  * Author:          	GamiPress
  * Author URI:      	https://gamipress.com/
  * Text Domain:     	gamipress
@@ -103,6 +103,7 @@ final class GamiPress {
 			self::$instance->classes();
 			self::$instance->compatibility();
 			self::$instance->includes();
+			self::$instance->modules();
 			self::$instance->hooks();
 
 		}
@@ -121,7 +122,7 @@ final class GamiPress {
 	private function constants() {
 
 		// Plugin version
-		define( 'GAMIPRESS_VER', '7.9.9.5' );
+		define( 'GAMIPRESS_VER', '8.0.9' );
 
 		// Plugin file
 		define( 'GAMIPRESS_FILE', __FILE__ );
@@ -196,18 +197,6 @@ final class GamiPress {
 		// WordPress backward compatibility
 		require_once GAMIPRESS_DIR . 'includes/compatibility/wordpress.php';
 
-		// GamiPress backward compatibility
-		require_once GAMIPRESS_DIR . 'includes/compatibility/1.2.8.php';
-		require_once GAMIPRESS_DIR . 'includes/compatibility/1.3.1.php';
-		require_once GAMIPRESS_DIR . 'includes/compatibility/1.4.3.php';
-		require_once GAMIPRESS_DIR . 'includes/compatibility/1.4.7.php';
-		require_once GAMIPRESS_DIR . 'includes/compatibility/1.5.0.php';
-		require_once GAMIPRESS_DIR . 'includes/compatibility/1.5.1.php';
-		require_once GAMIPRESS_DIR . 'includes/compatibility/1.6.5.php';
-		require_once GAMIPRESS_DIR . 'includes/compatibility/1.8.0.php';
-		require_once GAMIPRESS_DIR . 'includes/compatibility/1.8.6.php';
-		require_once GAMIPRESS_DIR . 'includes/compatibility/1.8.7.php';
-
 	}
 
 	/**
@@ -219,7 +208,6 @@ final class GamiPress {
 	 */
 	private function includes() {
 
-		// The rest of files
 		require_once GAMIPRESS_DIR . 'includes/admin.php';
 		require_once GAMIPRESS_DIR . 'includes/custom-tables.php';
 		require_once GAMIPRESS_DIR . 'includes/post-types.php';
@@ -245,6 +233,19 @@ final class GamiPress {
 		require_once GAMIPRESS_DIR . 'includes/widgets.php';
 
 	}
+
+    /**
+     * Include modules files
+     *
+     * @access      private
+     * @since       1.0.0
+     * @return      void
+     */
+    private function modules() {
+
+        require_once GAMIPRESS_DIR . 'modules/ai-assistant/gamipress-ai-assistant.php';
+
+    }
 
     /**
      * Include integrations files

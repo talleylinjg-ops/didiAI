@@ -24,12 +24,10 @@ require_once GAMIPRESS_DIR . 'includes/admin/upgrades.php';
 
 // Admin pages
 require_once GAMIPRESS_DIR . 'includes/admin/pages/dashboard.php';
-//require_once GAMIPRESS_DIR . 'includes/admin/pages/support.php';
 require_once GAMIPRESS_DIR . 'includes/admin/pages/badge-builder.php';
 require_once GAMIPRESS_DIR . 'includes/admin/pages/tools.php';
 require_once GAMIPRESS_DIR . 'includes/admin/pages/settings.php';
 require_once GAMIPRESS_DIR . 'includes/admin/pages/licenses.php';
-require_once GAMIPRESS_DIR . 'includes/admin/pages/assets.php';
 require_once GAMIPRESS_DIR . 'includes/admin/pages/add-ons.php';
 /**
  * Add custom GamiPress body classes
@@ -126,16 +124,20 @@ function gamipress_admin_menu_fix( $parent_file ) {
 
         }
 
-    // Reorder licenses, badge builder, tools & settings
-        $badge_builder = $submenu['gamipress'][6];
-        $licenses = $submenu['gamipress'][7];
-        $tools = $submenu['gamipress'][8];
-        $settings = $submenu['gamipress'][9];
+        if( isset( $submenu['gamipress'][7] )
+            && isset( $submenu['gamipress'][8] )
+            && isset( $submenu['gamipress'][9] ) ) {
 
-        $submenu['gamipress'][6] = $badge_builder;
-        $submenu['gamipress'][7] = $tools;
-        $submenu['gamipress'][8] = $settings;
-        $submenu['gamipress'][9] = $licenses;
+            // Reorder licenses, tools & settings
+            $licenses = $submenu['gamipress'][7];
+            $tools = $submenu['gamipress'][8];
+            $settings = $submenu['gamipress'][9];
+
+            $submenu['gamipress'][7] = $tools;
+            $submenu['gamipress'][8] = $settings;
+            $submenu['gamipress'][9] = $licenses;
+
+        }
     }
 
     return $parent_file;
@@ -163,9 +165,6 @@ add_action( 'admin_menu', 'gamipress_admin_submenu', 12 );
 function gamipress_admin_addons_submenu() {
     // Set minimum role setting for menus
     $minimum_role = gamipress_get_manager_capability();
-
-    // Assets sub menu
-    add_submenu_page( 'gamipress', __( 'Assets', 'gamipress' ), __( 'Assets', 'gamipress' ), $minimum_role, 'gamipress_assets', 'gamipress_assets_page' );
 
     // Add-ons sub menu
     add_submenu_page( 'gamipress', __( 'Add-ons', 'gamipress' ), __( 'Add-ons', 'gamipress' ), $minimum_role, 'gamipress_add_ons', 'gamipress_add_ons_page' );
@@ -481,14 +480,6 @@ function gamipress_admin_bar_submenu( $wp_admin_bar ) {
         'href'   => admin_url( 'admin.php?page=gamipress_licenses' )
     ) );
 
-    // Assets
-    $wp_admin_bar->add_node( array(
-        'id'     => 'gamipress-assets',
-        'title'  => __( 'Assets', 'gamipress' ),
-        'parent' => 'gamipress',
-        'href'   => admin_url( 'admin.php?page=gamipress_assets' )
-    ) );
-
     // Add-ons
     $wp_admin_bar->add_node( array(
         'id'     => 'gamipress-add-ons',
@@ -786,8 +777,6 @@ function gamipress_admin_footer_text( $footer_text ) {
                 || $_GET['page'] === 'gamipress_logs'
                 || $_GET['page'] === 'edit_gamipress_logs'
                 || $_GET['page'] === 'gamipress_add_ons'
-                || $_GET['page'] === 'gamipress_assets'
-                || $_GET['page'] === 'gamipress_help_support'
                 || $_GET['page'] === 'gamipress_badge_builder'
                 || $_GET['page'] === 'gamipress_tools'
                 || $_GET['page'] === 'gamipress'

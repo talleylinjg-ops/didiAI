@@ -1,11 +1,14 @@
 <?php
+// Exit if accessed directly
+if( !defined( 'ABSPATH' ) ) exit;
+
 if ( ! class_exists( 'WP_REST_Controller' ) ) {
 	// Shim the WP_REST_Controller class if wp-api plugin not installed, & not in core.
 	require_once cmb2_dir( 'includes/shim/WP_REST_Controller.php' );
 }
 
 /**
- * Creates CMB2 objects/fields endpoint for WordPres REST API.
+ * Creates CMB2 objects/fields endpoint for WordPress REST API.
  * Allows access to fields registered to a specific post type and more.
  *
  * @todo  Add better documentation.

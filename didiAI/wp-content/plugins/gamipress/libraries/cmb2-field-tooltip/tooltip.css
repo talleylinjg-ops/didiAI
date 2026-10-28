@@ -144,3 +144,8 @@
     margin-left: 6px;
     margin-top: -2px;
 }
+
+/* Utils */
+.cmb-tooltip-desc.cmb-tooltip-auto { width: auto; }
+.cmb-tooltip-desc.cmb-tooltip-min-content { width: min-content; }
+.cmb-tooltip-desc.cmb-tooltip-max-content { width: max-content; }

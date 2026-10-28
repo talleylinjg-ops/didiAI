@@ -149,7 +149,11 @@ if ( ! class_exists( 'CT_Edit_View' ) ) :
             ?>
 
             <fieldset class="metabox-prefs">
-                <legend><?php esc_html_e( 'Boxes' ); ?></legend>
+                <legend><?php esc_html_e( 'Screen elements' ); ?></legend>
+                <p>
+                    <?php esc_html_e( 'Some screen elements can be shown or hidden by using the checkboxes.' ); ?>
+                    <?php esc_html_e( 'Expand or collapse the elements by clicking on their headings, and arrange them by dragging their headings or by clicking on the up and down arrows.' ); ?>
+                </p>
                 <?php meta_box_prefs( $ct_table->name ); ?>
             </fieldset>
 
@@ -183,7 +187,10 @@ if ( ! class_exists( 'CT_Edit_View' ) ) :
                     <label class="columns-prefs-<?php echo esc_attr ( $i ); ?>">
                         <input type='radio' name='screen_columns' value='<?php echo esc_attr( $i ); ?>'
                             <?php checked( $screen_layout_columns, $i ); ?> />
-                        <?php printf( _n( '%s column', '%s columns', $i ), number_format_i18n( $i ) ); ?>
+                        <?php
+                            // translators: %s: Column name
+                            echo esc_html( sprintf( _n( '%s column', '%s columns', $i ), number_format_i18n( $i ) ) );
+                        ?>
                     </label>
                     <?php
                 endfor; ?>
@@ -297,12 +304,12 @@ if ( ! class_exists( 'CT_Edit_View' ) ) :
 
                         printf(
                             '<a href="%s" class="submitdelete deletion" onclick="%s" aria-label="%s">%s</a>',
-                            ct_get_delete_link( $ct_table->name, $object_id ),
+                            esc_attr( ct_get_delete_link( $ct_table->name, $object_id ) ),
                             "return confirm('" .
                             esc_attr( ct_get_table_label( $ct_table->name, 'delete_item_confirm' ) ) .
                             "');",
                             esc_attr( __( 'Delete permanently' ) ),
-                            __( 'Delete Permanently' )
+                            esc_html__( 'Delete Permanently' )
                         );
 
                     } ?>
@@ -354,31 +361,27 @@ if ( ! class_exists( 'CT_Edit_View' ) ) :
 
             // If not CT object, die
             if ( ! $ct_table )
-                wp_die( esc_html__( 'Invalid item type.' ) );
+                wp_die( esc_html__( 'Invalid object type.' ) );
 
             // If not CT object allow ui, die
             if ( ! $ct_table->show_ui ) {
-                wp_die( esc_html__( 'Sorry, you are not allowed to edit items of this type.' ) );
+                wp_die( esc_html( ct_get_table_label( $ct_table->name, 'edit_items_not_allowed' ) ) );
             }
 
             $primary_key = $ct_table->db->primary_key;
 
             if( ! isset( $_POST[$primary_key] ) ) {
-                wp_die( esc_html__( 'Invalid item type.' ) );
+                wp_die( esc_html__( 'Invalid object type.' ) );
             }
 
             $object_id = $_POST[$primary_key];
 
             // Nonce check
-            if ( ! isset( $_REQUEST['_wpnonce'] ) ) {
-                wp_die( esc_html__( 'Sorry, you are not allowed to edit this item.' ) );
+            if ( ! isset( $_REQUEST['_wpnonce'] ) || ! wp_verify_nonce( sanitize_text_field( wp_unslash ( $_REQUEST['_wpnonce'] ) ), 'ct_edit_' . $object_id ) ) {
+                wp_die( esc_html( ct_get_table_label( $ct_table->name, 'edit_item_not_allowed' ) ) );
             }
 
-            if ( ! wp_verify_nonce( sanitize_text_field( wp_unslash ( $_REQUEST['_wpnonce'] ) ), 'ct_edit_' . $object_id ) ) {
-                wp_die( esc_html__( 'Sorry, you are not allowed to edit this item.' ) );
-            }
-
-            $object_data =  map_deep( $_POST, 'wp_kses_post' );
+            $object_data = map_deep( $_POST, 'wp_kses_post' );
 
             unset( $object_data['ct-save'] );
 
@@ -402,8 +405,8 @@ if ( ! class_exists( 'CT_Edit_View' ) ) :
             global $ct_registered_tables, $ct_table;
 
             $messages = array(
-                0 => __( '%s could not be updated.' ),
-                1 => __( '%s updated successfully.' ),
+                0 => ct_get_table_label( $ct_table->name, 'update_error' ),
+                1 => ct_get_table_label( $ct_table->name, 'update_success' ),
             );
 
             /**

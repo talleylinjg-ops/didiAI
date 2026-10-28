@@ -400,24 +400,23 @@ function gamipress_achievements_shortcode_query( $args = array() ) {
 	// On network wide active installs, we need to switch to main blog mostly for posts permalinks and thumbnails
     $blog_id = gamipress_switch_to_main_site_if_network_wide_active();
 
-    // Turn no attributes to false
-    if( $current_user === 'no' ) {
-        $current_user = false;
-    }
+    // Sanitization
+    $limit = absint( $limit );
+    $offset = absint( $offset );
+    $order = gamipress_validate_from_array( strtoupper( $order ), array( 'ASC', 'DESC' ), 'DESC' );
 
-    if( $wpms === 'no' ) {
+    // Turn no attributes to false
+    if( $current_user === 'no' )
+        $current_user = false;
+
+    if( $wpms === 'no' )
         $wpms = false;
-    }
 
 	// Force to set current user as user ID
-	if( $current_user ) {
-		$user_id = get_current_user_id();
-    }
+	if( $current_user ) $user_id = get_current_user_id();
 
 	// Get the current user if one wasn't specified
-	if( ! $user_id ) {
-		$user_id = get_current_user_id();
-    }
+	if( ! $user_id ) $user_id = get_current_user_id();
 
 	// Ensure user ID as int
     $user_id = absint( $user_id );
@@ -504,8 +503,8 @@ function gamipress_achievements_shortcode_query( $args = array() ) {
                 'post_type'      	=> $type,
                 'orderby'        	=> $orderby,
                 'order'          	=> $order,
-                'posts_per_page' 	=> absint( $limit ),
-                'offset'         	=> absint( $offset ),
+                'posts_per_page' 	=> $limit,
+                'offset'         	=> $offset,
                 'post_status'    	=> 'publish',
                 'post__in' 			=> array(),
                 'post__not_in'   	=> array_diff( $hidden, $earned_ids )

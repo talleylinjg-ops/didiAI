@@ -141,6 +141,14 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_e
  */
 function gamipress_edd_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'edd_variation_id'          => '',
+        'edd_category_id'           => '',
+        'edd_tag_id'                => '',
+        'edd_lifetime_condition'    => '',
+        'edd_lifetime'              => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_edd_download_variation_purchase'
             || $requirement['trigger_type'] === 'gamipress_edd_download_variation_refund' ) ) {

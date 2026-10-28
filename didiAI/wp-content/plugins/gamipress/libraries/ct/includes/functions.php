@@ -119,46 +119,101 @@ function ct_get_table_object( $name ) {
 function ct_get_table_labels( $ct_table ) {
 
     $default_labels = array(
+        // translators: %1$s: Singular
         'name' => '%1$s',
+        // translators: %1$s: Singular
         'singular_name' => '%1$s',
+        // translators: %2$s: Plural
         'plural_name' => '%2$s',
         'add_new' => __('Add New', 'ct'),
+        // translators: %1$s: Singular
         'add_new_item' => __('Add New %1$s', 'ct'),
+        // translators: %1$s: Singular
         'edit_item' => __('Edit %1$s', 'ct'),
+        // translators: %1$s: Singular
         'new_item' => __('New %1$s', 'ct'),
+        // translators: %1$s: Singular
         'view_item' => __('View %1$s', 'ct'),
+        // translators: %2$s: Plural
         'view_items' => __('View %2$s', 'ct'),
+        // translators: %2$s: Plural
         'search_items' => __( 'Search %2$s', 'ct' ),
+        // translators: %2$s: Plural
         'not_found' => __( 'No %2$s found.', 'ct' ),
+        // translators: %2$s: Plural
         'not_found_in_trash' => __( 'No %2$s found in Trash.', 'ct' ),
+        // translators: %1$s: Singular
         'parent_item_colon' => __( 'Parent %1$s:', 'ct' ),
+        // translators: %2$s: Plural
         'all_items' => __( 'All %2$s', 'ct' ),
+        // translators: %1$s: Singular
         'archives' => __( '%1$s Archives', 'ct' ),
+        // translators: %1$s: Singular
         'attributes' => __( '%1$s Attributes', 'ct' ),
+        // translators: %1$s: Singular
         'insert_into_item' => __( 'Insert into %1$s', 'ct' ),
+        // translators: %1$s: Singular
         'uploaded_to_this_item' => __( 'Uploaded to this %1$s', 'ct' ),
         'featured_image' => __( 'Featured Image', 'ct' ),
         'set_featured_image' => __( 'Set featured image', 'ct' ),
         'remove_featured_image' => __( 'Remove featured image', 'ct' ),
         'use_featured_image' => __( 'Use as featured image', 'ct' ),
+        // translators: %2$s: Plural
         'filter_items_list' => __( 'Filter %2$s list', 'ct' ),
+        // translators: %2$s: Plural
         'items_list_navigation' => __( '%2$s list navigation', 'ct' ),
+        // translators: %2$s: Plural
         'items_list' => __( '%2$s list', 'ct' ),
-        // Views
+
+        // -- VIEWS --
+
+        // translators: %2$s: Plural
         'list_page_title' => '%2$s',
+        // translators: %2$s: Plural
         'list_menu_title' => __( 'All %2$s', 'ct' ),
         'add_page_title' => __('Add New', 'ct'),
         'add_menu_title' => __('Add New', 'ct'),
+        // translators: %1$s: Singular
         'edit_page_title' => __('Edit %1$s', 'ct'),
+        // translators: %1$s: Singular
         'edit_menu_title' => __('Edit %1$s', 'ct'),
-        // Messages
+
+        // -- MESSAGES --
+
+        // translators: %2$s: Plural
         'add_item_not_allowed' => __( 'Sorry, you are not allowed to add new %2$s.', 'ct' ),
+        // translators: %1$s: Singular
         'edit_item_not_allowed' => __( 'Sorry, you are not allowed to edit this %1$s.', 'ct' ),
+        // translators: %2$s: Plural
         'edit_items_not_allowed' => __( 'Sorry, you are not allowed to edit %2$s.', 'ct' ),
+        // translators: %1$s: Singular
         'edit_item_deleted' => __( 'You attempted to edit a %1$s that doesn&#8217;t exist. Perhaps it was deleted?', 'ct' ),
+        // translators: %1$s: Singular
         'delete_item_not_allowed' => __( 'Sorry, you are not allowed to delete this %1$s.', 'ct' ),
+        // translators: %2$s: Plural
         'delete_items_not_allowed' => __( 'Sorry, you are not allowed to delete %2$s.', 'ct' ),
+        // translators: %s: Singular
         'delete_item_confirm' => __( "Are you sure you want to delete this %s?\\n\\nClick \\'Cancel\\' to go back, \\'OK\\' to confirm the delete.", 'ct' ),
+
+        // -- TEXTS --
+
+        // translators: %s: Singular %d: ID
+        'select_item' => __( 'Select %s #%d', 'ct' ),
+        // translators: %s: Singular %d: ID
+        'item_locked' => __( '&#8220;%s #%d&#8221; is locked', 'ct' ),
+
+        // -- ERROR --
+
+        // translators: %1$s: Singular
+        'insert_error' => __( 'Could not insert %1$s into the database', 'ct' ),
+        // translators: %s: Singular
+        'update_error' => __( '%s could not be updated.', 'ct' ),
+        // translators: %s: Singular
+        'update_success' => __( '%s updated successfully.', 'ct' ),
+        // translators: %1$s: Singular
+        'delete_error' => __( 'The %1$s cannot be deleted.', 'ct' ),
+
+
     );
 
     // Use this hook to override default labels in your plugin with the plugin text domain
@@ -519,7 +574,7 @@ function ct_update_object( $object_data = array(), $wp_error = false ) {
 
     if ( is_null( $object ) ) {
         if ( $wp_error )
-            return new WP_Error( 'invalid_object', __( 'Invalid object ID.' ) );
+            return new WP_Error( 'invalid_object', __( 'Invalid item ID.' ) );
         return 0;
     }
 
@@ -584,7 +639,7 @@ function ct_insert_object( $object_data, $wp_error = false ) {
         if ( is_null( $original_object_data ) ) {
 
             if ( $wp_error ) {
-                return new WP_Error( 'invalid_object', __( 'Invalid object ID.', 'ct' ) );
+                return new WP_Error( 'invalid_object', __( 'Invalid item ID.' ) );
             }
 
             return 0;
@@ -615,11 +670,13 @@ function ct_insert_object( $object_data, $wp_error = false ) {
          * @param int   $object_id  Object ID.
          * @param array $data       Array of unslashed object data.
          */
+        do_action( 'ct_pre_object_update', $object_id, $object_data );
+        // Backward Compatibility
         do_action( 'pre_object_update', $object_id, $object_data );
 
         if ( false === $ct_table->db->update( $object_data, $where ) ) {
             if ( $wp_error ) {
-                return new WP_Error('db_update_error', __('Could not update object in the database'), $wpdb->last_error);
+                return new WP_Error('db_update_error', __( 'Could not update object in the database', 'ct' ), $wpdb->last_error);
             } else {
                 return 0;
             }
@@ -640,7 +697,7 @@ function ct_insert_object( $object_data, $wp_error = false ) {
         if ( false === $wpdb->insert( $ct_table->db->table_name, $object_data ) ) {
 
             if ( $wp_error ) {
-                return new WP_Error('db_insert_error', __('Could not insert object into the database'), $wpdb->last_error);
+                return new WP_Error('db_insert_error', ct_get_table_label( $ct_table->name, 'insert_error' ), $wpdb->last_error);
             } else {
                 return 0;
             }
@@ -750,7 +807,7 @@ function ct_delete_object( $object_id = 0, $force_delete = false ) {
     global $wpdb, $ct_table;
 
     if( ! is_a( $ct_table, 'CT_Table' ) ) {
-        return new WP_Error( 'invalid_ct_table', __( 'Invalid CT Table object.' ) );
+        return new WP_Error( 'invalid_ct_table', __( 'Invalid CT Table object.', 'ct' ) );
     }
 
     $ct_object = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$ct_table->db->table_name} WHERE {$ct_table->db->primary_key} = %d", $object_id ) );
@@ -775,7 +832,9 @@ function ct_delete_object( $object_id = 0, $force_delete = false ) {
      * @param WP_Post $post         Post object.
      * @param bool    $force_delete Whether to bypass the trash.
      */
-    $check = apply_filters( 'pre_delete_object', null, $ct_object, $force_delete );
+    $check = apply_filters( 'ct_pre_delete_object', null, $ct_object, $force_delete );
+    // Backward Compatibility
+    $check = apply_filters( 'pre_delete_object', $check, $ct_object, $force_delete );
     if ( null !== $check ) {
         return $check;
     }
@@ -789,6 +848,7 @@ function ct_delete_object( $object_id = 0, $force_delete = false ) {
      *
      * @param int $object_id Object ID.
      */
+    do_action( 'ct_before_delete_object', $object_id );
     do_action( 'before_delete_object', $object_id );
 
     if( $ct_table->meta ) {
@@ -809,6 +869,7 @@ function ct_delete_object( $object_id = 0, $force_delete = false ) {
      *
      * @param int $object_id Object ID.
      */
+    do_action( 'ct_delete_object', $object_id );
     do_action( 'delete_object', $object_id );
 
     $result = $ct_table->db->delete( $object_id );
@@ -824,6 +885,7 @@ function ct_delete_object( $object_id = 0, $force_delete = false ) {
      *
      * @param int $object_id Object ID.
      */
+    do_action( 'ct_deleted_object', $object_id );
     do_action( 'deleted_object', $object_id );
 
     ct_clean_object_cache( $ct_object );
@@ -837,6 +899,7 @@ function ct_delete_object( $object_id = 0, $force_delete = false ) {
      *
      * @param int $object_id Object ID.
      */
+    do_action( 'ct_after_delete_object', $object_id );
     do_action( 'after_delete_object', $object_id );
 
     return $ct_object;
@@ -898,7 +961,9 @@ function ct_add_object_meta( $object_id, $meta_key, $meta_value, $unique = false
      * @param bool      $unique     Whether the specified meta key should be unique
      *                              for the object. Optional. Default false.
      */
-    $check = apply_filters( "add_{$ct_table->name}_metadata", null, $object_id, $meta_key, $meta_value, $unique );
+    $check = apply_filters( "ct_add_{$ct_table->name}_metadata", null, $object_id, $meta_key, $meta_value, $unique );
+    // Backward compatibility
+    $check = apply_filters( "add_{$ct_table->name}_metadata", $check, $object_id, $meta_key, $meta_value, $unique );
     if ( null !== $check )
         return $check;
 
@@ -922,6 +987,8 @@ function ct_add_object_meta( $object_id, $meta_key, $meta_value, $unique = false
      * @param string $meta_key   Meta key.
      * @param mixed  $meta_value Meta value.
      */
+    do_action( "ct_add_{$ct_table->name}_meta", $object_id, $meta_key, $_meta_value );
+    // Backward compatibility
     do_action( "add_{$ct_table->name}_meta", $object_id, $meta_key, $_meta_value );
 
     $result = $wpdb->insert( $meta_table_name, array(
@@ -950,6 +1017,8 @@ function ct_add_object_meta( $object_id, $meta_key, $meta_value, $unique = false
      * @param string $meta_key   Meta key.
      * @param mixed  $meta_value Meta value.
      */
+    do_action( "ct_added_{$ct_table->name}_meta", $mid, $object_id, $meta_key, $_meta_value );
+    // Backward compatibility
     do_action( "added_{$ct_table->name}_meta", $mid, $object_id, $meta_key, $_meta_value );
 
     return $mid;
@@ -1010,7 +1079,9 @@ function ct_delete_object_meta( $object_id, $meta_key, $meta_value = '' ) {
      *                              for all objects, ignoring the specified $object_id.
      *                              Default false.
      */
-    $check = apply_filters( "delete_{$ct_table->name}_metadata", null, $object_id, $meta_key, $meta_value, $delete_all );
+    $check = apply_filters( "ct_delete_{$ct_table->name}_metadata", null, $object_id, $meta_key, $meta_value, $delete_all );
+    // Backward compatibility
+    $check = apply_filters( "delete_{$ct_table->name}_metadata", $check, $object_id, $meta_key, $meta_value, $delete_all );
     if ( null !== $check )
         return (bool) $check;
 
@@ -1051,6 +1122,8 @@ function ct_delete_object_meta( $object_id, $meta_key, $meta_value = '' ) {
      * @param string $meta_key   Meta key.
      * @param mixed  $meta_value Meta value.
      */
+    do_action( "ct_delete_{$ct_table->name}_meta", $meta_ids, $object_id, $meta_key, $_meta_value );
+    // Backward compatibility
     do_action( "delete_{$ct_table->name}_meta", $meta_ids, $object_id, $meta_key, $_meta_value );
 
     $query = "DELETE FROM $meta_table_name WHERE $meta_primary_key IN( " . implode( ',', $meta_ids ) . " )";
@@ -1081,6 +1154,8 @@ function ct_delete_object_meta( $object_id, $meta_key, $meta_value = '' ) {
      * @param string $meta_key   Meta key.
      * @param mixed  $meta_value Meta value.
      */
+    do_action( "ct_deleted_{$ct_table->name}_meta", $meta_ids, $object_id, $meta_key, $_meta_value );
+    // Backward compatibility
     do_action( "deleted_{$ct_table->name}_meta", $meta_ids, $object_id, $meta_key, $_meta_value );
 
     return true;
@@ -1127,7 +1202,9 @@ function ct_get_object_meta( $object_id, $meta_key = '', $single = false ) {
      * @param string            $meta_key  Meta key.
      * @param bool              $single    Whether to return only the first value of the specified $meta_key.
      */
-    $check = apply_filters( "get_{$ct_table->name}_metadata", null, $object_id, $meta_key, $single );
+    $check = apply_filters( "ct_get_{$ct_table->name}_metadata", null, $object_id, $meta_key, $single );
+    // Backward compatibility
+    $check = apply_filters( "get_{$ct_table->name}_metadata", $check, $object_id, $meta_key, $single );
     if ( null !== $check ) {
         if ( $single && is_array( $check ) )
             return $check[0];
@@ -1224,7 +1301,9 @@ function ct_update_object_meta( $object_id, $meta_key, $meta_value, $prev_value 
      *                              metadata entries with the specified value.
      *                              Otherwise, update all entries.
      */
-    $check = apply_filters( "update_{$ct_table->name}_metadata", null, $object_id, $meta_key, $meta_value, $prev_value );
+    $check = apply_filters( "ct_update_{$ct_table->name}_metadata", null, $object_id, $meta_key, $meta_value, $prev_value );
+    // backward compatibility
+    $check = apply_filters( "update_{$ct_table->name}_metadata", $check, $object_id, $meta_key, $meta_value, $prev_value );
     if ( null !== $check )
         return (bool) $check;
 
@@ -1270,6 +1349,8 @@ function ct_update_object_meta( $object_id, $meta_key, $meta_value, $prev_value 
          * @param string $meta_key   Meta key.
          * @param mixed  $meta_value Meta value.
          */
+        do_action( "ct_update_{$ct_table->name}_meta", $meta_id, $object_id, $meta_key, $_meta_value );
+        // Backward compatibility
         do_action( "update_{$ct_table->name}_meta", $meta_id, $object_id, $meta_key, $_meta_value );
     }
 
@@ -1294,6 +1375,8 @@ function ct_update_object_meta( $object_id, $meta_key, $meta_value, $prev_value 
          * @param string $meta_key   Meta key.
          * @param mixed  $meta_value Meta value.
          */
+        do_action( "ct_updated_{$ct_table->name}_meta", $meta_id, $object_id, $meta_key, $_meta_value );
+        // Backward compatibility
         do_action( "updated_{$ct_table->name}_meta", $meta_id, $object_id, $meta_key, $_meta_value );
     }
 
@@ -1467,6 +1550,8 @@ function ct_delete_metadata_by_mid( $meta_type, $meta_id ) {
         $object_id = $meta->{$meta_primary_key};
 
         /** This action is documented in wp-includes/meta.php */
+        do_action( "ct_delete_{$meta_type}_meta", (array) $meta_id, $object_id, $meta->meta_key, $meta->meta_value );
+        // Backward compatibility
         do_action( "delete_{$meta_type}_meta", (array) $meta_id, $object_id, $meta->meta_key, $meta->meta_value );
 
         // Run the query, will return true if deleted, false otherwise
@@ -1476,6 +1561,8 @@ function ct_delete_metadata_by_mid( $meta_type, $meta_id ) {
         wp_cache_delete($object_id, $meta_type . '_meta');
 
         /** This action is documented in wp-includes/meta.php */
+        do_action( "ct_deleted_{$meta_type}_meta", (array) $meta_id, $object_id, $meta->meta_key, $meta->meta_value );
+        // Backward compatibility
         do_action( "deleted_{$meta_type}_meta", (array) $meta_id, $object_id, $meta->meta_key, $meta->meta_value );
 
         return $result;
@@ -1570,7 +1657,7 @@ function ct_meta_form( $object = null ) {
     <table id="newmeta">
         <thead>
         <tr>
-            <th class="left"><label for="<?php echo $meta_key_input_id; ?>"><?php _ex( 'Name', 'meta name' ) ?></label></th>
+            <th class="left"><label for="<?php echo esc_attr( $meta_key_input_id ); ?>"><?php echo esc_html( _x( 'Name', 'meta name' ) ); ?></label></th>
             <th><label for="metavalue"><?php esc_html_e( 'Value' ) ?></label></th>
         </tr>
         </thead>

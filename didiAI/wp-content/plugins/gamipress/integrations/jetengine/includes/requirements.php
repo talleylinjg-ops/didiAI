@@ -72,6 +72,10 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_j
  */
 function gamipress_jetengine_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'jetengine_post_type' => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_jetengine_publish_post_specific_type'
             || $requirement['trigger_type'] === 'gamipress_jetengine_update_post_specific_type'

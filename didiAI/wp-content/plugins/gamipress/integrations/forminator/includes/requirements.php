@@ -69,6 +69,11 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_f
  */
 function gamipress_forminator_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'forminator_field_name'     => '',
+        'forminator_field_value'    => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_forminator_form_field_value_submission'
             || $requirement['trigger_type'] === 'gamipress_forminator_specific_form_field_value_submission'

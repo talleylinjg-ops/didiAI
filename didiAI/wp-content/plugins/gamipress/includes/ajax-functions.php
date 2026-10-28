@@ -20,7 +20,7 @@ if( !defined( 'ABSPATH' ) ) exit;
 function gamipress_ajax_get_achievements() {
     // Security check, forces to die if not security passed
     check_ajax_referer( 'gamipress', 'nonce' );
-
+    
 	// Send back our successful response
 	wp_send_json_success( gamipress_achievements_shortcode_query( $_REQUEST ) );
 
@@ -47,10 +47,14 @@ function gamipress_ajax_get_logs() {
 
     $atts = $_REQUEST;
     
-	// Change the atribute to display only public logs if current user is different
+	// Change the attribute to display only public logs if current user is different
     if( $atts['access'] !== 'public' ) {
-        if ( get_current_user_id() !== absint( $atts['user_id'] ) )
-            $atts['access'] = 'public';
+        $current_user_id = get_current_user_id();
+
+        // If user is not logged in, force to public
+        if ( $current_user_id === 0 ) $atts['access'] = 'public';
+        // If user ID is different from logged in, force to public
+        if ( $current_user_id !== absint( $atts['user_id'] ) ) $atts['access'] = 'public';
     }
 	
     // Unset non required shortcode atts
@@ -59,7 +63,7 @@ function gamipress_ajax_get_logs() {
 
 	// Sanitize
     foreach( $atts as $attr => $value ) {
-        $atts[$attr] = sanitize_text_field( $value );
+        $value = sanitize_text_field( $value );
 		$atts[$attr] = str_replace( array( '[', ']' ), '', $value);
     }
 
@@ -98,7 +102,7 @@ function gamipress_ajax_get_user_earnings() {
     // Sanitize
     foreach( $atts as $attr => $value ) {
         $atts[$attr] = sanitize_text_field( $value );
-		$atts[$attr] = str_replace( array( '[', ']' ), '', $value);
+		$atts[$attr] = str_replace( array( '[', ']' ), '', $atts[$attr]);
     }
 
     $atts = shortcode_atts( gamipress_earnings_shortcode_defaults(), $atts, 'gamipress_earnings' );
@@ -188,14 +192,11 @@ function gamipress_ajax_get_users() {
     // Security check, forces to die if not security passed
     check_ajax_referer( 'gamipress_admin', 'nonce' );
 
-	if( ! current_user_can( gamipress_get_manager_capability() ) ) {
-		return;
-    }
+    if( ! current_user_can( gamipress_get_manager_capability() ) )
+        wp_send_json_error( __( 'You can not perform this action', 'gamipress' ) );
 
 	// If no word query sent, initialize it
-	if ( ! isset( $_REQUEST['q'] ) ) {
-		$_REQUEST['q'] = '';
-    }
+	if ( ! isset( $_REQUEST['q'] ) ) $_REQUEST['q'] = '';
 
 	global $wpdb;
 
@@ -273,9 +274,8 @@ function gamipress_ajax_get_posts() {
     // Security check, forces to die if not security passed
     check_ajax_referer( 'gamipress_admin', 'nonce' );
 
-	if( ! current_user_can( gamipress_get_manager_capability() ) ) {
-		return;
-    }
+    if( ! current_user_can( gamipress_get_manager_capability() ) )
+        wp_send_json_error( __( 'You can not perform this action', 'gamipress' ) );
 
 	global $wpdb;
 
@@ -284,6 +284,7 @@ function gamipress_ajax_get_posts() {
 
 	// Setup where conditions (initialized with 1=1)
     $where = '1=1';
+    $prepare_args = array();
 
 	// Post type conditional
 	$post_type = ( isset( $_REQUEST['post_type'] ) && ! empty( $_REQUEST['post_type'] ) ? $_REQUEST['post_type'] :  array( 'post', 'page' ) );
@@ -291,23 +292,22 @@ function gamipress_ajax_get_posts() {
 	if ( is_array( $post_type ) ) {
 
 	    // Sanitize all post types given
-        foreach( $post_type as $i => $value ) {
+        foreach( $post_type as $i => $value )
             $post_type[$i] = sanitize_text_field( $value );
-        }
 
-		$post_type = sprintf( ' AND p.post_type IN(\'%s\')', implode( "','", $post_type ) );
+        $where .= ' AND p.post_type IN(' . implode( ',', array_fill( 0, count( $post_type ), '%s' ) ) . ')';
+        $prepare_args = array_merge( $prepare_args, array_values( $post_type ) );
 	} else {
-
-	    // Sanitize the post type
-        $post_type = sanitize_text_field( $post_type );
-
-		$post_type = sprintf( ' AND p.post_type = \'%s\'', $post_type );
+        $where .= ' AND p.post_type = %s';
+        $prepare_args[] = sanitize_text_field( $post_type );
 	}
 
     $where .= $post_type;
 
 	// Post title and ID conditional
-    $where .= " AND ( p.post_title LIKE '%{$search}%' OR p.ID LIKE '%{$search}%' )";
+    $where .= ' AND ( p.post_title LIKE %s OR p.ID LIKE %s )';
+    $prepare_args[] = '%' . $wpdb->esc_like( $search ) . '%';
+    $prepare_args[] = '%' . $wpdb->esc_like( $search ) . '%';
 
 	// Post status conditional
     $where .= " AND p.post_status IN( 'publish', 'private', 'inherit' )";
@@ -326,7 +326,8 @@ function gamipress_ajax_get_posts() {
 			if( is_array( $query_args ) ) {
 				// If is an array of conditionals, then build the new conditionals
 				foreach( $query_args as $field => $value ) {
-					$where .= " AND p.{$field} = '$value'";
+                    $where .= ' AND p.' . sanitize_key( $field ) . ' = %s';
+                    $prepare_args[] = sanitize_text_field( $value );
 				}
 			} else {
 			    // Leave an extra space if query args doesn't have one
@@ -355,7 +356,8 @@ function gamipress_ajax_get_posts() {
         if( is_array( $extra_query_args ) ) {
             // If is an array of conditionals, then build the new conditionals
             foreach( $extra_query_args as $field => $value ) {
-                $where .= " AND p.{$field} = '$value'";
+                $where .= ' AND p.' . sanitize_key( $field ) . ' = %s';
+                $prepare_args[] = sanitize_text_field( $value );
             }
         } else {
             // Leave an extra space if extra query args doesn't have one
@@ -440,13 +442,14 @@ function gamipress_ajax_get_posts() {
             $from = apply_filters( 'gamipress_ajax_get_posts_site_from', $from, $site_id );
 
 			// On this query, keep $wpdb->posts to get sub site posts
-			$site_results = $wpdb->get_results(
+			$site_results = $wpdb->get_results( $wpdb->prepare(
 				"SELECT p.ID, p.post_title, p.post_type
 				 FROM {$from}
 				 WHERE {$where}
                  ORDER BY {$order_by}
-				 LIMIT {$offset}, {$limit}"
-			);
+				 LIMIT {$offset}, {$limit}",
+                $prepare_args
+            ) );
 
 			// Loop all site results to add the site ID and name
 			foreach( $site_results as $index => $site_result ) {
@@ -460,7 +463,7 @@ function gamipress_ajax_get_posts() {
 			// Merge it to all results
 			$results = array_merge( $results, $site_results );
 
-			$count += absint( $wpdb->get_var( "SELECT COUNT(*) FROM {$from} WHERE {$where}" ) );
+			$count += absint( $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$from} WHERE {$where}", $prepare_args ) ) );
 
             // Restore current site
             restore_current_blog();
@@ -470,15 +473,16 @@ function gamipress_ajax_get_posts() {
 	} else {
 
 		// On this query, keep $wpdb->posts to get current site posts
-		$results = $wpdb->get_results(
+		$results = $wpdb->get_results( $wpdb->prepare(
 			"SELECT p.ID, p.post_title, p.post_type
              FROM {$from}
              WHERE {$where}
              ORDER BY {$order_by}
-             LIMIT {$offset}, {$limit}"
-		);
+             LIMIT {$offset}, {$limit}",
+            $prepare_args
+        ) );
 
-		$count = absint( $wpdb->get_var( "SELECT COUNT(*) FROM {$from} WHERE {$where}" ) );
+		$count = absint( $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$from} WHERE {$where}", $prepare_args ) ) );
 
 	}
 
@@ -503,9 +507,8 @@ function gamipress_ajax_get_requirements() {
     // Security check, forces to die if not security passed
     check_ajax_referer( 'gamipress_admin', 'nonce' );
 
-    if( ! current_user_can( gamipress_get_manager_capability() ) ) {
-        return;
-    }
+    if( ! current_user_can( gamipress_get_manager_capability() ) )
+        wp_send_json_error( __( 'You can not perform this action', 'gamipress' ) );
 
     global $wpdb;
 
@@ -514,6 +517,7 @@ function gamipress_ajax_get_requirements() {
 
     // Setup where conditions (initialized with 1=1)
     $where = '1=1';
+    $prepare_args = array();
 
     // Post type conditional
     $post_type = ( isset( $_REQUEST['post_type'] ) && ! empty( $_REQUEST['post_type'] ) ? $_REQUEST['post_type'] :  gamipress_get_requirement_types_slugs() );
@@ -525,19 +529,17 @@ function gamipress_ajax_get_requirements() {
             $post_type[$i] = sanitize_text_field( $value );
         }
 
-        $post_type = sprintf( ' AND p.post_type IN(\'%s\')', implode( "','", $post_type ) );
+        $where .= ' AND p.post_type IN(' . implode( ',', array_fill( 0, count( $post_type ), '%s' ) ) . ')';
+        $prepare_args = array_merge( $prepare_args, array_values( $post_type ) );
     } else {
-
-        // Sanitize the post type
-        $post_type = sanitize_text_field( $post_type );
-
-        $post_type = sprintf( ' AND p.post_type = \'%s\'', $post_type );
+        $where .= ' AND p.post_type = %s';
+        $prepare_args[] = sanitize_text_field( $post_type );
     }
 
-    $where .= $post_type;
-
     // Post title and ID conditional
-    $where .= " AND ( p.post_title LIKE '%{$search}%' OR p.ID LIKE '%{$search}%' )";
+    $where .= ' AND ( p.post_title LIKE %s OR p.ID LIKE %s )';
+    $prepare_args[] = '%' . $wpdb->esc_like( $search ) . '%';
+    $prepare_args[] = '%' . $wpdb->esc_like( $search ) . '%';;
 
     // Post status conditional
     $where .= " AND p.post_status = 'publish'";
@@ -591,15 +593,16 @@ function gamipress_ajax_get_requirements() {
     $offset = $limit * ( $page - 1 );
 
     // On this query, keep $wpdb->posts to get current site posts
-    $results = $wpdb->get_results(
+    $results = $wpdb->get_results( $wpdb->prepare(
         "SELECT p.ID, p.post_title, p.post_type, p.post_parent
              FROM {$from}
              WHERE {$where}
              ORDER BY {$order_by}
-             LIMIT {$offset}, {$limit}", ARRAY_A
-    );
+             LIMIT {$offset}, {$limit}",
+        $prepare_args
+    ), ARRAY_A );
 
-    $count = absint( $wpdb->get_var( "SELECT COUNT(*) FROM {$from} WHERE {$where}" ) );
+    $count = absint( $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$from} WHERE {$where}", $prepare_args ) ) );
 
     $parents = array();
 
@@ -647,6 +650,12 @@ add_action( 'wp_ajax_gamipress_get_requirements', 'gamipress_ajax_get_requiremen
  * @since 1.0.0
  */
 function gamipress_ajax_get_achievements_options() {
+
+    // Security check, forces to die if not security passed
+    check_ajax_referer( 'gamipress_admin', 'nonce' );
+
+    if( ! current_user_can( gamipress_get_manager_capability() ) )
+        wp_send_json_error( __( 'You can not perform this action', 'gamipress' ) );
 
 	global $wpdb;
 
@@ -700,6 +709,9 @@ function gamipress_achievement_post_ajax_handler() {
     // Security check, forces to die if not security passed
     check_ajax_referer( 'gamipress_admin', 'nonce' );
 
+    if( ! current_user_can( gamipress_get_manager_capability() ) )
+        wp_send_json_error( __( 'You can not perform this action', 'gamipress' ) );
+
 	$selected = '';
 
     // If requirement_id requested, then retrieve the selected option from this requirement
@@ -750,7 +762,7 @@ function gamipress_achievement_post_ajax_handler() {
     $output = '<option value="">' . sprintf( __( 'Choose the %s', 'gamipress' ), $singular_name ) . '</option>';
     foreach ( $achievements as $achievement ) {
         $achievement_id = absint( $achievement->ID );
-        $output .= '<option value="' . $achievement_id . '" ' . selected( $selected, $achievement_id, false ) . '>' . $achievement->post_title . '</option>';
+        $output .= '<option value="' . $achievement_id . '" ' . selected( $selected, $achievement_id, false ) . '>' . esc_html( $achievement->post_title ) . '</option>';
     }
 
     // Send back our results and die like a man
@@ -770,6 +782,9 @@ function gamipress_ajax_get_ranks_options_html() {
     // Security check, forces to die if not security passed
     check_ajax_referer( 'gamipress_admin', 'nonce' );
 
+    if( ! current_user_can( gamipress_get_manager_capability() ) )
+        wp_send_json_error( __( 'You can not perform this action', 'gamipress' ) );
+
 	global $wpdb;
 
 	// Post type conditional
@@ -782,7 +797,8 @@ function gamipress_ajax_get_ranks_options_html() {
             $post_type[$i] = sanitize_text_field( $value );
         }
 
-		$post_type = sprintf( 'AND p.post_type IN(\'%s\')', implode( "','", $post_type ) );
+        $post_type_where = sprintf( 'AND p.post_type IN( %s )', implode( ',', array_fill( 0, count( $post_type ), '%s' ) ) );
+        $post_type_values = array_values( $post_type );
 		$singular_name = __( 'Rank', 'gamipress' );
 	} else {
 
@@ -790,7 +806,8 @@ function gamipress_ajax_get_ranks_options_html() {
         $post_type = sanitize_text_field( $post_type );
 
 		$singular_name = gamipress_get_rank_type_singular( $post_type, true );
-		$post_type = sprintf( 'AND p.post_type = \'%s\'', $post_type );
+        $post_type_where = 'AND p.post_type = %s';
+        $post_type_values = array( $post_type );
 	}
 
 	$selected = '';
@@ -810,19 +827,20 @@ function gamipress_ajax_get_ranks_options_html() {
 
 	$posts = GamiPress()->db->posts;
 
-	$ranks = $wpdb->get_results(
+	$ranks = $wpdb->get_results( $wpdb->prepare(
 	    "SELECT p.ID, p.post_title
 		FROM {$posts} AS p
 		WHERE p.post_status IN( 'publish', 'private', 'inherit' )
-        {$post_type}
-		ORDER BY p.post_type ASC, p.menu_order DESC"
-    );
+        {$post_type_where}
+		ORDER BY p.post_type ASC, p.menu_order DESC",
+        $post_type_values
+    ) );
 
 	// Setup our output
 	$output = '<option value="">' . sprintf( __( 'Choose the %s', 'gamipress' ), $singular_name ) . '</option>';
 	foreach ( $ranks as $rank ) {
         $rank_id = absint( $rank->ID );
-		$output .= '<option value="' . $rank_id . '" ' . selected( $selected, $rank_id, false ) . '>' . $rank->post_title . '</option>';
+		$output .= '<option value="' . $rank_id . '" ' . selected( $selected, $rank_id, false ) . '>' . esc_html( $rank->post_title ) . '</option>';
 	}
 
 	// Send back our results and die like a man
@@ -838,6 +856,12 @@ add_action( 'wp_ajax_gamipress_get_ranks_options_html', 'gamipress_ajax_get_rank
  * @since 1.3.1
  */
 function gamipress_ajax_get_ranks_options() {
+    // Security check, forces to die if not security passed
+    check_ajax_referer( 'gamipress_admin', 'nonce' );
+
+    if( ! current_user_can( gamipress_get_manager_capability() ) )
+        wp_send_json_error( __( 'You can not perform this action', 'gamipress' ) );
+
 	global $wpdb;
 
 	// Pull back the search string
@@ -852,31 +876,31 @@ function gamipress_ajax_get_ranks_options() {
 	if ( is_array( $post_type ) ) {
 
         // Sanitize all post types given
-        foreach( $post_type as $i => $value ) {
+        foreach( $post_type as $i => $value )
             $post_type[$i] = sanitize_text_field( $value );
-        }
 
-		$post_type = sprintf( 'AND p.post_type IN(\'%s\')', implode( "','", $post_type ) );
+        $post_type_where = sprintf( 'AND p.post_type IN( %s )', implode( ',', array_fill( 0, count( $post_type ), '%s' ) ) );
+        $post_type_values = array_values( $post_type );
 
 		$select = 'p.ID, p.post_title, p.post_type';
 	} else {
-
-        // Sanitize the post type
-        $post_type = sanitize_text_field( $post_type );
-
-		$post_type = sprintf( 'AND p.post_type = \'%s\'', $post_type );
+        $post_type_where = 'AND p.post_type = %s';
+        $post_type_values = array( sanitize_text_field( $post_type ) );
 	}
 
-	$posts    	= GamiPress()->db->posts;
+	$posts = GamiPress()->db->posts;
 
 	$ranks = $wpdb->get_results( $wpdb->prepare(
 		"SELECT {$select}
 		FROM {$posts} AS p
 		WHERE p.post_status IN( 'publish', 'private', 'inherit' )
-        {$post_type}
+        {$post_type_where}
 		 AND p.post_title LIKE %s
 		ORDER BY p.post_type ASC, p.menu_order DESC",
-		"%%{$search}%%"
+        array_merge(
+            $post_type_values,
+            array( '%' . $wpdb->esc_like( $search ) . '%' )
+        )
 	) );
 
 	// Return our results
@@ -980,9 +1004,8 @@ function gamipress_ajax_unlock_achievement_with_points() {
 
 	$congratulations = gamipress_get_post_meta( $achievement_id, '_gamipress_congratulations_text' );
 
-	if( empty( $congratulations ) ) {
-		$congratulations = sprintf( __( 'Congratulations! You unlocked the %s %s.', 'gamipress' ), $achievement_type['singular_name'], $achievement->post_title );
-    }
+	if( empty( $congratulations ) )
+		$congratulations = sprintf( __( 'Congratulations! You unlocked the %s %s.', 'gamipress' ), $achievement_type['singular_name'], esc_html( $achievement->post_title ) );
 
     $congratulations = wpautop( $congratulations );
     $congratulations = do_shortcode( $congratulations );
@@ -1115,7 +1138,7 @@ function gamipress_ajax_unlock_rank_with_points() {
 	$congratulations = gamipress_get_post_meta( $rank_id, '_gamipress_congratulations_text' );
 
 	if( empty( $congratulations ) ) {
-		$congratulations = sprintf( __( 'Congratulations! You reached to the %s %s.', 'gamipress' ), $rank_type['singular_name'], $rank->post_title );
+		$congratulations = sprintf( __( 'Congratulations! You reached to the %s %s.', 'gamipress' ), $rank_type['singular_name'], esc_html( $rank->post_title ) );
     }
 
     $congratulations = wpautop( $congratulations );

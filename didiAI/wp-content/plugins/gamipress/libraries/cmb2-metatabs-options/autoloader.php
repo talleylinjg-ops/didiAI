@@ -1,4 +1,7 @@
 <?php
+// Exit if accessed directly
+if( !defined( 'ABSPATH' ) ) exit;
+
 /**
  * RNL AUTOLOADER
  * Looks in /code to see if a file matching the classname exists

@@ -50,11 +50,6 @@ function gamipress_is_achievement( $post = null ) {
  */
 function gamipress_get_achievements( $args = array() ) {
 
-	// If not properly upgrade to required version fallback to compatibility function
-	if( ! is_gamipress_upgraded_to( '1.5.1' ) ) {
-		return gamipress_get_achievements_old( $args );
-	}
-
 	// Setup our defaults
 	$defaults = array(
 		'post_type'                => array_merge( gamipress_get_achievement_types_slugs(), gamipress_get_requirement_types_slugs() ),
@@ -157,19 +152,6 @@ function gamipress_get_children_of_achievement( $achievement_id = 0 ) {
  */
 function gamipress_get_step_achievement( $step_id = 0 ) {
 
-	// If not properly upgrade to required version fallback to compatibility function
-	if( ! is_gamipress_upgraded_to( '1.5.1' ) ) {
-
-		$achievement = gamipress_get_parent_of_achievement( $step_id );
-
-		if( $achievement ) {
-			return $achievement;
-		} else {
-			return false;
-		}
-
-	}
-
 	// Grab the current post ID if no step ID was specified
 	if ( ! $step_id ) {
 		global $post;
@@ -199,12 +181,6 @@ function gamipress_get_step_achievement( $step_id = 0 ) {
  * @return array                    An array of post objects with the achievement's steps
  */
 function gamipress_get_achievement_steps( $achievement_id = 0, $post_status = 'publish' ) {
-
-	// If not properly upgrade to required version fallback to compatibility function
-	if( ! is_gamipress_upgraded_to( '1.5.1' ) ) {
-		// gamipress_get_assigned_requirements() has backward compatibility and merge new and old results
-		return gamipress_get_assigned_requirements( $achievement_id, 'step', $post_status );
-	}
 
     // Grab the current post ID if no achievement_id was specified
     if ( ! $achievement_id ) {
@@ -510,11 +486,6 @@ function gamipress_get_user_earned_achievement_types( $user_id = 0 ){
  */
 function gamipress_get_dependent_achievements( $achievement_id = 0 ) {
 
-    // If not properly upgrade to required version fallback to compatibility function
-    if( ! is_gamipress_upgraded_to( '1.5.1' ) ) {
-        return gamipress_get_dependent_achievements_old( $achievement_id );
-    }
-
 	global $wpdb;
 
 	// Grab the current achievement ID if none specified
@@ -564,11 +535,6 @@ function gamipress_get_dependent_achievements( $achievement_id = 0 ) {
  * @return array                   An array of achievements that are dependent on the given achievement
  */
 function gamipress_get_required_achievements_for_achievement( $achievement_id = 0, $post_status = 'publish' ) {
-
-    // If not properly upgrade to required version fallback to compatibility function
-    if( ! is_gamipress_upgraded_to( '1.5.1' ) ) {
-        return gamipress_get_required_achievements_for_achievement_old( $achievement_id );
-    }
 
 	global $wpdb;
 
@@ -885,25 +851,25 @@ function gamipress_get_achievement_earners( $achievement_id = 0, $args = array()
 
     $args = wp_parse_args( $args, $defaults );
 
+    // Sanitization
+    $args['limit'] = (int) $args['limit'];
+    $args['order'] = gamipress_validate_from_array( strtoupper( $args['order'] ), array( 'ASC', 'DESC' ), 'DESC' );
+
     // Setup FROM
-    if( ! empty( $args['from'] ) ) {
+    if( ! empty( $args['from'] ) )
         $from .= $args['from'];
-    }
 
     // Setup WHERE
-    if( ! empty( $args['where'] ) ) {
+    if( ! empty( $args['where'] ) )
         $where .= $args['where'];
-    }
 
     // Setup LIMIT
-    if( (int)( $args['limit'] ) > 0 ) {
+    if( (int)( $args['limit'] ) > 0 )
         $limit = '0, ' . $args['limit'];
-    }
 
     // Setup ORDER BY
-    if( ! empty( $args['orderby'] ) ) {
+    if( ! empty( $args['orderby'] ) )
         $order_by = $args['orderby'] . ' ' .  $args['order'];
-    }
 
 	$earners = $wpdb->get_col(
 	    "SELECT u.user_id
@@ -1227,12 +1193,6 @@ function gamipress_update_achievements_achievement_types( $original_type = '', $
  * @param string $new_type      New achievement type.
  */
 function gamipress_update_earned_meta_achievement_types( $original_type = '', $new_type = '' ) {
-
-	// If not properly upgrade to required version fallback to compatibility function
-	if( ! is_gamipress_upgraded_to( '1.2.8' ) ) {
-		gamipress_update_earned_meta_achievement_types_old( $original_type, $new_type );
-		return;
-	}
 
 	// Setup CT object
 	$ct_table = ct_setup_table( 'gamipress_user_earnings' );

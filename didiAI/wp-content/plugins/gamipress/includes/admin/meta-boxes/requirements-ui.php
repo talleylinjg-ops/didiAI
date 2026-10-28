@@ -164,11 +164,6 @@ function gamipress_requirements_ui_meta_box( $post = null, $metabox = array() ) 
  */
 function gamipress_get_assigned_requirements( $post_id = null, $requirement_type = '', $post_status = 'publish' ) {
 
-    // If not properly upgrade to required version fallback to compatibility function
-    if( ! is_gamipress_upgraded_to( '1.5.1' ) ) {
-        return gamipress_get_assigned_requirements_old( $post_id, $requirement_type, $post_status );
-    }
-
     global $post;
 
     if( $post_id === null ) {
@@ -1375,10 +1370,6 @@ function gamipress_build_requirement_title( $requirement_id, $requirement = arra
  */
 function gamipress_get_requirement_menu_order( $requirement_id = 0 ) {
 
-    // If not properly upgrade to required version fallback to compatibility function
-    if( ! is_gamipress_upgraded_to( '1.5.1' ) )
-        return gamipress_get_requirement_menu_order_old( $requirement_id );
-
     return gamipress_get_post_field( 'menu_order', $requirement_id );
 
 }
@@ -1395,10 +1386,6 @@ function gamipress_get_requirement_menu_order( $requirement_id = 0 ) {
  * @return int                      0 if the order matches, -1 if it's lower, 1 if it's higher
  */
 function gamipress_compare_requirements_order( $requirement_x, $requirement_y ) {
-
-    // If not properly upgrade to required version fallback to compatibility function
-    if( ! is_gamipress_upgraded_to( '1.5.1' ) && property_exists( $requirement_x, 'order' ) )
-        return gamipress_compare_requirements_order_old( $requirement_x, $requirement_y );
 
     if ( $requirement_x->menu_order == $requirement_y->menu_order )
         return 0;

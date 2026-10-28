@@ -440,13 +440,19 @@ if ( ! class_exists( 'CT_List_View' ) ) :
             );
 
             $bulk_messages = array(
-                'added'   => _n( '%s item added.', '%s items added.', $bulk_counts['added'] ),
-                'updated'   => _n( '%s item updated.', '%s items updated.', $bulk_counts['updated'] ),
+                // translators: %s: count
+                'added'     => _n( '%s item added.', '%s items added.', $bulk_counts['added'], 'ct' ),
+                // translators: %s: count
+                'updated'   => _n( '%s item updated.', '%s items updated.', $bulk_counts['updated'], 'ct' ),
                 'locked'    => ( 1 == $bulk_counts['locked'] ) ? __( '1 item not updated, somebody is editing it.', 'ct' ) :
-                    _n( '%s item not updated, somebody is editing it.', '%s items not updated, somebody is editing them.', $bulk_counts['locked'] ),
-                'deleted'   => _n( '%s item permanently deleted.', '%s items permanently deleted.', $bulk_counts['deleted'] ),
-                'trashed'   => _n( '%s item moved to the Trash.', '%s items moved to the Trash.', $bulk_counts['trashed'] ),
-                'untrashed' => _n( '%s item restored from the Trash.', '%s items restored from the Trash.', $bulk_counts['untrashed'] ),
+                               // translators: %s: count
+                               _n( '%s item not updated, somebody is editing it.', '%s items not updated, somebody is editing them.', $bulk_counts['locked'], 'ct' ),
+                // translators: %s: count
+                'deleted'   => _n( '%s item permanently deleted.', '%s items permanently deleted.', $bulk_counts['deleted'], 'ct' ),
+                // translators: %s: count
+                'trashed'   => _n( '%s item moved to the Trash.', '%s items moved to the Trash.', $bulk_counts['trashed'], 'ct' ),
+                // translators: %s: count
+                'untrashed' => _n( '%s item restored from the Trash.', '%s items restored from the Trash.', $bulk_counts['untrashed'], 'ct' ),
             );
 
             /**

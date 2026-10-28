@@ -21,22 +21,22 @@ if( $thumbnail_size === 0 ) {
 
 <span id="gamipress-inline-rank-<?php the_ID(); ?>" class="gamipress-inline-rank">
 
-     <?php // Link to the rank page
-     if( $a['link'] === 'yes' ) : ?>
-         <a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>" class="gamipress-inline-rank-link">
-     <?php endif; ?>
-
      <?php // Achievement Image
      if( $a['thumbnail'] === 'yes' ) : ?>
         <span class="gamipress-inline-rank-thumbnail"><?php echo gamipress_get_rank_post_thumbnail( get_the_ID(), $thumbnail_size ); ?></span>&nbsp;
      <?php endif; ?>
 
-     <?php // Achievement Ttitle ?>
+     <?php // Rank Title
+    if( $a['title'] === 'yes' ) : ?>
+        
+        <?php // Link to the rank page
+        if( $a['link'] === 'yes' ) : ?>
+            <a href="<?php the_permalink(); ?>" title="<?php the_title(); ?>" class="gamipress-inline-rank-link"><?php the_title(); ?></a>
+        <?php else : ?>
+           <?php // Rank title ?>
         <span class="gamipress-inline-rank-title"><?php the_title(); ?></span>
+        <?php endif; ?>       
 
-     <?php // Link to the rank page
-     if( $a['link'] === 'yes' ) : ?>
-         </a>
-     <?php endif; ?>
+    <?php endif; ?>
 
 </span>

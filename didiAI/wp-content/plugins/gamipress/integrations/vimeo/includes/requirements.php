@@ -55,6 +55,10 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_v
  */
 function gamipress_vimeo_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'vimeo_video_id' => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] ) && $requirement['trigger_type'] === 'gamipress_vimeo_watch_specific_video' ) {
 
         // Save the custom field

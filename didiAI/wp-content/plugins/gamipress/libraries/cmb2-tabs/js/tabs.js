@@ -20,12 +20,13 @@
         if( ! tab.hasClass('active') ) {
             var tabs = tab.closest('.cmb-tabs');
             var form = tabs.next('.cmb2-wrap');
+            var tabs_speed = tabs.data('speed');
 
             // Hide current active tab fields
-            form.find(tabs.find('.cmb-tab.active').data('fields')).fadeOut('fast', function() {
+            form.find(tabs.find('.cmb-tab.active').data('fields')).fadeOut(tabs_speed, function() {
                 $(this).removeClass('cmb-tab-active-item');
 
-                form.find(tab.data('fields')).fadeIn('fast', function() {
+                form.find(tab.data('fields')).fadeIn(tabs_speed, function() {
                     $(this).addClass('cmb-tab-active-item');
 
                     // Support for groups and repeatable fields

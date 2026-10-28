@@ -74,6 +74,12 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_q
  */
 function gamipress_qsm_ajax_update_requirement( $requirement_id, $requirement ) {
     
+    $requirement = wp_parse_args( $requirement, array(
+        'qsm_points'        => '',
+        'qsm_min_points'    => '',
+        'qsm_max_points'    => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_qsm_complete_quiz_points'
             || $requirement['trigger_type'] === 'gamipress_qsm_complete_specific_quiz_points'

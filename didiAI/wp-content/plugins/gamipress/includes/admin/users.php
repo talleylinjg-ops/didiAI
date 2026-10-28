@@ -21,9 +21,7 @@ function gamipress_user_profile_data( $user = null ) {
 
     <?php // Verify user meets minimum role to manage earned achievements
     if ( current_user_can( gamipress_get_manager_capability() ) ) : ?>
-
         <h2><?php echo gamipress_dashicon( 'gamipress' ); ?> <?php _e( 'GamiPress', 'gamipress' ); ?></h2>
-
     <?php endif; ?>
 
     <?php // Output markup to user rank
@@ -59,7 +57,11 @@ function gamipress_ajax_profile_update_user_rank() {
 
     // Check if user has permissions
     if ( ! current_user_can( 'edit_user', $user_id ) )
-        wp_send_json_error( __( 'You can perform this action.', 'gamipress' ) );
+        wp_send_json_error( __( 'You are not allowed to perform this action.', 'gamipress' ) );
+
+    // Check if user can manage GamiPress
+    if( ! current_user_can( gamipress_get_manager_capability() ) )
+        wp_send_json_error( __( 'You are not allowed to perform this action.', 'gamipress' ) );
 
     // Check if valid user ID
     if( $user_id === 0 )
@@ -106,14 +108,12 @@ function gamipress_ajax_profile_update_user_points() {
     $user_id            = absint( $_POST['user_id'] );
 
     // Check if user can edit other users
-    if ( ! current_user_can( 'edit_user', $user_id ) ) {
-        wp_send_json_error( __( 'You can perform this action.', 'gamipress' ) );
-    }
+    if ( ! current_user_can( 'edit_user', $user_id ) )
+        wp_send_json_error( __( 'You are not allowed to perform this action.', 'gamipress' ) );
 
     // Check if user can manage GamiPress
-    if( ! current_user_can( gamipress_get_manager_capability() ) ) {
-        wp_send_json_error( __( 'You can perform this action.', 'gamipress' ) );
-    }
+    if( ! current_user_can( gamipress_get_manager_capability() ) )
+        wp_send_json_error( __( 'You are not allowed to perform this action.', 'gamipress' ) );
 
     // Check if valid user ID
     if( $user_id === 0 ) {
@@ -541,7 +541,7 @@ function gamipress_ajax_profile_load_award_achievement_award() {
 
     // Return if user is not a manager
     if( ! current_user_can( gamipress_get_manager_capability() ) ) {
-        wp_send_json_error( __( 'You can perform this action.', 'gamipress' ) );
+        wp_send_json_error( __( 'You are not allowed to perform this action.', 'gamipress' ) );
     }
 
     $post_type  = sanitize_text_field( $_POST['post_type'] );
@@ -549,7 +549,7 @@ function gamipress_ajax_profile_load_award_achievement_award() {
 
     // Check if user has permissions
     if ( ! current_user_can( 'edit_user', $user_id ) ) {
-        wp_send_json_error( __( 'You can perform this action.', 'gamipress' ) );
+        wp_send_json_error( __( 'You are not allowed to perform this action.', 'gamipress' ) );
     }
 
     // Grab our types
@@ -673,9 +673,7 @@ add_action( 'wp_ajax_gamipress_profile_load_award_achievement_table', 'gamipress
 function gamipress_profile_award_requirement( $user = null ) {
 
     // Return if user is not a manager
-    if( ! current_user_can( gamipress_get_manager_capability() ) ) {
-        return;
-    }
+    if( ! current_user_can( gamipress_get_manager_capability() ) ) return;
 
     // Grab our types
     $requirement_types = gamipress_get_requirement_types();
@@ -723,17 +721,15 @@ function gamipress_ajax_profile_load_award_requirement_table() {
     check_ajax_referer( 'gamipress_admin', 'nonce' );
 
     // Return if user is not a manager
-    if( ! current_user_can( gamipress_get_manager_capability() ) ) {
-        wp_send_json_error( __( 'You can perform this action.', 'gamipress' ) );
-    }
+    if( ! current_user_can( gamipress_get_manager_capability() ) )
+        wp_send_json_error( __( 'You are not allowed to perform this action.', 'gamipress' ) );
 
     $post_type  = sanitize_text_field( $_POST['post_type'] );
     $user_id    = absint( $_POST['user_id'] );
 
     // Check if user has permissions
-    if ( ! current_user_can( 'edit_user', $user_id ) ) {
-        wp_send_json_error( __( 'You can perform this action.', 'gamipress' ) );
-    }
+    if ( ! current_user_can( 'edit_user', $user_id ) )
+        wp_send_json_error( __( 'You are not allowed to perform this action.', 'gamipress' ) );
 
     // Grab our types
     $achievement_types = gamipress_get_achievement_types();

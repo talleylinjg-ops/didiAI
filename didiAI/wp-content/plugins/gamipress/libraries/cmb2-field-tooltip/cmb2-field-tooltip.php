@@ -8,7 +8,7 @@
  * Plugin URI: https://github.com/rubengc/cmb2-field-tooltip
  * GitHub Plugin URI: https://github.com/rubengc/cmb2-field-tooltip
  * Description: Adds tooltips to CMB2 fields.
- * Version: 1.0.3
+ * Version: 1.0.4
  * Author: Tsunoa
  * Author URI: https://tsunoa.com/
  * License: GPLv2+
@@ -27,7 +27,7 @@ if( !class_exists( 'RGC_CMB2_Field_Tooltip' ) ) {
         /**
          * Current version number
          */
-        const VERSION = '1.0.3';
+        const VERSION = '1.0.4';
 
         /**
          * Initialize the plugin by hooking into CMB2

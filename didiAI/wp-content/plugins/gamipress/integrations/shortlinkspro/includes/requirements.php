@@ -78,6 +78,11 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_s
  */
 function gamipress_shortlinkspro_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'shortlinkspro_category'    => '',
+        'shortlinkspro_tag'         => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_shortlinkspro_click_specific_category' ) ) {
 

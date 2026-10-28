@@ -81,6 +81,11 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_b
  */
 function gamipress_bp_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'bp_member_type'    => '',
+        'bp_field_value'    => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] ) ) {
 
         if( $requirement['trigger_type'] === 'gamipress_bp_set_member_type' ) {

@@ -78,6 +78,12 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_w
  */
 function gamipress_wpep_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'wpep_score'        => '',
+        'wpep_min_score'    => '',
+        'wpep_max_score'    => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_wpep_complete_assessment_min_grade'
             || $requirement['trigger_type'] === 'gamipress_wpep_complete_specific_assessment_min_grade'

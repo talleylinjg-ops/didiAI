@@ -86,6 +86,12 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_t
  */
 function gamipress_thrive_quiz_builder_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'thrive_quiz_builder_percentage_condition'  => '',
+        'thrive_quiz_builder_percentage'            => '',
+        'thrive_quiz_builder_quiz_type'             => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_thrive_quiz_builder_complete_percentage_quiz'
             || $requirement['trigger_type'] === 'gamipress_thrive_quiz_builder_complete_specific_percentage_quiz' ) ) {

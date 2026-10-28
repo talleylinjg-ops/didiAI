@@ -1,4 +1,6 @@
 <?php
+// Exit if accessed directly
+if( !defined( 'ABSPATH' ) ) exit;
 
 /**
  * See https://github.com/rogerlos/cmb2-metatabs-options

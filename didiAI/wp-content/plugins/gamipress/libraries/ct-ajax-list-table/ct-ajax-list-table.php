@@ -6,6 +6,8 @@
  * @author       GamiPress <contact@gamipress.com>, rubengc <rubengcdev@gamil.com>
  * @copyright    Copyright (c) GamiPress
  */
+// Exit if accessed directly
+if( !defined( 'ABSPATH' ) ) exit;
 
 if ( ! class_exists( 'CT_Ajax_List_Table' ) ) :
 

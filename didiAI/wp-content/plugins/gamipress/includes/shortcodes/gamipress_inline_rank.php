@@ -37,6 +37,14 @@ function gamipress_register_inline_rank_shortcode() {
 				'default'           => '',
 				'options_cb'        => 'gamipress_options_cb_posts'
 			),
+            'title' => array(
+				'name'              => __( 'Show Title', 'gamipress' ),
+                'tooltip'           => __( 'Display the rank title.', 'gamipress' ),
+                'label_cb'          => 'cmb_tooltip_label_cb',
+				'type' 		        => 'checkbox',
+				'classes' 	        => 'gamipress-switch',
+				'default'           => 'yes'
+			),
 			'link' => array(
 				'name'      => __( 'Show Link', 'gamipress' ),
                 'tooltip'   => __( 'Add a link on rank title to the rank page.', 'gamipress' ),
@@ -168,6 +176,7 @@ function gamipress_inline_rank_shortcode_defaults() {
 
 	return apply_filters( 'gamipress_inline_rank_shortcode_defaults', array(
 		'id' 			        => get_the_ID(),
+        'title' 			    => 'yes',
 		'link' 			        => 'yes',
 		'thumbnail' 	        => 'yes',
 		'thumbnail_size' 	    => '',

@@ -65,6 +65,10 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_s
  */
 function gamipress_sensei_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'sensei_score' => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_sensei_complete_quiz_grade'
             || $requirement['trigger_type'] === 'gamipress_sensei_complete_specific_quiz_grade'

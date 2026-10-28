@@ -9,6 +9,9 @@
  * @link      https://cmb2.io
  */
 
+// Exit if accessed directly
+if( !defined( 'ABSPATH' ) ) exit;
+
 /**
  * Helper function to provide directory path to CMB2
  *
@@ -41,7 +44,7 @@ function cmb2_autoload_classes( $class_name ) {
 		$path .= '/rest-api';
 	}
 
-	include_once( cmb2_dir( "$path/{$class_name}.php" ) );
+	include_once cmb2_dir( "$path/{$class_name}.php" );
 }
 
 /**
@@ -321,7 +324,7 @@ function cmb2_print_metabox_form( $meta_box, $object_id = 0, $args = array() ) {
 		$cmb->prop( 'save_fields' )
 		// check nonce.
 		&& isset( $_POST['submit-cmb'], $_POST['object_id'], $_POST[ $cmb->nonce() ] )
-		&& wp_verify_nonce( sanitize_text_field( wp_unslash ( $_POST[ $cmb->nonce() ] ) ), $cmb->nonce() )
+		&& wp_verify_nonce( $_POST[ $cmb->nonce() ], $cmb->nonce() )
 		&& $object_id && $_POST['object_id'] == $object_id
 	) {
 		$cmb->save_fields( $object_id, $cmb->object_type(), $_POST );
@@ -347,7 +350,6 @@ function cmb2_print_metabox_form( $meta_box, $object_id = 0, $args = array() ) {
 	if ( isset( $format_parts[1] ) && $format_parts[1] ) {
 		printf( str_ireplace( '%4$s', '%1$s', $format_parts[1] ), esc_attr( $args['save_button'] ) );
 	}
-
 }
 
 /**

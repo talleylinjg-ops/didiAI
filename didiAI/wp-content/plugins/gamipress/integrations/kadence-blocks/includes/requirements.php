@@ -82,6 +82,12 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_k
  */
 function gamipress_kadence_blocks_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'kadence_blocks_form'           => '',
+        'kadence_blocks_field_name'     => '',
+        'kadence_blocks_field_value'    => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_kadence_blocks_specific_new_form_submission'
             || $requirement['trigger_type'] === 'gamipress_kadence_blocks_specific_field_value_submission' ) ) {

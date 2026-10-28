@@ -21,7 +21,7 @@ function ct_ajax_list_table_handle_request() {
     }
 
     // Setup the CT Table
-    $ct_table = ct_setup_table( sanitize_text_field( $_GET['object'] ) );
+    $ct_table = ct_setup_table( sanitize_text_field( wp_unslash( $_GET['object'] ) ) );
 
     if( ! is_object( $ct_table ) ) {
         wp_send_json_error();
@@ -43,8 +43,8 @@ function ct_ajax_list_table_handle_request() {
     // Setup this constant to allow from CT_List_Table meet that this render comes from this plugin
     @define( 'IS_CT_AJAX_LIST_TABLE', true );
 
-    if( is_array( $_GET['query_args'] ) ) {
-        $query_args = map_deep( $_GET['query_args'], 'sanitize_text_field' );
+    if( isset( $_GET['query_args'] ) && is_array( $_GET['query_args'] ) ) {
+        $query_args = map_deep( wp_unslash( $_GET['query_args'] ), 'sanitize_text_field' );
     } else {
         $query_args = json_decode( wp_unslash( $_GET['query_args'] ), true );
         // Sanitize

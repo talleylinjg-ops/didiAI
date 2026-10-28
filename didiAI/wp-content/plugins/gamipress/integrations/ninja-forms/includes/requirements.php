@@ -65,6 +65,11 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_n
  */
 function gamipress_nf_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'nf_field_name'     => '',
+        'nf_field_value'    => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_nf_field_value_submission'
             || $requirement['trigger_type'] === 'gamipress_nf_specific_field_value_submission' ) ) {

@@ -1,5 +1,828 @@
 == Changelog ==
 
+= 7.9.9.7 =
+
+* **Improvements**
+* Improved CSS compatibility between CMB2 & WP 7.1
+
+= 7.9.9.6 =
+
+* **Bug Fixes**
+* Fixed vulnerability on Youtube and Vimeo integrations.
+
+= 7.9.9.5 =
+
+* **New Features**
+* WooCommerce: New event: Subscription active for a number of months.
+* WooCommerce: New event: Specific subscription active for a number of months.
+
+= 7.9.9.4 =
+
+* **New Features**
+* BuddyBoss: New event: Get a reply deleted from an activity post.
+* BuddyBoss: New event: Delete a reply in a comment in a group.
+* BuddyBoss: New event: Delete a reply in a comment in a specific group.
+* BuddyBoss: New event: Get a reply in a comment deleted in a group.
+* BuddyBoss: New event: Get a reply in a comment deleted in a specific group.
+
+= 7.9.9.3 =
+
+* **New Features**
+* FluentCommunity: New event: Complete any lesson.
+* FluentCommunity: New event: Complete a specific lesson.
+* Tutor LMS: New event: Submit an assignment.
+* Tutor LMS: New event: Submit a specific assignment.
+* Tutor LMS: New event: Successfully pass an assignment.
+* Tutor LMS: New event: Successfully pass a specific assignment.
+* Tutor LMS: New event: Fail an assignment.
+* Tutor LMS: New event: Fail a specific assignment.
+
+= 7.9.9.2 =
+
+* **Bug Fixes**
+* Fixed vulnerability.
+
+= 7.9.9.1 =
+
+* **Bug Fixes**
+* Fixed visibility issue on credentials links.
+
+= 7.9.9 =
+
+* **New Features**
+* Added the brand new "Credentials" feature!
+* Users can now share credential links from earned achievements & ranks!
+* Social links now uses the new credentials links.
+* Credential links can be found on user earnings & single pages.
+* BuddyBoss: New event: Publish only text in an activity post
+* **Improvements**
+* Cached several queries for performance.
+
+= 7.9.8 =
+
+* **Bug Fixes**
+* Fixed vulnerability.
+
+= 7.9.7 =
+
+* **Improvements**
+* Improved recounting tool to support post of a type event for published posts.
+* Improved event selector searcher.
+* CSS improvement.
+
+= 7.9.6 =
+
+* **Improvements**
+* Improved filter related to User Earnings.
+
+= 7.9.5 =
+
+* **Bug Fixes**
+* Fixed vulnerability.
+
+= 7.9.4 =
+
+* **Bug Fixes**
+* Fixed vulnerability.
+
+= 7.9.3 =
+
+* **Improvements**
+* Style improvements to match with WordPress 7.0.
+* Fixed deprecated function notice.
+
+= 7.9.2 =
+
+* **Bug Fixes**
+* Fix notice for review.
+
+= 7.9.1 =
+
+* **Improvements**
+* Code cleaning to avoid displaying debug messages.
+* BuddyBoss: Improved check for events that publish activities containing attachments.
+
+= 7.9.0 =
+
+* **Improvements**
++ Style improvements to match with WordPress 7.0.
+
+= 7.8.9 =
+
+* **New Features**
+* New integration: AffiliatePress.
+* AffiliatePress: New event: Become as affiliate.
+* AffiliatePress: New event: Earn a commission.
+* AffiliatePress: New event: Get a generated payment.
+* New integration: BookingPress.
+* BookingPress: New event: Register as a customer.
+* BookingPress: New event: Book an appointment for a service.
+* BookingPress: New event: Book an appointment for a specific service.
+* BookingPress: New event: Approve an appointment for a service.
+* BookingPress: New event: Approve an appointment for a specific service.
+* BookingPress: New event: Reject an appointment for a service.
+* BookingPress: New event: Reject an appointment for for a specific service.
+* BookingPress: New event: Cancel an appointment for a service.
+* BookingPress: New event: Cancel an appointment for a specific service.
+* BookingPress: New event: An appointment is set to pending for a service.
+* BookingPress: New event: An appointment is set to pending for a specific service.
+* New integration: Mail Mint.
+* Mail Mint: New event: A tag added.
+* Mail Mint: New event: Specific tag added.
+* Mail Mint: New event: Added to a list.
+* Mail Mint: New event: Added to a specific list.
+* Mail Mint: New event: A tag removed.
+* Mail Mint: New event: Specific tag removed.
+* Mail Mint: New event: Removed from a list.
+* Mail Mint: New event: Removed from specific list.
+* Mail Mint: New event: Submit a form.
+* Mail Mint: New event: Submit a specific form.
+* Mail Mint: New event: Register as a contact.
+* WooCommerce: New event: Purchase a specific subscription variation of a product.
+* WooCommerce: New event: Renew a specific subscription variation of a product.
+* WooCommerce: New event: Cancel a specific subscription variation of a product.
+* WooCommerce: New event: Specific subscription variation of a product expires.
+
+= 7.8.8 =
+
+* **Improvements**
+* Improved security in some ajax requests.
+
+= 7.8.7 =
+
+* **Improvements**
+* Prevent PHP warnings when site can not connect with gamipress.com.
+* Make BuddyPress and BuddyBoss tabs more extensible.
+* Make earners queries more extensible.
+
+= 7.8.6 =
+
+* **New Features**
+* New integration: FluentCart.
+* FluentCart: Make a new purchase.
+* FluentCart: Purchase a product.
+* FluentCart: Purchase a specific product.
+* FluentCart: Refund fully a purchase.
+* FluentCart: Refund partially a purchase.
+* FluentCart: Activate a subscription.
+* FluentCart: Activate a subscription of a specific product.
+* FluentCart: Cancel a subscription.
+* FluentCart: Cancel a subscription of a specific product.
+* FluentCart: Renew a subscription.
+* FluentCart: Renew a subscription of a specific product.
+* New tool: Bulk Award/Revoke Requirements.
+
+= 7.8.5 =
+
+* **Improvements**
+* Ensure a default option for the points type HTML display.
+
+= 7.8.4 =
+
+* **New Features**
+* New options to define the points type HTML display.
+* New achievements and ranks column on types dashboard.
+
+= 7.8.3 =
+
+* **Bug Fixes**
+* Fixed REST API incorrect json format error.
+* **Developers**
+* New functions to meet the requirements count of a reward.
+
+= 7.8.2 =
+
+* **Improvements**
+* Fixed PHP Deprecated: strip_tags() notice for newer versions of PHP.
+* **Bug Fixes**
+* Fixed bug related to manually points revokation.
+
+= 7.8.1 =
+
+* **New Features**
+* New integration: Brizy.
+* Brizy: New event: Submit a form.
+* Brizy: New event: Submit a specific form.
+* Brizy: New event: Submit a specific field value.
+* Brizy: New event: Submit a specific field value on a specific form.
+
+= 7.8.0 =
+
+* **Improvements**
+* Improvements to the add-ons and dashboard screens for GamiPress PRO.
+* **Bug Fixes**
+* Fixed bug related to rank deletion.
+
+= 7.7.2 =
+
+* **New Features**
+* FluentCommunity: New event: Attempt any quiz.
+* FluentCommunity: New event: Attempt a specific quiz.
+* FluentCommunity: New event: Pass any quiz.
+* FluentCommunity: New event: Pass a specific quiz.
+* FluentCommunity: New event: Fail any quiz.
+* FluentCommunity: New event: Fail a specific quiz.
+
+= 7.7.1 =
+
+* **Improvements**
+* Elementor: Added a dedicated category for GamiPress widgets.
+* **New Features**
+* Presto Player: New event: Watch a video from a specific platform.
+
+= 7.7.0 =
+
+* **New Features**
+* Added our brand new Badge Builder!
+
+= 7.6.9 =
+
+* **New Features**
+* ARMember: New event: Renew any membership plan.
+* ARMember: New event: Renew a specific membership plan.
+* **Improvements**
+* Added points and points type tags in achievement email templates.
+
+= 7.6.8 =
+
+* **Improvements**
+* BuddyBoss: Improved display of GamiPress items in the News Feed.
+
+= 7.6.7 =
+
+* **Bug Fixes**
+* Fixed vulnerability.
+
+= 7.6.6 =
+
+* **New Features**
+* New integration: SureMembers.
+* SureMembers: Added to any access group.
+* SureMembers: Added to a specific access group.
+* SureMembers: Removed from any access group.
+* SureMembers: Removed from a specific access group.
+
+= 7.6.5 =
+
+* **Improvements**
+* Performed migration of blocks to API version 3.
+* Added filter for arguments in templates.
+
+= 7.6.4 =
+
+* **Bug Fixes**
+* Fixed vulnerability related to gamipress_logs shortcode.
+
+= 7.6.3 =
+
+* **Bug Fixes**
+* Fixed Warning related to menus in multisite.
+
+= 7.6.2 =
+
+* **Bug Fixes**
+* Fixed vulnerability.
+
+= 7.6.1 =
+
+* **Bug Fixes**
+* Minor fix.
+
+= 7.6.0 =
+
+* **Bug Fixes**
+* Fixed vulnerability.
+
+= 7.5.9 =
+
+* **New Features**
+* LearnDash: New event: Review any course.
+* LearnDash: New event: Review a specific course.
+
+= 7.5.8 =
+
+* **Developer Notes**
+* Tested with WordPress 6.9.
+
+= 7.5.7 =
+
+* **Bug Fixes**
+* Links fixed in Add-ons section.
+
+= 7.5.6 =
+
+* **Improvements**
+* Improved dashboard information.
+* Added tooltip library to improve descriptions.
+* **Bug Fixes**
+* Sensei LMS: Fixed bug related to enrollment event.
+
+= 7.5.5 =
+
+* **New Features**
+* New integration: Eventin.
+* Eventin: Purchase a ticket for any event.
+* Eventin: Purchase a ticket for specific event.
+* Eventin: Create an event.
+* Eventin: Delete any event.
+* Eventin: Delete a specific event.
+* Eventin: Update any event.
+* Eventin: Update a specific event.
+
+= 7.5.4 =
+
+* **Improvements**
+* Improved add-ons section view.
+
+= 7.5.3 =
+
+* **New Features**
+* New integration: Asgaros Forum.
+* Asgaros Forum: Reply to a topic.
+* Asgaros Forum: Reply to a specific topic.
+* Asgaros Forum: Reply to a topic on a specific forum.
+* Asgaros Forum: Create a new topic.
+* Asgaros Forum: Create a new topic on a specific forum.
+* Asgaros Forum: Like a post.
+* Asgaros Forum: Like a post on a specific topic.
+* Asgaros Forum: Like a post on a specific forum.
+* Asgaros Forum: Get a like on a post.
+* Asgaros Forum: Dislike a post.
+* Asgaros Forum: Dislike a post on a specific topic.
+* Asgaros Forum: Dislike a post on a specific forum.
+* Asgaros Forum: Get a dislike on a post.
+* Asgaros Forum: Delete a reply.
+* Asgaros Forum: Delete a topic.
+* **New Features**
+* New integration: FluentBooking.
+* FluentBooking: Schedule a one-to-one meeting.
+* FluentBooking: Schedule a specific one-to-one meeting.
+* FluentBooking: Schedule one-to-one meeting with specific host.
+* FluentBooking: Cancel a one-to-one meeting.
+* FluentBooking: Cancel a specific one-to-one meeting.
+* FluentBooking: Cancel one-to-one meeting with specific host.
+* FluentBooking: Schedule a team meeting.
+* FluentBooking: Schedule a specific team meeting.
+* FluentBooking: Schedule team meeting with specific host.
+* FluentBooking: Cancel a team meeting.
+* FluentBooking: Cancel a specific team meeting.
+* FluentBooking: Cancel team meeting with specific host.
+
+= 7.5.2 =
+
+* **New Features**
+* New integration: BBForms.
+* BBForms: Submit a form.
+* BBForms: Submit a specific form.
+* BBForms: Submit a form of a category.
+* BBForms: Submit a form of a tag.
+* BBForms: Submit a specific field value.
+* BBForms: Submit a specific field value on a specific form.
+
+= 7.5.1 =
+
+* **Improvements**
+* Fixed typo.
+
+= 7.5.0 =
+
+* **Improvements**
+* Improved how to display add-on information.
+* Improved logs for points importation.
+* Fixed warning related to point type key when creating a new item.
+
+= 7.4.9 =
+
+* **Improvements**
+* ACF: Improved events when meta value is added first time.
+* Improved CT library.
+* Improved events Daily visit to avoid archives.
+
+= 7.4.8 =
+
+* **New Features**
+* H5P: Complete any interactive content of a tag.
+* H5P: Complete any interactive content at maximum score of a tag.
+* H5P: Complete any interactive content with a minimum score of a tag.
+* H5P: Complete any interactive content with a maximum score of a tag.
+* H5P: Complete any interactive content on a range of scores of a tag.
+* H5P: Complete any interactive content with a minimum percentage score of a tag.
+* H5P: Complete any interactive content with a maximum percentage score of a tag.
+* H5P: Complete any interactive content on a range of percentages scores of a tag.
+
+= 7.4.7 =
+
+* **Improvements**
+* Advanced Ads: Support to Advanced Ads latest version.
+* Improved ajax functions to get Achievements and Ranks.
+
+= 7.4.6 =
+
+* **Improvements**
+* Improved load text.
+* **Bug Fixes**
+* Vulnerability Fixed.
+
+= 7.4.5 =
+
+* **Improvements**
+* ACF: Improved query for ACF events.
+
+= 7.4.4 =
+
+* **New Features**
+* New integration: ShortLinks Pro.
+* ShortLinks Pro: User clicks a link.
+* ShortLinks Pro: User clicks a specific link.
+* ShortLinks Pro: User clicks a link of a category.
+* ShortLinks Pro: User clicks a link of a tag.
+
+= 7.4.3 =
+
+* **Improvements**
+* Improved hook related to triggers.
+
+= 7.4.2 =
+
+* **Improvements**
+* Improved administration roles.
+
+= 7.4.1 =
+
+* **Improvements**
+* Added hook to extend funcion related to requirement deletions.
+
+= 7.4.0 =
+
+* **Bug Fixes**
+* BuddyBoss: Fixed bug related to tabs.
+
+= 7.3.9 =
+
+* **Bug Fixes**
+* Easy Affiliate: Fixed bug related to events.
+* Autonami: Fixed bug related to contacts who are not WordPress users.
+
+= 7.3.8 =
+
+* **Improvements**
+* Fixed vulnerability related to logs shortcode.
+
+= 7.3.7 =
+
+* **Improvements**
+* Improved CSS.
+* Fixed vulnerability.
+* Improvement settings for minimum role to administer GamiPress.
+* Fixed load text domain notice.
+
+= 7.3.6.3 =
+
+* **Developer notes**
+* Updated CMB2 library.
+
+= 7.3.6.2 =
+
+* **Developer notes**
+* Updated CT library.
+
+= 7.3.6.1 =
+
+* **Developer notes**
+* Updated CT library.
+
+= 7.3.6 =
+
+* **New Features**
+* BuddyBoss: New event: React an activity post.
+* BuddyBoss: New event: React with specific reaction an activity post.
+* BuddyBoss: New event: Get a reaction on an activity post.
+* BuddyBoss: New event: Get a specific reaction on an activity post.
+* BuddyBoss: New event: Remove a reaction from an activity post.
+* BuddyBoss: New event: Remove a specific reaction from an activity post.
+* BuddyBoss: New event: Get a reaction removed from an activity post.
+* BuddyBoss: New event: Get a specific reaction removed from an activity post.
+
+= 7.3.5.1 =
+
+* **Developer notes**
+* Updated CT library.
+
+= 7.3.5 =
+
+* **Bug Fixes**
+* FluentCommunity: Fixed bug related to reply events.
+
+= 7.3.4 =
+
+* **Improvements**
+* Improved CT and CMB2 libraries.
+
+= 7.3.3 =
+
+* **Bug fixes**
+* QSM: Fixed bug related to events with required points.
+
+= 7.3.2.1 =
+
+* **Developer notes**
+* Updated PHP version required.
+
+= 7.3.2 =
+
+* **Developer notes**
+* Update related to shortcodes vulnerability.
+
+= 7.3.1 =
+
+* **Developer notes**
+* Updated license to meet WordPress org requirements.
+* Update related to shortcodes vulnerability.
+
+= 7.3.0 =
+
+* **Improvements**
+* Added new attribute "hide_no_earnings" for the shortcode [gamipress_user_points].
+* Improved GamiPress dashboard.
+* **Bug Fixes**
+* Fixed vulnerability related to shortcodes.
+
+= 7.2.9 =
+
+* **Bug Fixes**
+* Easy Digital Downloads: Fixed bug related to download variations.
+
+= 7.2.8 =
+
+* **Improvements**
+* Improved Gamipress menu.
+* Deprecated functions updated to adapt to PHP latest version.
+
+= 7.2.7 =
+
+* **Improvements**
+* Fixed related to textdomain notices.
+
+= 7.2.6 =
+
+* **New Features**
+* New integration: FluentCommunity.
+* FluentCommunity: Publish a post in any space.
+* FluentCommunity: Publish a post in a specific space.
+* FluentCommunity: Remove a post from any space.
+* FluentCommunity: Remove a post from a specific space.
+* FluentCommunity: React a post of any space.
+* FluentCommunity: React a post of specific space.
+* FluentCommunity: Request to join any space.
+* FluentCommunity: Request to join specific space.
+* FluentCommunity: Join any space.
+* FluentCommunity: Join a specific space.
+* FluentCommunity: Leave any space.
+* FluentCommunity: Leave a specific space.
+* FluentCommunity: Add a comment in any space.
+* FluentCommunity: Add a comment in a specific space.
+* FluentCommunity: Delete a comment in any space.
+* FluentCommunity: Delete a comment in a specific space.
+* FluentCommunity: Create a space.
+* FluentCommunity: Delete any space.
+* FluentCommunity: Delete a specific space.
+* FluentCommunity: Complete any course.
+* FluentCommunity: Complete a specific course.
+* FluentCommunity: Enroll in any course.
+* FluentCommunity: Enroll in a specific course.
+* FluentCommunity: Unroll from any course.
+* FluentCommunity: Unroll from a specific course.
+* FluentCommunity: Create a course.
+* FluentCommunity: Delete any course.
+* FluentCommunity: Delete a specific course.
+* New integration: Paid Membership Subscriptions.
+* Paid Membership Subscriptions: Purchase a subscription.
+* Paid Membership Subscriptions: Purchase a specific subscription.
+* Paid Membership Subscriptions: Pay a subscription.
+* Paid Membership Subscriptions: Pay a specific subscription.
+* Paid Membership Subscriptions: Renew a subscription.
+* Paid Membership Subscriptions: Renew a specific subscription.
+* Paid Membership Subscriptions: Change a subscription.
+* Paid Membership Subscriptions: Change a specific subscription.
+* Paid Membership Subscriptions: Cancel a subscription.
+* Paid Membership Subscriptions: Cancel a specific subscription.
+* Paid Membership Subscriptions: Abandon a subscription.
+* Paid Membership Subscriptions: Abandon a specific subscription.
+
+= 7.2.5 =
+
+* **Improvements**
+* Improved texts for user earnings registration.
+* WP Courseware: Support to latest version.
+
+= 7.2.4 =
+
+* **Bug fixes**
+* Fixed bug related to ct library sql queries.
+
+= 7.2.3 =
+
+* **Bug fixes**
+* Fixed bug related to user earnings tables.
+
+= 7.2.2 =
+
+* **Improvements**
+* Fixed vulnerability related to shortcodes.
+
+= 7.2.1 =
+
+* **Bug Fixes**
+* PeepSo: Fix related to write comment event.
+
+= 7.2.0 =
+
+* **Bug Fixes**
+* BuddyPress: Fix specific value check for multiselect fields.
+* BuddyBoss: Fix specific value check for multiselect fields.
+
+= 7.1.9 =
+
+* **New Features**
+* BuddyBoss: New event: Get a topic reported.
+* BuddyBoss: New event: Get a reply in a topic reported.
+* **Improvements**
+* Improved achievement revocation system.
+* **Bug Fixes**
+*  Added check to ensure data type when updating event counter.
+* PeepSo: Fixed bug related to earnings related to private messages.
+
+= 7.1.8 =
+
+* **Bug Fixes**
+* WP Ulike: Fixed condition times for events related to post types.
+
+= 7.1.7 =
+
+* **New Features**
+* Tutor LMS: New event: Review a course.
+* Tutor LMS: New event: Review a specific course course.
+* LearnDash: New event: Submit an essay for a quiz.
+* LearnDash: New event: Submit an essay for a specific quiz.
+* LearnDash: New event: Mark as incomplete a topic.
+* LearnDash: New event: Mark as incomplete a specific topic.
+
+= 7.1.6 =
+
+* **Improvements**
+* WooCommerce: Added renewal check on new subscription purchases.
+* **Bug Fixes**
+* Fixed bug related to ajax vulnerability to avoid shortcode injections.
+
+= 7.1.5 =
+
+* **New Features**
+* BuddyBoss: New event: Delete a group.
+* BuddyBoss: New event: Delete a specific group.
+* BuddyPress: New event: Delete a group.
+* BuddyPress: New event: Delete a specific group.
+
+= 7.1.4 =
+
+* **Bug Fixes**
+* Fix widgets checkboxes.
+
+= 7.1.3 =
+
+* **Bug Fixes**
+* Update PeepSo listeners.
+
+= 7.1.2 =
+
+* **New Features**
+* New integration: GeoDirectory.
+* GeoDirectory: New event: Add a new place.
+* GeoDirectory: New event: Add a new category.
+* GeoDirectory: New event: Add a new review on any place.
+* GeoDirectory: New event: Add a new review on a specific place.
+* New integration: Quiz and Survey Master.
+* Quiz and Survey Master: New event: Submit a quiz.
+* Quiz and Survey Master: New event: Submit a specific quiz.
+* Quiz and Survey Master: New event: Complete a quiz with a minimum amount of points.
+* Quiz and Survey Master: New event: Complete a specific quiz with a minimum amount of points.
+* Quiz and Survey Master: New event: Complete a quiz with a maximum amount of points.
+* Quiz and Survey Master: New event: Complete a specific quiz with a maximum amount of points.
+* Quiz and Survey Master: New event: Complete a quiz on a range of points.
+* Quiz and Survey Master: New event: Complete a specific quiz on a range of points.
+* New integration: WP Booking Calendar.
+* WP Booking Calendar: New event: New booking scheduled.
+* WP Booking Calendar: New event: Booking is set to approved.
+* WP Booking Calendar: New event: Specific booking is set to approved.
+* WP Booking Calendar: New event: Booking is set to pending.
+* WP Booking Calendar: New event: Specific booking is set to pending.
+* WP Booking Calendar: New event: Booking is set to cancelled.
+* WP Booking Calendar: New event: Specific booking is set to cancelled.
+
+= 7.1.1 =
+
+* **Improvements**
+* Updated X/Twitter logo for Social Sharing.
+
+= 7.1.0 =
+
+* **Improvements**
+* Added check when initializing metaboxes.
+* **Bug Fixes**
+* PeepSo: Fixed events related to get likes and reactions.
+
+= 7.0.9 =
+
+* **New Features**
+* Amelia: New event: Cancel an appointment for any service.
+* Amelia: New event: Cancel an appointment for a specific service.
+* Amelia: New event: Cancel for any event.
+* Amelia: New event: Cancel for a specific event.
+
+= 7.0.8 =
+
+* **New Features**
+* New integration: Everest Forms.
+* Everest Forms: New event: Submit a form.
+* Everest Forms: New event: Submit a specific form.
+* Everest Forms: New event: Submit a specific field value.
+* Everest Forms: New event: Submit a specific field value on a specific form.
+* **Improvements**
+* Formidable Forms: Support to latest version.
+* Added check in "Daily visit" events to ensure that the post ID is received.
+* Added CSS improvement.
+* **Bug Fixes**
+* Fixed bug in getting log IDs and user earnings through RestAPI.
+
+= 7.0.7 =
+
+* **New Features**
+* New integration: Kali Forms.
+* Kali Forms: New event: Submit a form.
+* Kali Forms: New event: Submit a specific form.
+* Kali Forms: New event: Submit a specific field value.
+* Kali Forms: New event: Submit a specific field value on a specific form.
+* New integration: weForms.
+* weForms: New event: Submit a form.
+* weForms: New event: Submit a specific form.
+* weForms: New event: Submit a specific field value.
+* weForms: New event: Submit a specific field value on a specific form.
+* New integration: PrettyLinks.
+* weForms: New event: User clicks a pretty link.
+* weForms: New event: User clicks a specific link.
+* **Improvements**
+* Presto Player: Improved trigger for viewing a percentage of video.
+* **Bug Fixes**
+* Presto Player: Small bug related to watch video between percents.
+
+= 7.0.6 =
+
+* **Bug Fixes**
+* BuddyBoss: Fixed Hide If No Earnings feature in Points tab.
+* BuddyPress: Fixed Hide If No Earnings feature in Points tab.
+* WS Forms: Fixed bug in WS Forms field types.
+
+= 7.0.5 =
+
+* **Improvements**
+* Added new filters related to point awards and user earnings.
+* **Bug Fixes**
+* WP User Manager: Fixed hook to adapt to the latest version of WP User Manager.
+
+= 7.0.4 =
+
+* **Bug Fixes**
+* JetEngine: Added support to the latest version of JetEngine.
+
+= 7.0.3 =
+
+* **Improvements**
+* Paid Memberships Pro: Improved hooks to support latest version.
+
+= 7.0.2 =
+
+* **Improvements**
+* Added check to rank earners.
+* **Bug Fixes**
+* Fixed times counter in requirements.
+
+= 7.0.1 =
+
+* **New Features**
+* BuddyBoss: New event: Get an activity marked as spam.
+* BuddyBoss: New event: User posts an image in an activity stream message.
+* BuddyBoss: New event: User posts a video in an activity stream message.
+* BuddyBoss: New event: User posts a document in an activity stream message.
+* BuddyPress: New event: Get an activity marked as spam.
+* **Improvements**
+* Formidable Forms: Support for Formidable Forms PRO forms that can be updated from the frontend.
+
+= 7.0.0 =
+
+* **Improvements**
+* WordPress: Improved check on comments related events.
+* BuddyBoss: Improved check on topic replies events.
+* bbPress: Improved check on topic replies events.
+
 = 6.9.9.1 =
 
 * **Bug Fixes**

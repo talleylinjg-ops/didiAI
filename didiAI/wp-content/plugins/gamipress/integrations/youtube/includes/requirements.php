@@ -55,6 +55,10 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_y
  */
 function gamipress_youtube_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'youtube_video_id' => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] ) && $requirement['trigger_type'] === 'gamipress_youtube_watch_specific_video' ) {
 
         // Save the custom field

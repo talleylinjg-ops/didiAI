@@ -90,6 +90,8 @@ final class GamiPress_Integration_BuddyBoss {
                 require_once GAMIPRESS_BUDDYBOSS_DIR . 'includes/forums/loader.php';
             }
 
+            require_once GAMIPRESS_BUDDYBOSS_DIR . 'includes/membership/loader.php';
+
         }
 
     }

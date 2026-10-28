@@ -58,6 +58,10 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_s
  */
 function gamipress_surecart_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'surecart_product' => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_surecart_specific_product_purchase' ) ) {
 

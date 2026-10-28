@@ -107,64 +107,74 @@ function gamipress_dashboard_page() {
                 <?php gamipress_dashboard_assets_section(); ?>
 
                 <?php // Documentation ?>
-                <h1><?php echo esc_html_e( 'Documentation', 'gamipress' ); ?></h1>
+                <div class="gamipress-dashboard-docs-section">
 
-                <div id="postbox-container-1" class="postbox-container">
-                    <div id="normal-sortables" class="meta-box-sortables ui-sortable">
+                    <h1><?php echo esc_html_e( 'Documentation', 'gamipress' ); ?></h1>
 
-                        <?php // Getting Started ?>
-                        <?php gamipress_dashboard_box( array(
-                            'id' => 'getting-started',
-                            'title' => __( 'Getting Started', 'gamipress' ),
-                            'content_cb' => 'gamipress_dashboard_getting_started_docs_box',
-                        ) ); ?>
+                    <div id="postbox-container-1" class="postbox-container">
+                        <div id="normal-sortables" class="meta-box-sortables ui-sortable">
 
+                            <?php // Getting Started ?>
+                            <?php gamipress_dashboard_box( array(
+                                'id' => 'getting-started',
+                                'title' => __( 'Getting Started', 'gamipress' ),
+                                'content_cb' => 'gamipress_dashboard_getting_started_docs_box',
+                            ) ); ?>
+
+                        </div>
                     </div>
-                </div>
 
-                <div id="postbox-container-2" class="postbox-container">
-                    <div id="normal-sortables" class="meta-box-sortables ui-sortable">
+                    <div id="postbox-container-2" class="postbox-container">
+                        <div id="normal-sortables" class="meta-box-sortables ui-sortable">
 
-                        <?php // Tutorials ?>
-                        <?php gamipress_dashboard_box( array(
-                            'id' => 'tutorials-docs',
-                            'title' => __( 'Tutorials', 'gamipress' ),
-                            'content_cb' => 'gamipress_dashboard_tutorials_docs_box',
-                        ) ); ?>
+                            <?php // Features ?>
+                            <?php gamipress_dashboard_box( array(
+                                'id' => 'features-docs',
+                                'title' => __( 'Features', 'gamipress' ),
+                                'content_cb' => 'gamipress_dashboard_features_docs_box',
+                            ) ); ?>
 
-                        <?php // Advanced ?>
-                        <?php gamipress_dashboard_box( array(
-                            'id' => 'advanced-docs',
-                            'title' => __( 'Advanced', 'gamipress' ),
-                            'content_cb' => 'gamipress_dashboard_advanced_docs_box',
-                        ) ); ?>
+                            <?php // Tutorials ?>
+                            <?php gamipress_dashboard_box( array(
+                                'id' => 'tutorials-docs',
+                                'title' => __( 'Tutorials', 'gamipress' ),
+                                'content_cb' => 'gamipress_dashboard_tutorials_docs_box',
+                            ) ); ?>
 
+                        </div>
                     </div>
-                </div>
 
-                <div id="postbox-container-3" class="postbox-container">
-                    <div id="normal-sortables" class="meta-box-sortables ui-sortable">
+                    <div id="postbox-container-3" class="postbox-container">
+                        <div id="normal-sortables" class="meta-box-sortables ui-sortable">
 
-                        <?php // Blocks ?>
-                        <?php gamipress_dashboard_box( array(
-                            'id' => 'blocks',
-                            'title' => __( 'Blocks, Shortcodes and Widgets', 'gamipress' ),
-                            'content_cb' => 'gamipress_dashboard_blocks_box',
-                        ) ); ?>
+                            <?php // Blocks ?>
+                            <?php gamipress_dashboard_box( array(
+                                'id' => 'blocks',
+                                'title' => __( 'Blocks, Shortcodes and Widgets', 'gamipress' ),
+                                'content_cb' => 'gamipress_dashboard_blocks_box',
+                            ) ); ?>
 
+                        </div>
                     </div>
-                </div>
 
-                <div id="postbox-container-4" class="postbox-container">
-                    <div id="normal-sortables" class="meta-box-sortables ui-sortable">
+                    <div id="postbox-container-4" class="postbox-container">
+                        <div id="normal-sortables" class="meta-box-sortables ui-sortable">
 
-                        <?php // Support ?>
-                        <?php gamipress_dashboard_box( array(
-                            'id' => 'support',
-                            'title' => __( 'Support', 'gamipress' ),
-                            'content_cb' => 'gamipress_dashboard_support_box',
-                        ) ); ?>
+                            <?php // Support ?>
+                            <?php gamipress_dashboard_box( array(
+                                'id' => 'support',
+                                'title' => __( 'Support', 'gamipress' ),
+                                'content_cb' => 'gamipress_dashboard_support_box',
+                            ) ); ?>
 
+                            <?php // Advanced ?>
+                            <?php gamipress_dashboard_box( array(
+                                'id' => 'advanced-docs',
+                                'title' => __( 'Advanced', 'gamipress' ),
+                                'content_cb' => 'gamipress_dashboard_advanced_docs_box',
+                            ) ); ?>
+
+                        </div>
                     </div>
                 </div>
 
@@ -748,8 +758,21 @@ function gamipress_dashboard_getting_started_docs_box() {
         <hr>
         <li><a href="https://gamipress.com/docs/getting-started/requirements-ui/" target="_blank"><?php esc_html_e( 'Requirements UI', 'gamipress' ); ?></a></li>
         <li><a href="https://gamipress.com/docs/getting-started/events/" target="_blank"><?php esc_html_e( 'Events', 'gamipress' ); ?></a></li>
-        <li><a href="https://gamipress.com/docs/getting-started/credentials/" target="_blank"><?php esc_html_e( 'Credentials', 'gamipress' ); ?></a></li>
-        <li><a href="https://gamipress.com/docs/getting-started/badge-builder/" target="_blank"><?php esc_html_e( 'Badge Builder', 'gamipress' ); ?></a></li>
+    </ul>
+    <?php
+}
+
+/**
+ * Dashboard features docs box
+ *
+ * @since  2.0.0
+ */
+function gamipress_dashboard_features_docs_box() {
+    ?>
+    <ul>
+        <li><a href="https://gamipress.com/docs/features/ai-assistant/" target="_blank"><?php esc_html_e( 'AI Assistant', 'gamipress' ); ?></a></li>
+        <li><a href="https://gamipress.com/docs/features/badge-builder/" target="_blank"><?php esc_html_e( 'Badge Builder', 'gamipress' ); ?></a></li>
+        <li><a href="https://gamipress.com/docs/features/credentials/" target="_blank"><?php esc_html_e( 'Credentials', 'gamipress' ); ?></a></li>
     </ul>
     <?php
 }
@@ -824,7 +847,7 @@ function gamipress_dashboard_blocks_box() {
         'ranks' => __( 'Ranks', 'gamipress' ),
         'user_rank' => __( 'User Rank', 'gamipress' ),
         'inline_achievement' => __( 'Inline Achievement', 'gamipress' ),
-        'inline_last_achievements_earned' => __( 'Inline Last Achievements Earned', 'gamipress' ),
+        'inline_last_achievements_earned' => __( 'Inline Last Achievs. Earned', 'gamipress' ),
         'inline_rank' => __( 'Inline Rank', 'gamipress' ),
         'inline_user_rank' => __( 'Inline User Rank', 'gamipress' ),
         'logs' => __( 'Logs', 'gamipress' ),

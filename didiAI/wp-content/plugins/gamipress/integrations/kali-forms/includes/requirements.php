@@ -66,6 +66,11 @@ add_action( 'gamipress_requirement_ui_html_after_achievement_post', 'gamipress_k
  */
 function gamipress_kali_forms_ajax_update_requirement( $requirement_id, $requirement ) {
 
+    $requirement = wp_parse_args( $requirement, array(
+        'kali_forms_field_name'     => '',
+        'kali_forms_field_value'    => '',
+    ) );
+
     if( isset( $requirement['trigger_type'] )
         && ( $requirement['trigger_type'] === 'gamipress_kali_forms_field_value_submission'
             || $requirement['trigger_type'] === 'gamipress_kali_forms_specific_field_value_submission' ) ) {
