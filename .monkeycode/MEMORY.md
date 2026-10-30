@@ -152,3 +152,14 @@ This file records user instructions, preferences, and teachings for reference in
   - 沙箱 DNS 污染：`*.workers.dev` 被解析到无关 IP（Facebook 网段），本地 curl 直连失败；`*.monkeycode-ai.online` 也曾被 Cloudflare 拦截（HTTP 000）。
   - 绕过方法：先用 DoH 查真实 CF IP（`curl "https://dns.google/resolve?name=<domain>&type=A"` 或 1.1.1.1 的 dns-query），再用 `curl --resolve <domain>:443:<real-ip>` 强制直连，HTTPS SNI 正常即可命中 Cloudflare 边缘（实测 workers.dev 图片 200 OK）。
   - 已验证：didiAI CJ 图片迁移后 R2 链路端到端可用（随机 7 张抽样全部 HTTP 200，content-type image/jpeg，cache-control 1 年 immutable）；VPS 上线后仅需浏览器肉眼复核商品页。
+
+[Project Knowledge Summary]
+- Date: 2026-10-28
+- Context: Discovered by Agent while fixing both sites' XML sitemap returning 404/301 (Rank Math was active but silently inert)
+- Category: Troubleshooting & Debugging
+- Instructions:
+  - Rank Math「激活但失效」排查链：先查 `rank_math_modules` option（didiAI 曾是 false——模块全不加载）；再查 `RANK_MATH_REGISTRATION_SKIP`（沙箱无外网无法连 rankmath.com，`registration->invalid` 会让 rank-math.php 主 init 提前 return，Module_Manager 根本不创建；两站 wp-config 已加 `define('RANK_MATH_REGISTRATION_SKIP', true)`）。`class_exists()` 为 true 只代表文件被 autoload，不能证明模块已实例化挂钩。
+  - sitemap 验证顺序：rewrite_rules（flush 后应含 `sitemap_index\.xml$` 与 `([^/]+?)-sitemap([0-9]+)?\.xml$`，注意 CLI 手写 add_rewrite_rule 用双引号会吞 `$matches` 变量产生坏规则）→ 登录墙白名单（`didi_ai_guest_access_control` 需 `strpos($path,'sitemap')` 放行，否则 302 /login）→ `rank_math_sitemap` 设置组（pt-xxx_sitemap 键，写独立 option 无效）→ transient/文件缓存（uploads/rank-math/，已 gitignore）。
+  - 手动 flush 后需重启 php -S worker（OPcache stat 缓存可能让 worker 看不到插件文件改动，插桩 file_put_contents 比 error_log 可靠——后者被 WP 吞）。
+  - 两站 page-cache.php 的 skip 正则曾有「缺结束分隔符 #」语法错误导致所有 skip 失效（404 页也会进 ob），已修复；preg_match 失败静默返回 false，仅 php -S 日志有 Warning。
+  - robots.txt 的 Sitemap 行已指向 `sitemap_index.xml`（原 wp-sitemap.xml）；didAI 产品 sitemap 待产品发布（当前全部 draft，publish 数 0，索引无 product 条目属正常）。
