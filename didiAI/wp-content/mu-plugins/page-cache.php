@@ -21,7 +21,7 @@ function didi_page_cache_skip() {
     if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') return true;
     if (!empty($_COOKIE)) return true;
     $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
-    if (preg_match('#^/(wp-admin|wp-login\.php|wp-json|xmlrpc\.php|wp-cron\.php|cart|checkout|my-account|feed|robots\.txt|llms\.txt|wp-sitemap|sitemap)', $uri)) return true;
+    if (preg_match('#^/(wp-admin|wp-login\.php|wp-json|xmlrpc\.php|wp-cron\.php|cart|checkout|my-account|feed|robots\.txt|llms\.txt|wp-sitemap|sitemap)#', $uri)) return true;
     return false;
 }
 

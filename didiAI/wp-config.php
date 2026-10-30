@@ -90,6 +90,9 @@ $table_prefix = 'wp_';
  */
 define( 'WP_DEBUG', false );
 
+/* 跳过 Rank Math 账户注册校验（沙箱无外网无法连接 rankmath.com） */
+define( 'RANK_MATH_REGISTRATION_SKIP', true );
+
 /* Add any custom values between this line and the "stop editing" line. */
 
 // 预览环境：外部经 https 代理访问，php -S 后端收到的为 http，需让 WP 识别 https

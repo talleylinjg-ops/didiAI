@@ -1084,6 +1084,8 @@ function didi_ai_guest_access_control() {
   $public = array('/blog', '/forum', '/recharge', '/member', '/login', '/register', '/consult-', '/wp-login.php', '/wp-admin', '/wp-json', '/feed', '/wp-cron.php', '/xmlrpc.php', '/robots.txt', '/llms.txt', '/sitemap.xml', '/wp-sitemap.xml', '/wp-sitemap');
 
   if ($path === '/') return;
+  // sitemap 全变体放行：/sitemap.xml、/sitemap_index.xml、/post-sitemap.xml 等
+  if (strpos($path, 'sitemap') !== false) return;
   foreach ($public as $a) {
     if (strpos($path, $a) === 0) return;
   }
@@ -1460,7 +1462,7 @@ add_filter('robots_txt', function ($output, $public) {
     '',
     '# 生成式引擎可读取的站点摘要',
     '# llms.txt: ' . $home . '/llms.txt',
-    'Sitemap: ' . $home . '/wp-sitemap.xml',
+    'Sitemap: ' . $home . '/sitemap_index.xml',
   );
   return implode("\n", $lines) . "\n";
 }, 10, 2);
