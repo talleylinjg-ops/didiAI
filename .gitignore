@@ -22,6 +22,7 @@ didiAI/wp-content/uploads/wc-logs/
 
 # didiAI uploads runtime data (keep _old archives except large queue dumps)
 didiAI/wp-content/uploads/2026/
+didiAI/wp-content/uploads/rank-math/
 didiAI/wp-content/uploads/woocommerce_uploads/
 didiAI/wp-content/uploads/woocommerce-placeholder.webp
 didiAI/wp-content/uploads/_old/cj-queues-20261027/
