@@ -110,6 +110,15 @@ add_filter('pre_option_blogdescription', function ($value) {
   return $value;
 });
 
+/* forum_topic 标签动态翻译（feed 标题、后台、archive title） */
+add_filter('register_post_type_args', function ($args, $post_type) {
+  if (daqi_site_lang() !== 'en' || $post_type !== 'forum_topic') return $args;
+  $args['labels']['name'] = 'Community Topics';
+  $args['labels']['singular_name'] = 'Community Topic';
+  $args['labels']['add_new_item'] = 'New Topic';
+  return $args;
+}, 10, 2);
+
 /* 定价表动态字段双语（unit / model 中文值映射） */
 function daqi_pricing_unit($unit) {
   if (daqi_site_lang() !== 'en') return $unit;

@@ -302,8 +302,6 @@ function gamipress_ajax_get_posts() {
         $prepare_args[] = sanitize_text_field( $post_type );
 	}
 
-    $where .= $post_type;
-
 	// Post title and ID conditional
     $where .= ' AND ( p.post_title LIKE %s OR p.ID LIKE %s )';
     $prepare_args[] = '%' . $wpdb->esc_like( $search ) . '%';
@@ -462,7 +460,7 @@ function gamipress_ajax_get_posts() {
 
 			// Merge it to all results
 			$results = array_merge( $results, $site_results );
-
+			
 			$count += absint( $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$from} WHERE {$where}", $prepare_args ) ) );
 
             // Restore current site
@@ -483,7 +481,7 @@ function gamipress_ajax_get_posts() {
         ) );
 
 		$count = absint( $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$from} WHERE {$where}", $prepare_args ) ) );
-
+		
 	}
 
 	$response = array(
