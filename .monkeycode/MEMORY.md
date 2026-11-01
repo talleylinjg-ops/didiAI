@@ -163,3 +163,13 @@ This file records user instructions, preferences, and teachings for reference in
   - 手动 flush 后需重启 php -S worker（OPcache stat 缓存可能让 worker 看不到插件文件改动，插桩 file_put_contents 比 error_log 可靠——后者被 WP 吞）。
   - 两站 page-cache.php 的 skip 正则曾有「缺结束分隔符 #」语法错误导致所有 skip 失效（404 页也会进 ob），已修复；preg_match 失败静默返回 false，仅 php -S 日志有 Warning。
   - robots.txt 的 Sitemap 行已指向 `sitemap_index.xml`（原 wp-sitemap.xml）；didAI 产品 sitemap 待产品发布（当前全部 draft，publish 数 0，索引无 product 条目属正常）。
+
+[Project Knowledge Summary]
+- Date: 2026-11-01
+- Context: Discovered by Agent while switching didiAI image domain from workers.dev to img.chacha.asia (user-confirmed chacha.asia is DNS-hosted on Cloudflare)
+- Category: Operations & Deployment
+- Instructions:
+  - didiAI 商品图片域名已完成切换：DB 中 205,590 行引用从 `didi-ai-mirror.talley-linjg.workers.dev` 全部替换为 `https://img.chacha.asia`（`_wp_attached_file` 180,300 行 + 其他 meta 25,290 行，残留 0）。旧 workers.dev 在大陆被间歇性 SNI 干扰（复测 000），新域实测 200 image/jpeg。
+  - img.chacha.asia 的技术实现是 **Worker Route**（pattern `img.chacha.asia/*` → worker `didi-ai-mirror`）+ DNS A 记录 192.0.2.1（proxied），并非 R2 Custom Domains 功能（R2 的 `PUT /accounts/{id}/r2/buckets/{bucket}/domains/custom/{domain}` API 返回 success 但实际不生效——列表恒为空，属于 API 假成功，勿信）。CF token 在 /tmp/opencode/cf.env（用户 2026-11-01 轮换后的全权 token，附 R2 S3 凭证）。
+  - `*.chacha.asia` 有通配 DNS 记录（任意子域都解析到 CF IP），判断子域占用需查 zone DNS records 而非 DoH。worker 对 R2 miss 的路径会回退到源站 WordPress（返回 49KB HTML），验证图片要看 content-type=image/jpeg。
+  - CJ 图片迁移最终态：23,943/23,963（99.92%）已入 R2；20 张永久失败（18 张 cbu01.alicdn 1688 图床防盗链 + 2 张 CJ 已删图）保留外链。变体迁移脚本每轮 1 小时被工具超时杀掉后需重启 loop（断点队列 /tmp/opencode/variant-pending-{0..3}）。
