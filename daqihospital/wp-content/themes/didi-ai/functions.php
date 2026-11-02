@@ -1086,6 +1086,9 @@ function didi_ai_guest_access_control() {
   if ($path === '/') return;
   // sitemap 全变体放行：/sitemap.xml、/sitemap_index.xml、/post-sitemap.xml 等
   if (strpos($path, 'sitemap') !== false) return;
+  // SEO/GEO：内容页对游客完全公开（文章/产品/帖子详情、归档列表），与爬虫看到的内容一致，避免 cloaking
+  if (is_singular(array('post', 'product', 'forum_topic'))) return;
+  if (is_archive() || is_home()) return;
   foreach ($public as $a) {
     if (strpos($path, $a) === 0) return;
   }
@@ -1493,6 +1496,17 @@ add_filter('wp_sitemaps_add_provider', function ($provider, $name) {
   if ($name === 'users') return false;
   return $provider;
 }, 10, 2);
+
+// SEO：首页 title 用关键词型标题（覆盖 WP 默认的「首页 - 大气AI医院」，按站点语言输出）
+add_filter('pre_get_document_title', function ($title) {
+  if (is_front_page() || (is_home() && !is_paged())) {
+    if (function_exists('daqi_site_lang') && daqi_site_lang() === 'en') {
+      return 'DaQi AI Hospital - Free Online AI Doctor Consultation & Health Report Review';
+    }
+    return '大气AI医院 - 免费在线AI问诊：AI医生一对一咨询、健康报告解读';
+  }
+  return $title;
+}, 20);
 
 // SEO/GEO 共享数据：问诊通道清单（JSON-LD ItemList 与 llms.txt 共用，按站点语言输出）
 function didi_ai_seo_tools() {
