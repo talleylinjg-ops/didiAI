@@ -1679,6 +1679,7 @@ add_action('template_redirect', function () {
 .card .reco-tag{position:absolute;top:-10px;right:14px;background:#00a36c;color:#fff;font-size:11px;border-radius:99px;padding:3px 10px}
 .card.pending{opacity:.72;border:2px dashed #c4d2cb;background:#fafcfb}
 .card .soon-tag{position:absolute;top:-10px;right:14px;background:#8fa39a;color:#fff;font-size:11px;border-radius:99px;padding:3px 10px}
+.store-pending{margin-top:10px;background:#f0f4f2;border:1px dashed #c4d2cb;border-radius:9px;padding:9px 12px;font-size:12px;color:#6b7d74;text-align:center}
 .card h2{font-size:16px;margin:10px 0 6px}.card p{font-size:13px;color:#5a6b63;line-height:1.7;margin:0 0 16px}
 .btn{display:block;text-align:center;background:#00a36c;color:#fff;text-decoration:none;border-radius:10px;padding:11px 0;font-size:14px;font-weight:600}
 .btn.ghost{background:#eef6f2;color:#00795a}
@@ -1707,6 +1708,7 @@ add_action('template_redirect', function () {
       <h2>Android 安卓 APK</h2>
       <p>APK 直接安装，图标直达；应用内自动检测新版本并提示升级。</p>
       <a class="btn" href="<?php echo esc_url($v['apk']); ?>">下载 APK（<?php echo esc_html($v['version']); ?>）</a>
+      <div class="store-pending">Google Play 商店 · 即将上架（开发者账号配置中）</div>
     </div>
     <div class="card" data-p="ios">
       <h2>PWA 应用（添加主屏幕）</h2>
@@ -1717,18 +1719,7 @@ add_action('template_redirect', function () {
         Android / 电脑：地址栏右侧 <b>「安装应用」</b> 图标
       </div>
       <a class="btn ghost" href="/">立即打开 didi AI</a>
-    </div>
-    <div class="card pending">
-      <span class="soon-tag">即将上架</span>
-      <h2>Google Play 商店</h2>
-      <p>Play 商店版本已打包（AAB）就绪，待开发者账号配置完成后上架。</p>
-      <span class="btn disabled">准备中</span>
-    </div>
-    <div class="card pending">
-      <span class="soon-tag">即将上架</span>
-      <h2>App Store（iOS）</h2>
-      <p>iOS 商店版开发工程已就绪，待 Apple 开发者账号（$99/年）配置后上架。</p>
-      <span class="btn disabled">准备中</span>
+      <div class="store-pending">App Store（iOS）· 即将上架（Apple 开发者账号配置中）</div>
     </div>
     <div class="card" data-p="windows">
       <h2>Windows 电脑</h2>
