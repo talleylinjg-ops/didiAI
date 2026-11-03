@@ -1698,33 +1698,31 @@ add_action('template_redirect', function () {
     <p>v<?php echo esc_html($v['version']); ?> · 手机、电脑多端同步 · AI对话 / 图片 / 视频 / PPT 一站完成</p>
   </div>
   <div class="grid">
+    <div class="card" data-p="web">
+      <h2>H5 网页版</h2>
+      <p>无需安装任何应用，浏览器打开即用；所有客户端数据与本站实时同步。</p>
+      <a class="btn" href="/">立即打开 didi AI</a>
+    </div>
     <div class="card" data-p="android">
-      <h2>Android 安卓</h2>
+      <h2>Android 安卓 APK</h2>
       <p>APK 直接安装，图标直达；应用内自动检测新版本并提示升级。</p>
       <a class="btn" href="<?php echo esc_url($v['apk']); ?>">下载 APK（<?php echo esc_html($v['version']); ?>）</a>
-      <a class="btn ghost" style="margin-top:8px" href="/">或用 Chrome「安装应用」</a>
     </div>
-    <div class="card" data-p="harmony">
-      <h2>HarmonyOS 鸿蒙</h2>
-      <p>HarmonyOS 4 及以下：直接安装上方 APK 即可；HarmonyOS NEXT：待华为应用市场上架后安装。</p>
-      <a class="btn" href="<?php echo esc_url($v['apk']); ?>">下载 APK 安装</a>
-      <span class="btn disabled" style="margin-top:8px">华为应用市场 · 即将上架</span>
+    <div class="card" data-p="ios">
+      <h2>PWA 应用（添加主屏幕）</h2>
+      <p>全平台通用：iPhone 用 Safari，Android/电脑用 Chrome 或 Edge，通过「添加到主屏幕 / 安装应用」变成桌面应用。</p>
+      <div class="ios-steps">
+        iPhone（Safari）：<br>
+        1. 打开 didi AI → 2. 点击底部 <b>⬆︎ 分享</b> → 3. 选择 <b>「添加到主屏幕」</b><br>
+        Android / 电脑：地址栏右侧 <b>「安装应用」</b> 图标
+      </div>
+      <a class="btn ghost" href="/">立即打开 didi AI</a>
     </div>
     <div class="card pending">
       <span class="soon-tag">即将上架</span>
       <h2>Google Play 商店</h2>
       <p>Play 商店版本已打包（AAB）就绪，待开发者账号配置完成后上架。</p>
       <span class="btn disabled">准备中</span>
-    </div>
-    <div class="card" data-p="ios">
-      <h2>iPhone / iPad</h2>
-      <p>无需下载安装包，用 Safari 添加到主屏幕即可（iOS 官方方式）。</p>
-      <div class="ios-steps">
-        1. 用 <b>Safari</b> 打开 didi AI<br>
-        2. 点击底部 <b>⬆︎ 分享</b> 按钮<br>
-        3. 选择 <b>「添加到主屏幕」</b>
-      </div>
-      <a class="btn ghost" href="/">立即打开 didi AI</a>
     </div>
     <div class="card pending">
       <span class="soon-tag">即将上架</span>
@@ -1736,19 +1734,22 @@ add_action('template_redirect', function () {
       <h2>Windows 电脑</h2>
       <p>下载后解压，双击 <b>didi-ai.exe</b> 运行；内置新版本检测提示。</p>
       <a class="btn" href="<?php echo esc_url($v['win']); ?>">下载 Windows 版</a>
-      <a class="btn ghost" style="margin-top:8px" href="/">或用 Edge/Chrome「安装应用」</a>
     </div>
     <div class="card" data-p="mac">
       <h2>macOS 电脑</h2>
       <p>下载解压后拖入「应用程序」；首次打开需右键 →「打开」绕过公证提示。</p>
       <a class="btn" href="<?php echo esc_url($v['mac']); ?>">下载 Mac 版</a>
-      <a class="btn ghost" style="margin-top:8px" href="/">或用 Chrome「安装应用」</a>
     </div>
     <div class="card" data-p="linux">
       <h2>Linux 电脑</h2>
       <p>下载解压后运行 <b>didi-ai</b>（需已安装 Chrome 或 Chromium 作为运行时）。</p>
       <a class="btn" href="<?php echo esc_url($v['linux']); ?>">下载 Linux 版</a>
-      <a class="btn ghost" style="margin-top:8px" href="/">或用 Chrome「安装应用」</a>
+    </div>
+    <div class="card" data-p="harmony">
+      <h2>HarmonyOS 鸿蒙</h2>
+      <p>HarmonyOS 4 及以下：直接安装上方 Android APK 即可；HarmonyOS NEXT：待华为应用市场上架后安装。</p>
+      <a class="btn" href="<?php echo esc_url($v['apk']); ?>">下载 APK 安装</a>
+      <span class="btn disabled" style="margin-top:8px">华为应用市场 · 即将上架</span>
     </div>
   </div>
   <div class="note">
@@ -1760,7 +1761,6 @@ add_action('template_redirect', function () {
 // 平台自动推荐：命中的卡片置顶高亮
 (function () {
   var p = '<?php echo esc_js($platform); ?>';
-  if (p === 'web') return;
   document.querySelectorAll('.card').forEach(function (c) {
     if (c.getAttribute('data-p') === p) {
       c.classList.add('reco');
