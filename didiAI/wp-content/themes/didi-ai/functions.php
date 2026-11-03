@@ -1651,7 +1651,10 @@ add_action('template_redirect', function () {
   $icon = get_theme_file_uri('assets/pwa/icon-192.png');
   $v = didi_ai_app_version();
   $ua = isset($_SERVER['HTTP_USER_AGENT']) ? strtolower($_SERVER['HTTP_USER_AGENT']) : '';
-  if (strpos($ua, 'android') !== false) $platform = 'android';
+  if (strpos($ua, 'android') !== false) {
+    /* 华为 HarmonyOS 的 UA 同样含 Android 字样，按是否含 Harmony 判定 */
+    $platform = (strpos($ua, 'harmony') !== false) ? 'harmony' : 'android';
+  }
   elseif (strpos($ua, 'iphone') !== false || strpos($ua, 'ipad') !== false || strpos($ua, 'ipod') !== false) $platform = 'ios';
   elseif (strpos($ua, 'mac os') !== false) $platform = 'mac';
   elseif (strpos($ua, 'windows') !== false) $platform = 'windows';
@@ -1674,6 +1677,8 @@ add_action('template_redirect', function () {
 .card{background:#fff;border-radius:16px;padding:22px 20px;border:2px solid transparent;box-shadow:0 2px 10px rgba(20,40,30,.05);position:relative}
 .card.reco{border-color:#00a36c;background:linear-gradient(180deg,#f2fbf7,#fff)}
 .card .reco-tag{position:absolute;top:-10px;right:14px;background:#00a36c;color:#fff;font-size:11px;border-radius:99px;padding:3px 10px}
+.card.pending{opacity:.72;border:2px dashed #c4d2cb;background:#fafcfb}
+.card .soon-tag{position:absolute;top:-10px;right:14px;background:#8fa39a;color:#fff;font-size:11px;border-radius:99px;padding:3px 10px}
 .card h2{font-size:16px;margin:10px 0 6px}.card p{font-size:13px;color:#5a6b63;line-height:1.7;margin:0 0 16px}
 .btn{display:block;text-align:center;background:#00a36c;color:#fff;text-decoration:none;border-radius:10px;padding:11px 0;font-size:14px;font-weight:600}
 .btn.ghost{background:#eef6f2;color:#00795a}
@@ -1699,6 +1704,18 @@ add_action('template_redirect', function () {
       <a class="btn" href="<?php echo esc_url($v['apk']); ?>">下载 APK（<?php echo esc_html($v['version']); ?>）</a>
       <a class="btn ghost" style="margin-top:8px" href="/">或用 Chrome「安装应用」</a>
     </div>
+    <div class="card" data-p="harmony">
+      <h2>HarmonyOS 鸿蒙</h2>
+      <p>HarmonyOS 4 及以下：直接安装上方 APK 即可；HarmonyOS NEXT：待华为应用市场上架后安装。</p>
+      <a class="btn" href="<?php echo esc_url($v['apk']); ?>">下载 APK 安装</a>
+      <span class="btn disabled" style="margin-top:8px">华为应用市场 · 即将上架</span>
+    </div>
+    <div class="card pending">
+      <span class="soon-tag">即将上架</span>
+      <h2>Google Play 商店</h2>
+      <p>Play 商店版本已打包（AAB）就绪，待开发者账号配置完成后上架。</p>
+      <span class="btn disabled">准备中</span>
+    </div>
     <div class="card" data-p="ios">
       <h2>iPhone / iPad</h2>
       <p>无需下载安装包，用 Safari 添加到主屏幕即可（iOS 官方方式）。</p>
@@ -1708,6 +1725,12 @@ add_action('template_redirect', function () {
         3. 选择 <b>「添加到主屏幕」</b>
       </div>
       <a class="btn ghost" href="/">立即打开 didi AI</a>
+    </div>
+    <div class="card pending">
+      <span class="soon-tag">即将上架</span>
+      <h2>App Store（iOS）</h2>
+      <p>iOS 商店版开发工程已就绪，待 Apple 开发者账号（$99/年）配置后上架。</p>
+      <span class="btn disabled">准备中</span>
     </div>
     <div class="card" data-p="windows">
       <h2>Windows 电脑</h2>
