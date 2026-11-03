@@ -1,0 +1,24 @@
+name: didi-ai
+options:
+  bundleIdPrefix: com.chacha
+  deploymentTarget:
+    iOS: "14.0"
+targets:
+  didi-ai:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+    resources:
+      - path: Resources
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.chacha.didiai
+        PRODUCT_NAME: didi AI
+        MARKETING_VERSION: "1.0.0"
+        CURRENT_PROJECT_VERSION: 1
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        INFOPLIST_KEY_UIRequiresFullScreen: true
+        INFOPLIST_KEY_UILaunchScreen_Generation: true
+        TARGETED_DEVICE_FAMILY: "1,2"
+        CODE_SIGN_STYLE: Automatic

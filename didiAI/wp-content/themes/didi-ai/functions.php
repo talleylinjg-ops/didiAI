@@ -1588,6 +1588,7 @@ function didi_ai_app_version() {
     'apk'     => home_url('/download/didi-ai.apk'),
     'win'     => home_url('/download/didi-ai-win-x64.zip'),
     'mac'     => home_url('/download/didi-ai-mac-x64.zip'),
+    'linux'   => home_url('/download/didi-ai-linux-x64.tar.gz'),
     'page'    => home_url('/download'),
     'notes'   => '首发版本',
   );
@@ -1654,6 +1655,7 @@ add_action('template_redirect', function () {
   elseif (strpos($ua, 'iphone') !== false || strpos($ua, 'ipad') !== false || strpos($ua, 'ipod') !== false) $platform = 'ios';
   elseif (strpos($ua, 'mac os') !== false) $platform = 'mac';
   elseif (strpos($ua, 'windows') !== false) $platform = 'windows';
+  elseif (strpos($ua, 'linux') !== false || strpos($ua, 'x11') !== false) $platform = 'linux';
   else $platform = 'web';
   ?><!doctype html>
 <html lang="zh-CN">
@@ -1717,6 +1719,12 @@ add_action('template_redirect', function () {
       <h2>macOS 电脑</h2>
       <p>下载解压后拖入「应用程序」；首次打开需右键 →「打开」绕过公证提示。</p>
       <a class="btn" href="<?php echo esc_url($v['mac']); ?>">下载 Mac 版</a>
+      <a class="btn ghost" style="margin-top:8px" href="/">或用 Chrome「安装应用」</a>
+    </div>
+    <div class="card" data-p="linux">
+      <h2>Linux 电脑</h2>
+      <p>下载解压后运行 <b>didi-ai</b>（需已安装 Chrome 或 Chromium 作为运行时）。</p>
+      <a class="btn" href="<?php echo esc_url($v['linux']); ?>">下载 Linux 版</a>
       <a class="btn ghost" style="margin-top:8px" href="/">或用 Chrome「安装应用」</a>
     </div>
   </div>
