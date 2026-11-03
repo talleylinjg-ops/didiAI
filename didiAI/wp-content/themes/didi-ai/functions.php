@@ -1054,7 +1054,7 @@ function didi_ai_guest_access_control() {
 
   // 访客（未登录）公开页面：首页、博客、论坛、充值、会员、登录注册、WP 基础接口
   // 以及搜索引擎 / 生成式引擎必需的文件（robots / sitemap / llms）
-  $public = array('/blog', '/forum', '/recharge', '/member', '/login', '/register', '/wp-login.php', '/wp-admin', '/wp-json', '/feed', '/wp-cron.php', '/xmlrpc.php', '/robots.txt', '/llms.txt', '/sitemap.xml', '/wp-sitemap.xml', '/wp-sitemap');
+  $public = array('/blog', '/forum', '/recharge', '/member', '/login', '/register', '/download', '/app-version.json', '/.well-known/', '/wp-login.php', '/wp-admin', '/wp-json', '/feed', '/wp-cron.php', '/xmlrpc.php', '/robots.txt', '/llms.txt', '/manifest.json', '/sw.js', '/sitemap.xml', '/wp-sitemap.xml', '/wp-sitemap');
 
   if ($path === '/') return;
   // sitemap 全变体放行：/sitemap.xml、/sitemap_index.xml、/post-sitemap.xml 等
@@ -1504,6 +1504,341 @@ function didi_ai_seo_faq() {
     array('如何开始使用 didi AI？', '注册并登录后，在首页选择任一 AI 工具，输入需求即可获得结果；支持中文界面，无需安装任何软件。'),
   );
 }
+
+/* ================= PWA（H5 应用化：manifest + SW + 安装引导 + 升级提示） ================= */
+
+// /manifest.json 与 /sw.js 根路由输出（SW scope 必须覆盖站点根，故在根路径 serve）
+add_action('template_redirect', function () {
+  $path = isset($_SERVER['REQUEST_URI']) ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : '';
+  $path = rtrim($path, '/');
+  if ($path === '') $path = '/';
+
+  if ($path === '/manifest.json') {
+    status_header(200);
+    nocache_headers();
+    header('Content-Type: application/manifest+json; charset=utf-8');
+    $icons = untrailingslashit(get_theme_file_uri('assets/pwa'));
+    $manifest = array(
+      'name'             => 'didi AI - 免费 AI 工具台',
+      'short_name'       => 'didi AI',
+      'description'      => '一站式 AI 工具台：AI对话、图片生成、视频、PPT、音频与智能剪辑。',
+      'lang'             => 'zh-CN',
+      'start_url'        => home_url('/'),
+      'scope'            => home_url('/'),
+      'display'          => 'standalone',
+      'background_color' => '#ffffff',
+      'theme_color'      => '#00a36c',
+      'icons'            => array(
+        array('src' => $icons . '/icon-192.png', 'sizes' => '192x192', 'type' => 'image/png'),
+        array('src' => $icons . '/icon-512.png', 'sizes' => '512x512', 'type' => 'image/png'),
+        array('src' => $icons . '/maskable-512.png', 'sizes' => '512x512', 'type' => 'image/png', 'purpose' => 'maskable'),
+      ),
+      'shortcuts'        => array(
+        array('name' => 'AI 对话', 'url' => home_url('/ai-chat/')),
+        array('name' => 'AI 图片', 'url' => home_url('/ai-image/')),
+      ),
+    );
+    echo wp_json_encode($manifest, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    exit;
+  }
+
+  if ($path === '/sw.js') {
+    status_header(200);
+    nocache_headers();
+    header('Content-Type: application/javascript; charset=utf-8');
+    header('Service-Worker-Allowed: /');
+    echo file_get_contents(get_theme_file_path('pwa-sw.js'));
+    exit;
+  }
+
+  // SW 离线兜底页（SW install 时预缓存此地址）
+  if (isset($_GET['pwa-offline'])) {
+    status_header(200);
+    nocache_headers();
+    header('Content-Type: text/html; charset=utf-8');
+    $icon = get_theme_file_uri('assets/pwa/icon-192.png');
+    echo '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>当前离线 - didi AI</title>';
+    echo '<style>body{display:flex;min-height:100vh;align-items:center;justify-content:center;font-family:system-ui;background:#f6f8f7;margin:0}.box{text-align:center;padding:32px}.box img{width:96px;height:96px;border-radius:22px}h1{font-size:20px;color:#123;margin:18px 0 8px}p{color:#667;font-size:14px;margin:0 0 20px}button{background:#00a36c;color:#fff;border:0;border-radius:10px;padding:11px 34px;font-size:15px;cursor:pointer}</style></head>';
+    echo '<body><div class="box"><img src="' . esc_url($icon) . '" alt=""><h1>当前离线</h1><p>网络恢复后即可继续使用 didi AI</p><button onclick="location.reload()">重新连接</button></div></body></html>';
+    exit;
+  }
+});
+
+// PWA head 注入：manifest、主题色、iOS 主屏元数据
+add_action('wp_head', function () {
+  $pwa = untrailingslashit(get_theme_file_uri('assets/pwa'));
+  echo '<meta name="theme-color" content="#00a36c">' . "\n";
+  echo '<link rel="manifest" href="' . esc_url(home_url('/manifest.json')) . '">' . "\n";
+  echo '<link rel="apple-touch-icon" href="' . esc_url($pwa . '/apple-touch-icon.png') . '">' . "\n";
+  echo '<meta name="mobile-web-app-capable" content="yes">' . "\n";
+  echo '<meta name="apple-mobile-web-app-capable" content="yes">' . "\n";
+  echo '<meta name="apple-mobile-web-app-status-bar-style" content="default">' . "\n";
+  echo '<meta name="apple-mobile-web-app-title" content="didi AI">' . "\n";
+}, 1);
+
+/* ---- 多端客户端下载：/download 页、/download/* 文件流、/app-version.json 版本接口 ---- */
+function didi_ai_apps_dir() {
+  $dir = WP_CONTENT_DIR . '/uploads/apps';
+  if (!is_dir($dir)) wp_mkdir_p($dir);
+  return $dir;
+}
+function didi_ai_app_version() {
+  return array(
+    'version' => '1.0.0',
+    'apk'     => home_url('/download/didi-ai.apk'),
+    'win'     => home_url('/download/didi-ai-win-x64.zip'),
+    'mac'     => home_url('/download/didi-ai-mac-x64.zip'),
+    'page'    => home_url('/download'),
+    'notes'   => '首发版本',
+  );
+}
+add_action('template_redirect', function () {
+  $path = isset($_SERVER['REQUEST_URI']) ? parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) : '';
+  $path = rtrim($path, '/');
+
+  // 版本接口：Electron / APK 内嵌页启动时比对，有新版则提示升级
+  if ($path === '/app-version.json') {
+    status_header(200);
+    nocache_headers();
+    header('Content-Type: application/json; charset=utf-8');
+    echo wp_json_encode(didi_ai_app_version(), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+    exit;
+  }
+
+  // Android TWA 域名验证（Digital Asset Links）：与 android-app/app/keystore.jks 签名对应
+  if ($path === '/.well-known/assetlinks.json') {
+    status_header(200);
+    nocache_headers();
+    header('Content-Type: application/json; charset=utf-8');
+    $links = array(array(
+      'relation' => array('delegate_permission/common.handle_all_urls'),
+      'target'   => array(
+        'namespace'               => 'android_app',
+        'package_name'            => 'com.chacha.didiai',
+        'sha256_cert_fingerprints' => array('12:EA:E9:C1:E1:B7:8B:C3:2E:EF:7D:3E:EA:58:EE:37:F2:23:5E:E3:9D:36:31:75:15:FC:10:F1:97:35:84:6F'),
+      ),
+    ));
+    echo wp_json_encode($links, JSON_UNESCAPED_SLASHES);
+    exit;
+  }
+
+  // 安装包文件流：/download/<file> → wp-content/uploads/apps/<file>
+  if (preg_match('#^/download/([A-Za-z0-9._-]+)$#', $path, $m)) {
+    $file = didi_ai_apps_dir() . '/' . $m[1];
+    if (!is_readable($file)) {
+      status_header(404);
+      nocache_headers();
+      header('Content-Type: text/plain; charset=utf-8');
+      echo '安装包尚未上传，请稍后再试';
+      exit;
+    }
+    status_header(200);
+    nocache_headers();
+    header('Content-Type: ' . (str_ends_with($m[1], '.apk') ? 'application/vnd.android.package-archive' : 'application/zip'));
+    header('Content-Length: ' . (string) filesize($file));
+    header('Content-Disposition: attachment; filename="' . $m[1] . '"');
+    readfile($file);
+    exit;
+  }
+
+  if ($path !== '/download') return;
+
+  // /download 下载页（虚拟页：按平台检测自动推荐）
+  status_header(200);
+  nocache_headers();
+  header('Content-Type: text/html; charset=UTF-8');
+  $icon = get_theme_file_uri('assets/pwa/icon-192.png');
+  $v = didi_ai_app_version();
+  $ua = isset($_SERVER['HTTP_USER_AGENT']) ? strtolower($_SERVER['HTTP_USER_AGENT']) : '';
+  if (strpos($ua, 'android') !== false) $platform = 'android';
+  elseif (strpos($ua, 'iphone') !== false || strpos($ua, 'ipad') !== false || strpos($ua, 'ipod') !== false) $platform = 'ios';
+  elseif (strpos($ua, 'mac os') !== false) $platform = 'mac';
+  elseif (strpos($ua, 'windows') !== false) $platform = 'windows';
+  else $platform = 'web';
+  ?><!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>客户端下载 - didi AI</title>
+<link rel="icon" href="<?php echo esc_url($icon); ?>">
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f6f8f7;color:#1a2b24}
+.wrap{max-width:860px;margin:0 auto;padding:36px 18px 60px}
+.head{text-align:center;margin-bottom:26px}.head img{width:84px;height:84px;border-radius:20px;box-shadow:0 6px 24px rgba(0,163,108,.25)}
+.head h1{font-size:24px;margin:14px 0 6px}.head p{color:#5a6b63;font-size:14px;margin:0}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+.card{background:#fff;border-radius:16px;padding:22px 20px;border:2px solid transparent;box-shadow:0 2px 10px rgba(20,40,30,.05);position:relative}
+.card.reco{border-color:#00a36c;background:linear-gradient(180deg,#f2fbf7,#fff)}
+.card .reco-tag{position:absolute;top:-10px;right:14px;background:#00a36c;color:#fff;font-size:11px;border-radius:99px;padding:3px 10px}
+.card h2{font-size:16px;margin:10px 0 6px}.card p{font-size:13px;color:#5a6b63;line-height:1.7;margin:0 0 16px}
+.btn{display:block;text-align:center;background:#00a36c;color:#fff;text-decoration:none;border-radius:10px;padding:11px 0;font-size:14px;font-weight:600}
+.btn.ghost{background:#eef6f2;color:#00795a}
+.btn:hover{filter:brightness(1.06)}
+.btn.disabled{background:#c9d6d0;pointer-events:none}
+.ios-steps{font-size:13px;color:#3c4f46;background:#f4faf7;border-radius:10px;padding:12px 14px;line-height:2;margin-bottom:16px}
+.ios-steps b{color:#00a36c}
+.note{margin-top:26px;text-align:center;font-size:12px;color:#8a9a91;line-height:1.9}
+.note a{color:#00895f}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <img src="<?php echo esc_url($icon); ?>" alt="didi AI">
+    <h1>didi AI 客户端下载</h1>
+    <p>v<?php echo esc_html($v['version']); ?> · 手机、电脑多端同步 · AI对话 / 图片 / 视频 / PPT 一站完成</p>
+  </div>
+  <div class="grid">
+    <div class="card" data-p="android">
+      <h2>Android 安卓</h2>
+      <p>APK 直接安装，图标直达；应用内自动检测新版本并提示升级。</p>
+      <a class="btn" href="<?php echo esc_url($v['apk']); ?>">下载 APK（<?php echo esc_html($v['version']); ?>）</a>
+      <a class="btn ghost" style="margin-top:8px" href="/">或用 Chrome「安装应用」</a>
+    </div>
+    <div class="card" data-p="ios">
+      <h2>iPhone / iPad</h2>
+      <p>无需下载安装包，用 Safari 添加到主屏幕即可（iOS 官方方式）。</p>
+      <div class="ios-steps">
+        1. 用 <b>Safari</b> 打开 didi AI<br>
+        2. 点击底部 <b>⬆︎ 分享</b> 按钮<br>
+        3. 选择 <b>「添加到主屏幕」</b>
+      </div>
+      <a class="btn ghost" href="/">立即打开 didi AI</a>
+    </div>
+    <div class="card" data-p="windows">
+      <h2>Windows 电脑</h2>
+      <p>下载后解压，双击 <b>didi-ai.exe</b> 运行；内置新版本检测提示。</p>
+      <a class="btn" href="<?php echo esc_url($v['win']); ?>">下载 Windows 版</a>
+      <a class="btn ghost" style="margin-top:8px" href="/">或用 Edge/Chrome「安装应用」</a>
+    </div>
+    <div class="card" data-p="mac">
+      <h2>macOS 电脑</h2>
+      <p>下载解压后拖入「应用程序」；首次打开需右键 →「打开」绕过公证提示。</p>
+      <a class="btn" href="<?php echo esc_url($v['mac']); ?>">下载 Mac 版</a>
+      <a class="btn ghost" style="margin-top:8px" href="/">或用 Chrome「安装应用」</a>
+    </div>
+  </div>
+  <div class="note">
+    版本 v<?php echo esc_html($v['version']); ?>（<?php echo esc_html($v['notes']); ?>）· 各端均由官方站点提供 · 遇到问题请到 <a href="/forum">论坛</a> 反馈<br>
+    iOS 用户的「升级」：主屏应用会自动加载最新版本；如遇缓存问题，删除主屏图标后重新添加即可。
+  </div>
+</div>
+<script>
+// 平台自动推荐：命中的卡片置顶高亮
+(function () {
+  var p = '<?php echo esc_js($platform); ?>';
+  if (p === 'web') return;
+  document.querySelectorAll('.card').forEach(function (c) {
+    if (c.getAttribute('data-p') === p) {
+      c.classList.add('reco');
+      var tag = document.createElement('span'); tag.className = 'reco-tag'; tag.textContent = '检测到你的平台';
+      c.appendChild(tag);
+      c.parentNode.insertBefore(c, c.parentNode.firstChild);
+    }
+  });
+})();
+</script>
+</body>
+</html>
+  <?php
+  exit;
+});
+
+// PWA 客户端：SW 注册、版本升级提示、Android 安装引导、iOS 添加主屏指引
+add_action('wp_footer', function () {
+  ?>
+  <div id="didi-pwa-ui"></div>
+  <style>
+    #didi-pwa-ui .pwa-toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:2147483646;display:flex;align-items:center;gap:12px;background:#10241c;color:#fff;border-radius:14px;padding:12px 14px 12px 18px;font-size:14px;box-shadow:0 8px 30px rgba(0,0,0,.28);max-width:92vw}
+    #didi-pwa-ui .pwa-toast button{background:#00a36c;color:#fff;border:0;border-radius:9px;padding:8px 18px;font-size:14px;cursor:pointer;white-space:nowrap}
+    #didi-pwa-ui .pwa-toast .x{background:transparent;color:#9fb5ab;padding:4px 6px;font-size:16px}
+    #didi-pwa-ui .pwa-banner{position:fixed;left:12px;right:12px;bottom:12px;z-index:2147483646;display:flex;align-items:center;gap:12px;background:#fff;border-radius:16px;padding:12px 14px;box-shadow:0 10px 40px rgba(0,0,0,.18);border:1px solid #e6efe9}
+    #didi-pwa-ui .pwa-banner img{width:44px;height:44px;border-radius:11px;flex:none}
+    #didi-pwa-ui .pwa-banner .t{flex:1;min-width:0}
+    #didi-pwa-ui .pwa-banner .t b{display:block;font-size:14px;color:#123}
+    #didi-pwa-ui .pwa-banner .t span{display:block;font-size:12px;color:#687}
+    #didi-pwa-ui .pwa-banner .go{background:#00a36c;color:#fff;border:0;border-radius:9px;padding:9px 16px;font-size:13px;cursor:pointer;white-space:nowrap}
+    #didi-pwa-ui .pwa-banner .x{background:transparent;border:0;color:#99a;font-size:18px;cursor:pointer;padding:4px}
+    #didi-pwa-ui .pwa-ios .share{display:inline-block;padding:0 3px}
+  </style>
+  <script>
+  (function () {
+    var ui = document.getElementById('didi-pwa-ui');
+    var ICON = <?php echo wp_json_encode(get_theme_file_uri('assets/pwa/icon-192.png')); ?>;
+    var DISMISS_KEY = 'didi-pwa-banner-dismissed';
+    var DISMISS_DAYS = 7;
+    function dismissed() {
+      try { var v = localStorage.getItem(DISMISS_KEY); return v && Date.now() - parseInt(v, 10) < DISMISS_DAYS * 864e5; } catch (e) { return false; }
+    }
+    function dismiss() { try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch (e) {} }
+    var standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+    /* ---- SW 注册 + 版本升级提示 ---- */
+    if ('serviceWorker' in navigator) {
+      var reloading = false;
+      navigator.serviceWorker.addEventListener('controllerchange', function () {
+        if (reloading) return;
+        reloading = true;
+        window.location.reload();
+      });
+      navigator.serviceWorker.register('<?php echo esc_js(home_url('/sw.js')); ?>').then(function (reg) {
+        reg.addEventListener('updatefound', function () {
+          var nw = reg.installing;
+          if (!nw) return;
+          nw.addEventListener('statechange', function () {
+            if (nw.state === 'installed' && navigator.serviceWorker.controller) showUpdateToast(nw);
+          });
+        });
+        // 周期性检查升级（每 60 分钟）
+        setInterval(function () { reg.update().catch(function () {}); }, 3600000);
+      }).catch(function () {});
+    }
+    function showUpdateToast(worker) {
+      if (ui.querySelector('.pwa-toast')) return;
+      var t = document.createElement('div');
+      t.className = 'pwa-toast';
+      t.innerHTML = '<span>didi AI 已有新版本</span><button type="button">立即升级</button><button type="button" class="x">✕</button>';
+      t.querySelector('button').onclick = function () { worker.postMessage({ type: 'SKIP_WAITING' }); };
+      t.querySelector('.x').onclick = function () { t.remove(); };
+      ui.appendChild(t);
+    }
+
+    /* ---- Android / 桌面 Chrome：beforeinstallprompt 安装引导 ---- */
+    var deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', function (e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (standalone || dismissed() || ui.querySelector('.pwa-banner')) return;
+      var b = document.createElement('div');
+      b.className = 'pwa-banner';
+      b.innerHTML = '<img src="' + ICON + '" alt=""><div class="t"><b>安装 didi AI 应用</b><span>添加到桌面，秒开直达</span></div><button type="button" class="go">安装</button><button type="button" class="x">✕</button>';
+      b.querySelector('.go').onclick = function () {
+        b.remove();
+        if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; }
+      };
+      b.querySelector('.x').onclick = function () { dismiss(); b.remove(); };
+      ui.appendChild(b);
+    });
+    window.addEventListener('appinstalled', function () {
+      var b = ui.querySelector('.pwa-banner'); if (b) b.remove();
+    });
+
+    /* ---- iOS Safari：添加到主屏幕指引（iOS 无安装包生态，主屏 PWA 即应用） ---- */
+    var isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    var isSafari = /safari/i.test(navigator.userAgent) && !/crios|fxios|edgios|opt\/|ucbrowser|qqbrowser/i.test(navigator.userAgent);
+    if (isIOS && isSafari && !standalone && !dismissed()) {
+      var g = document.createElement('div');
+      g.className = 'pwa-banner pwa-ios';
+      g.innerHTML = '<img src="' + ICON + '" alt=""><div class="t"><b>添加到主屏幕，体验更好</b><span>点击 Safari 底部 <span class="share">⬆︎</span> 分享按钮 → 「添加到主屏幕」</span></div><button type="button" class="x">✕</button>';
+      g.querySelector('.x').onclick = function () { dismiss(); g.remove(); };
+      ui.appendChild(g);
+    }
+  })();
+  </script>
+  <?php
+}, 99);
 
 // llms.txt：为生成式引擎（GEO）提供站点结构化摘要
 add_action('template_redirect', function () {

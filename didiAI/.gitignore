@@ -179,3 +179,13 @@ wp-content/uploads/didi-projects/
 *.lz
 *.lzma
 *.iso
+
+# Multi-platform apps (PWA/Electron/Android)
+desktop-app/node_modules/
+desktop-app/dist/
+android-app/app/build/
+android-app/.gradle/
+android-app/local.properties
+*.apk
+*.jks
+wp-content/uploads/apps/
