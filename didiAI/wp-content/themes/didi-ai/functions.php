@@ -1758,7 +1758,7 @@ add_action('template_redirect', function () {
   </div>
 </div>
 <script>
-// 平台自动推荐：命中的卡片置顶高亮
+// 平台提示：命中的卡片加高亮角标（固定顺序，不移动卡片位置）
 (function () {
   var p = '<?php echo esc_js($platform); ?>';
   document.querySelectorAll('.card').forEach(function (c) {
@@ -1766,7 +1766,6 @@ add_action('template_redirect', function () {
       c.classList.add('reco');
       var tag = document.createElement('span'); tag.className = 'reco-tag'; tag.textContent = '检测到你的平台';
       c.appendChild(tag);
-      c.parentNode.insertBefore(c, c.parentNode.firstChild);
     }
   });
 })();
