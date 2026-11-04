@@ -1708,7 +1708,6 @@ add_action('template_redirect', function () {
       <h2>Android 安卓 APK</h2>
       <p>APK 直接安装，图标直达；应用内自动检测新版本并提示升级。</p>
       <a class="btn" href="<?php echo esc_url($v['apk']); ?>">下载 APK（<?php echo esc_html($v['version']); ?>）</a>
-      <div class="store-pending">Google Play 商店 · 即将上架（开发者账号配置中）</div>
     </div>
     <div class="card" data-p="ios">
       <h2>PWA 应用（添加主屏幕）</h2>
@@ -1719,7 +1718,13 @@ add_action('template_redirect', function () {
         Android / 电脑：地址栏右侧 <b>「安装应用」</b> 图标
       </div>
       <a class="btn ghost" href="/">立即打开 didi AI</a>
-      <div class="store-pending">App Store（iOS）· 即将上架（Apple 开发者账号配置中）</div>
+    </div>
+    <div class="card pending">
+      <span class="soon-tag">即将上架</span>
+      <h2>应用商店</h2>
+      <p>商店版本已打包就绪，待开发者账号配置完成后上架。</p>
+      <div class="store-pending">Google Play（安卓商店）· 准备中</div>
+      <div class="store-pending" style="margin-top:6px">App Store（苹果商店）· 准备中</div>
     </div>
     <div class="card" data-p="windows">
       <h2>Windows 电脑</h2>
