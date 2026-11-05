@@ -1059,6 +1059,8 @@ function didi_ai_guest_access_control() {
   if ($path === '/') return;
   // sitemap 全变体放行：/sitemap.xml、/sitemap_index.xml、/post-sitemap.xml 等
   if (strpos($path, 'sitemap') !== false) return;
+  // 404 页放行：不存在的路径走 WP 原生 404（对搜索引擎返回正确状态码）
+  if (is_404()) return;
   // SEO/GEO：内容页对游客完全公开（文章/产品/帖子详情、归档列表），与爬虫看到的内容一致，避免 cloaking
   if (is_singular(array('post', 'product', 'forum_topic'))) return;
   if (is_archive() || is_home()) return;

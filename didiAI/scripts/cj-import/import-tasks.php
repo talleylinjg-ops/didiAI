@@ -37,7 +37,7 @@ function cjStageList($_CJ) {
         $s['listPage']++;
         stateSave($_CJ, $s);
         $total = isset($res['data']['total']) ? $res['data']['total'] : '?';
-        echo "页 {$s['listPage']}: +" . count($res['data']['list']) . "（累计 " . cjStagingCount($_CJ) . "/$total）\n";
+        echo "页 {$s['listPage']}: +" . count($res['data']['list']) . "（累计 " . cjStagingCount($_CJ) . "/{$total}）\n";
         if (count($res['data']['list']) < $pageSize) {
             $s['listDone'] = true;
             stateSave($_CJ, $s);
@@ -118,7 +118,18 @@ function cjStageImport($_CJ, $limit) {
         if (!$item || empty($item['pid'])) continue;
         $pid = $item['pid'];
 
+        /* 列表行自带 SKU：先按 SKU 查重，旧品直接跳过（免详情 API；仅新品才调详情） */
+        $lsku = isset($item['productSku']) ? (string) $item['productSku'] : '';
+        if ($lsku !== '' && wc_get_product_id_by_sku($lsku)) {
+            $s['skipped']++;
+            $s['importCursor'] = $idx + 1;
+            $processed++;
+            continue;
+        }
+
+        $__t0 = microtime(true);
         $res = cjGet($_CJ, '/v1/product/query', array('pid' => $pid));
+        file_put_contents('/tmp/opencode/import-timing.log', "line=$idx pid=$pid detail=" . round((microtime(true) - $__t0) * 1000) . "ms\n", FILE_APPEND | LOCK_EX);
         if (empty($res['data'])) {
             fwrite(STDERR, "  [$pid] 详情失败: " . (isset($res['message']) ? $res['message'] : '') . "\n");
             $s['failed'][] = $pid;
@@ -134,7 +145,9 @@ function cjStageImport($_CJ, $limit) {
             stateSave($_CJ, $s);
             continue;
         }
+        $__t1 = microtime(true);
         $err = cjImportProduct($_CJ, $d);
+        file_put_contents('/tmp/opencode/import-timing.log', "line=$idx pid=$pid product=" . round((microtime(true) - $__t1) * 1000) . "ms\n", FILE_APPEND | LOCK_EX);
         if ($err) {
             fwrite(STDERR, "  [$pid] 导入失败: $err\n");
             $s['failed'][] = $pid;
