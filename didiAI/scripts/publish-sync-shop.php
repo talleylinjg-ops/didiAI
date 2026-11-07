@@ -2,7 +2,17 @@
 // shop.daqi.asia 源站同步脚本：按 ID 白名单把产品 draft -> publish 并补 slug
 // 用法：php publish-sync-shop.php ids.txt
 // 幂等：已 publish 的 ID 自动跳过；slug 查重使用源站自身数据库
-require __DIR__ . '/../../wp-load.php';
+// 自动向上定位 wp-load.php（兼容不同容器目录结构）
+$wpRoot = '';
+$dir = __DIR__;
+for ($i = 0; $i < 5; $i++) {
+    if (file_exists($dir . '/wp-load.php')) { $wpRoot = $dir; break; }
+    $parent = dirname($dir);
+    if ($parent === $dir) break;
+    $dir = $parent;
+}
+if (!$wpRoot) { fwrite(STDERR, "找不到 wp-load.php，请把本脚本放到 WordPress 目录树内再执行\n"); exit(1); }
+require $wpRoot . '/wp-load.php';
 
 global $wpdb;
 
