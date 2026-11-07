@@ -31,7 +31,7 @@ $_CJ = array(
         'bucket'   => 'didi-ai-mirror',
         'accountId'=> getenv('CF_ACCOUNT_ID') ?: '2e33f078edc00ade4b25e61526d6f544',
         'token'    => getenv('CF_API_TOKEN') ?: '',
-        'publicBase' => 'https://didi-ai-mirror.talley-linjg.workers.dev',
+        'publicBase' => 'https://img.chacha.asia',
     ),
 );
 

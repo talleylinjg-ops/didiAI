@@ -425,7 +425,8 @@ function cjStageImages($_CJ, $limit, $shardIdx = 0, $shardTotal = 1) {
                     $wpdb->query(call_user_func_array(array($wpdb, 'prepare'), array_merge(array($sql), $params)));
                     update_post_meta($wpid, '_cj_images', array_values($map));
                 }
-                update_post_meta($wpid, '_cj_images_migrated', 'yes');
+                // 上传全部失败时保持 no，下次重试；有映射或确认无图才标记完成
+                update_post_meta($wpid, '_cj_images_migrated', $map ? 'yes' : 'no');
                 $st['done']++;
                 file_put_contents($_CJ['imgState'], json_encode($st));
             }
