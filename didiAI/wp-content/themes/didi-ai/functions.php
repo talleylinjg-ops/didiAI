@@ -1652,6 +1652,8 @@ add_action('template_redirect', function () {
   header('Content-Type: text/html; charset=UTF-8');
   $icon = get_theme_file_uri('assets/pwa/icon-192.png');
   $v = didi_ai_app_version();
+  /* 二维码用公网地址（手机无法访问 localhost）；正式部署后改为 https://daqi.asia */
+  $qrBase = 'https://8080-4e40fe0ce2a47756.monkeycode-ai.online';
   $ua = isset($_SERVER['HTTP_USER_AGENT']) ? strtolower($_SERVER['HTTP_USER_AGENT']) : '';
   if (strpos($ua, 'android') !== false) {
     /* 华为 HarmonyOS 的 UA 同样含 Android 字样，按是否含 Harmony 判定 */
@@ -1672,6 +1674,7 @@ add_action('template_redirect', function () {
 <title>客户端下载 - didi AI</title>
 <link rel="icon" href="<?php echo esc_url($icon); ?>">
 <link rel='stylesheet' id='didi-ai-css' href='<?php echo esc_url(get_theme_file_uri('style.css')); ?>' media='all' />
+<script src="<?php echo esc_url(get_theme_file_uri('assets/js/qrcode.min.js')); ?>"></script>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#f7f8fa;min-height:100vh;display:flex;flex-direction:column}
@@ -1711,6 +1714,9 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
 .ios-steps b{color:#1668dc}
 .note{margin-top:36px;text-align:center;font-size:12px;color:#86909c;line-height:1.9}
 .note a{color:#1668dc;text-decoration:none}
+.qr{margin-top:14px;padding-top:14px;border-top:1px dashed #e5e6eb;text-align:center}
+.qr-img svg{width:92px;height:92px;display:inline-block}
+.qr-label{font-size:11px;color:#86909c;margin-top:6px;letter-spacing:.5px}
 .note a:hover{text-decoration:underline}
 @media (max-width:640px){.hero h1{font-size:32px}.hero .app-icon{width:80px;height:80px;border-radius:20px}main{padding:36px 16px 32px}.grid{gap:14px}}
 </style>
@@ -1742,6 +1748,7 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
       <h2>Android 安卓 APK</h2>
       <p>APK 直接安装，图标直达；应用内自动检测新版本并提示升级。</p>
       <a class="btn" href="<?php echo esc_url($v['apk']); ?>">下载 APK（<?php echo esc_html($v['version']); ?>）</a>
+      <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/download/didi-ai.apk'); ?>"></div><div class="qr-label">手机扫码下载 APK</div></div>
     </div>
     <div class="card" data-p="ios">
       <div class="ico">&#128241;</div>
@@ -1753,26 +1760,28 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
         Android / 电脑：地址栏右侧 <b>「安装应用」</b> 图标
       </div>
       <a class="btn ghost" href="/">立即打开 didi AI</a>
+      <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/'); ?>"></div><div class="qr-label">手机扫码打开 · 添加主屏幕</div></div>
     </div>
-  </div>
-  <div class="grid-rest">
     <div class="card" data-p="windows">
       <div class="ico">&#128421;</div>
       <h2>Windows 电脑</h2>
       <p>下载后解压，双击 <b>didi-ai.exe</b> 运行；内置新版本检测提示。</p>
       <a class="btn" href="<?php echo esc_url($v['win']); ?>">下载 Windows 版</a>
+      <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/download/didi-ai-win-x64.zip'); ?>"></div><div class="qr-label">手机扫码转发下载</div></div>
     </div>
     <div class="card" data-p="mac">
       <div class="ico">&#128186;</div>
       <h2>macOS 电脑</h2>
       <p>下载解压后拖入「应用程序」；首次打开需右键 →「打开」绕过公证提示。</p>
       <a class="btn" href="<?php echo esc_url($v['mac']); ?>">下载 Mac 版</a>
+      <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/download/didi-ai-mac-x64.zip'); ?>"></div><div class="qr-label">手机扫码转发下载</div></div>
     </div>
     <div class="card" data-p="linux">
       <div class="ico">&#128039;</div>
       <h2>Linux 电脑</h2>
       <p>下载解压后运行 <b>didi-ai</b>（需已安装 Chrome 或 Chromium 作为运行时）。</p>
       <a class="btn" href="<?php echo esc_url($v['linux']); ?>">下载 Linux 版</a>
+      <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/download/didi-ai-linux-x64.tar.gz'); ?>"></div><div class="qr-label">手机扫码转发下载</div></div>
     </div>
     <div class="card" data-p="harmony">
       <div class="ico">&#127749;</div>
@@ -1780,6 +1789,7 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
       <p>HarmonyOS 4 及以下：直接安装上方 Android APK 即可；HarmonyOS NEXT：待华为应用市场上架后安装。</p>
       <a class="btn" href="<?php echo esc_url($v['apk']); ?>">下载 APK 安装</a>
       <span class="btn disabled" style="margin-top:8px">华为应用市场 · 即将上架</span>
+      <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/download/didi-ai.apk'); ?>"></div><div class="qr-label">手机扫码下载 APK</div></div>
     </div>
     <div class="card pending">
       <span class="soon-tag">即将上架</span>
@@ -1807,6 +1817,19 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
       c.appendChild(tag);
     }
   });
+  // 生成各卡二维码（内联库，无外部请求）
+  if (typeof qrcode === 'function') {
+    document.querySelectorAll('.qr-img').forEach(function (el) {
+      var url = el.getAttribute('data-qr');
+      if (!url) return;
+      try {
+        var qr = qrcode(0, 'M');
+        qr.addData(url);
+        qr.make();
+        el.innerHTML = qr.createSvgTag({ cellSize: 3, margin: 0, scalable: true });
+      } catch (e) {}
+    });
+  }
 })();
 </script>
 </body>
