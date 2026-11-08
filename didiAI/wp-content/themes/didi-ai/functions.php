@@ -1686,7 +1686,9 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
 .hero .sub{font-size:15px;color:#4e5969;margin:0 0 18px;line-height:1.8}
 .hero .ver{display:inline-block;font-size:12px;font-weight:600;color:#1668dc;background:linear-gradient(90deg,rgba(22,104,220,.08),rgba(106,61,232,.08));border:1px solid rgba(22,104,220,.25);border-radius:99px;padding:5px 16px;letter-spacing:.5px}
 .grid-top{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
-.grid-rest{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:18px}
+.grid-rest{display:grid;grid-template-columns:repeat(5,1fr);gap:18px}
+@media (max-width:1024px){.grid-rest{grid-template-columns:repeat(3,1fr)}}
+@media (max-width:640px){.grid-rest{grid-template-columns:1fr;gap:14px}}
 @media (max-width:640px){.grid-top{grid-template-columns:1fr;gap:14px}}
 .card{background:#fff;border:1px solid #e5e6eb;border-radius:20px;padding:24px 22px;box-shadow:0 2px 12px rgba(22,40,80,.04);position:relative;transition:transform .2s,box-shadow .2s,border-color .2s;display:flex;flex-direction:column}
 .card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(22,104,220,.12);border-color:#c6d4f5}
@@ -1754,12 +1756,6 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
     </div>
   </div>
   <div class="grid-rest">
-    <div class="card" data-p="web">
-      <div class="ico">&#127760;</div>
-      <h2>H5 网页版</h2>
-      <p>无需安装任何应用，浏览器打开即用；所有客户端数据与本站实时同步。</p>
-      <a class="btn" href="/">立即打开 didi AI</a>
-    </div>
     <div class="card" data-p="windows">
       <div class="ico">&#128421;</div>
       <h2>Windows 电脑</h2>
