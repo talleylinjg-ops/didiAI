@@ -1668,50 +1668,85 @@ add_action('template_redirect', function () {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex">
+<meta name="theme-color" content="#1668dc">
 <title>客户端下载 - didi AI</title>
 <link rel="icon" href="<?php echo esc_url($icon); ?>">
+<link rel='stylesheet' id='didi-ai-css' href='<?php echo esc_url(get_theme_file_uri('style.css')); ?>' media='all' />
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#f6f8f7;color:#1a2b24}
-.wrap{max-width:860px;margin:0 auto;padding:36px 18px 60px}
-.head{text-align:center;margin-bottom:26px}.head img{width:84px;height:84px;border-radius:20px;box-shadow:0 6px 24px rgba(0,163,108,.25)}
-.head h1{font-size:24px;margin:14px 0 6px}.head p{color:#5a6b63;font-size:14px;margin:0}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
-.card{background:#fff;border-radius:16px;padding:22px 20px;border:2px solid transparent;box-shadow:0 2px 10px rgba(20,40,30,.05);position:relative}
-.card.reco{border-color:#00a36c;background:linear-gradient(180deg,#f2fbf7,#fff)}
-.card .reco-tag{position:absolute;top:-10px;right:14px;background:#00a36c;color:#fff;font-size:11px;border-radius:99px;padding:3px 10px}
-.card.pending{opacity:.72;border:2px dashed #c4d2cb;background:#fafcfb}
-.card .soon-tag{position:absolute;top:-10px;right:14px;background:#8fa39a;color:#fff;font-size:11px;border-radius:99px;padding:3px 10px}
-.store-pending{margin-top:10px;background:#f0f4f2;border:1px dashed #c4d2cb;border-radius:9px;padding:9px 12px;font-size:12px;color:#6b7d74;text-align:center}
-.card h2{font-size:16px;margin:10px 0 6px}.card p{font-size:13px;color:#5a6b63;line-height:1.7;margin:0 0 16px}
-.btn{display:block;text-align:center;background:#00a36c;color:#fff;text-decoration:none;border-radius:10px;padding:11px 0;font-size:14px;font-weight:600}
-.btn.ghost{background:#eef6f2;color:#00795a}
-.btn:hover{filter:brightness(1.06)}
-.btn.disabled{background:#c9d6d0;pointer-events:none}
-.ios-steps{font-size:13px;color:#3c4f46;background:#f4faf7;border-radius:10px;padding:12px 14px;line-height:2;margin-bottom:16px}
-.ios-steps b{color:#00a36c}
-.note{margin-top:26px;text-align:center;font-size:12px;color:#8a9a91;line-height:1.9}
-.note a{color:#00895f}
+*{box-sizing:border-box}
+body{margin:0;background:#f7f8fa;min-height:100vh;display:flex;flex-direction:column}
+header{position:relative;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid #e5e6eb}
+.nav-links{display:flex;gap:18px;align-items:center}
+.nav-links a{font-size:14px;color:#4e5969;text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:#1668dc}
+main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
+.hero{text-align:center;margin-bottom:44px}
+.hero .app-icon{width:96px;height:96px;border-radius:24px;box-shadow:0 12px 40px rgba(22,104,220,.22);display:block;margin:0 auto}
+.hero h1{font-size:44px;font-weight:700;letter-spacing:2px;margin:22px 0 10px;background:linear-gradient(90deg,#1668dc,#6a3de8);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hero .sub{font-size:15px;color:#4e5969;margin:0 0 18px;line-height:1.8}
+.hero .ver{display:inline-block;font-size:12px;font-weight:600;color:#1668dc;background:linear-gradient(90deg,rgba(22,104,220,.08),rgba(106,61,232,.08));border:1px solid rgba(22,104,220,.25);border-radius:99px;padding:5px 16px;letter-spacing:.5px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:18px}
+.card{background:#fff;border:1px solid #e5e6eb;border-radius:20px;padding:24px 22px;box-shadow:0 2px 12px rgba(22,40,80,.04);position:relative;transition:transform .2s,box-shadow .2s,border-color .2s;display:flex;flex-direction:column}
+.card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(22,104,220,.12);border-color:#c6d4f5}
+.card .ico{width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,rgba(22,104,220,.1),rgba(106,61,232,.12));display:flex;align-items:center;justify-content:center;font-size:23px;margin-bottom:14px}
+.card h2{font-size:16.5px;margin:0 0 7px;color:#1f2329}
+.card p{font-size:13px;color:#4e5969;line-height:1.75;margin:0 0 18px;flex:1}
+.btn{display:block;text-align:center;background:linear-gradient(90deg,#1668dc,#6a3de8);color:#fff;text-decoration:none;border-radius:12px;padding:12px 0;font-size:14px;font-weight:600;transition:opacity .2s,box-shadow .2s}
+.btn:hover{opacity:.9;box-shadow:0 6px 18px rgba(22,104,220,.3)}
+.btn.ghost{background:#eef2fd;color:#1668dc}
+.btn.ghost:hover{box-shadow:none;background:#e2e9fc}
+.btn.disabled{background:#e5e6eb;color:#86909c;pointer-events:none}
+.card.reco{border-color:#1668dc;background:linear-gradient(180deg,#f4f8ff,#fff 55%)}
+.card.reco .ico{background:linear-gradient(135deg,#1668dc,#6a3de8)}
+.card .reco-tag{position:absolute;top:-11px;right:14px;background:linear-gradient(90deg,#1668dc,#6a3de8);color:#fff;font-size:11px;font-weight:600;border-radius:99px;padding:4px 12px;box-shadow:0 4px 12px rgba(22,104,220,.3)}
+.card.pending{border-style:dashed;background:#fafbfc}
+.card.pending:hover{transform:none;box-shadow:0 2px 12px rgba(22,40,80,.04);border-color:#e5e6eb}
+.card .soon-tag{position:absolute;top:-11px;right:14px;background:#c9cdd4;color:#fff;font-size:11px;border-radius:99px;padding:4px 12px}
+.store-pending{margin-top:10px;background:#f7f8fa;border:1px dashed #e5e6eb;border-radius:10px;padding:10px 12px;font-size:12px;color:#86909c;text-align:center}
+.ios-steps{font-size:12.5px;color:#4e5969;background:#f7f8fa;border-radius:12px;padding:12px 14px;line-height:2;margin-bottom:18px}
+.ios-steps b{color:#1668dc}
+.note{margin-top:36px;text-align:center;font-size:12px;color:#86909c;line-height:1.9}
+.note a{color:#1668dc;text-decoration:none}
+.note a:hover{text-decoration:underline}
+@media (max-width:640px){.hero h1{font-size:32px}.hero .app-icon{width:80px;height:80px;border-radius:20px}main{padding:36px 16px 32px}.grid{gap:14px}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="head">
-    <img src="<?php echo esc_url($icon); ?>" alt="didi AI">
+<header>
+  <div class="nav-right">
+    <div class="nav-left">
+      <a class="logo-small" href="/">didi AI</a>
+      <nav class="nav-links">
+        <a href="/">首页</a>
+        <a href="/recharge">充值</a>
+        <a href="/member">会员</a>
+        <a href="/forum">论坛</a>
+      </nav>
+    </div>
+  </div>
+</header>
+<main>
+  <div class="hero">
+    <img class="app-icon" src="<?php echo esc_url($icon); ?>" alt="didi AI">
     <h1>didi AI 客户端下载</h1>
-    <p>v<?php echo esc_html($v['version']); ?> · 手机、电脑多端同步 · AI对话 / 图片 / 视频 / PPT 一站完成</p>
+    <p class="sub">手机、电脑多端同步 · AI对话 / 图片 / 视频 / PPT 一站完成</p>
+    <span class="ver">v<?php echo esc_html($v['version']); ?> · 全平台官方发布</span>
   </div>
   <div class="grid">
     <div class="card" data-p="web">
+      <div class="ico">&#127760;</div>
       <h2>H5 网页版</h2>
       <p>无需安装任何应用，浏览器打开即用；所有客户端数据与本站实时同步。</p>
       <a class="btn" href="/">立即打开 didi AI</a>
     </div>
     <div class="card" data-p="android">
+      <div class="ico">&#129517;</div>
       <h2>Android 安卓 APK</h2>
       <p>APK 直接安装，图标直达；应用内自动检测新版本并提示升级。</p>
       <a class="btn" href="<?php echo esc_url($v['apk']); ?>">下载 APK（<?php echo esc_html($v['version']); ?>）</a>
     </div>
     <div class="card" data-p="ios">
+      <div class="ico">&#128241;</div>
       <h2>PWA 应用（添加主屏幕）</h2>
       <p>全平台通用：iPhone 用 Safari，Android/电脑用 Chrome 或 Edge，通过「添加到主屏幕 / 安装应用」变成桌面应用。</p>
       <div class="ios-steps">
@@ -1723,27 +1758,32 @@ add_action('template_redirect', function () {
     </div>
     <div class="card pending">
       <span class="soon-tag">即将上架</span>
+      <div class="ico">&#127757;</div>
       <h2>应用商店</h2>
       <p>商店版本已打包就绪，待开发者账号配置完成后上架。</p>
       <div class="store-pending">Google Play（安卓商店）· 准备中</div>
       <div class="store-pending" style="margin-top:6px">App Store（苹果商店）· 准备中</div>
     </div>
     <div class="card" data-p="windows">
+      <div class="ico">&#128421;</div>
       <h2>Windows 电脑</h2>
       <p>下载后解压，双击 <b>didi-ai.exe</b> 运行；内置新版本检测提示。</p>
       <a class="btn" href="<?php echo esc_url($v['win']); ?>">下载 Windows 版</a>
     </div>
     <div class="card" data-p="mac">
+      <div class="ico">&#128186;</div>
       <h2>macOS 电脑</h2>
       <p>下载解压后拖入「应用程序」；首次打开需右键 →「打开」绕过公证提示。</p>
       <a class="btn" href="<?php echo esc_url($v['mac']); ?>">下载 Mac 版</a>
     </div>
     <div class="card" data-p="linux">
+      <div class="ico">&#128039;</div>
       <h2>Linux 电脑</h2>
       <p>下载解压后运行 <b>didi-ai</b>（需已安装 Chrome 或 Chromium 作为运行时）。</p>
       <a class="btn" href="<?php echo esc_url($v['linux']); ?>">下载 Linux 版</a>
     </div>
     <div class="card" data-p="harmony">
+      <div class="ico">&#127749;</div>
       <h2>HarmonyOS 鸿蒙</h2>
       <p>HarmonyOS 4 及以下：直接安装上方 Android APK 即可；HarmonyOS NEXT：待华为应用市场上架后安装。</p>
       <a class="btn" href="<?php echo esc_url($v['apk']); ?>">下载 APK 安装</a>
@@ -1754,7 +1794,8 @@ add_action('template_redirect', function () {
     版本 v<?php echo esc_html($v['version']); ?>（<?php echo esc_html($v['notes']); ?>）· 各端均由官方站点提供 · 遇到问题请到 <a href="/forum">论坛</a> 反馈<br>
     iOS 用户的「升级」：主屏应用会自动加载最新版本；如遇缓存问题，删除主屏图标后重新添加即可。
   </div>
-</div>
+</main>
+<footer>didi AI</footer>
 <script>
 // 平台提示：命中的卡片加高亮角标（固定顺序，不移动卡片位置）
 (function () {
