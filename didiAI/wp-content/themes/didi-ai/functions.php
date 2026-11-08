@@ -1689,7 +1689,7 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
 .hero .sub{font-size:15px;color:#4e5969;margin:0 0 18px;line-height:1.8}
 .hero .ver{display:inline-block;font-size:12px;font-weight:600;color:#1668dc;background:linear-gradient(90deg,rgba(22,104,220,.08),rgba(106,61,232,.08));border:1px solid rgba(22,104,220,.25);border-radius:99px;padding:5px 16px;letter-spacing:.5px}
 .grid-top{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
-.grid-rest{display:grid;grid-template-columns:repeat(5,1fr);gap:18px}
+.grid-rest{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
 @media (max-width:1024px){.grid-rest{grid-template-columns:repeat(3,1fr)}}
 @media (max-width:640px){.grid-rest{grid-template-columns:1fr;gap:14px}}
 @media (max-width:640px){.grid-top{grid-template-columns:1fr;gap:14px}}
@@ -1748,6 +1748,7 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
       <h2>Android 安卓 APK</h2>
       <p>APK 直接安装，图标直达；应用内自动检测新版本并提示升级。</p>
       <a class="btn" href="<?php echo esc_url($v['apk']); ?>">下载 APK（<?php echo esc_html($v['version']); ?>）</a>
+      <div class="store-pending" style="margin-top:12px">Google Play（安卓商店）· 准备中</div>
       <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/download/didi-ai.apk'); ?>"></div><div class="qr-label">手机扫码下载 APK</div></div>
     </div>
     <div class="card" data-p="ios">
@@ -1760,6 +1761,7 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
         Android / 电脑：地址栏右侧 <b>「安装应用」</b> 图标
       </div>
       <a class="btn ghost" href="/">立即打开 didi AI</a>
+      <div class="store-pending" style="margin-top:12px">App Store（苹果商店）· 准备中</div>
       <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/'); ?>"></div><div class="qr-label">手机扫码打开 · 添加主屏幕</div></div>
     </div>
     <div class="card" data-p="windows">
@@ -1790,14 +1792,6 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
       <a class="btn" href="<?php echo esc_url($v['apk']); ?>">下载 APK 安装</a>
       <span class="btn disabled" style="margin-top:8px">华为应用市场 · 即将上架</span>
       <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/download/didi-ai.apk'); ?>"></div><div class="qr-label">手机扫码下载 APK</div></div>
-    </div>
-    <div class="card pending">
-      <span class="soon-tag">即将上架</span>
-      <div class="ico">&#127757;</div>
-      <h2>应用商店</h2>
-      <p>商店版本已打包就绪，待开发者账号配置完成后上架。</p>
-      <div class="store-pending">Google Play（安卓商店）· 准备中</div>
-      <div class="store-pending" style="margin-top:6px">App Store（苹果商店）· 准备中</div>
     </div>
   </div>
   <div class="note">
