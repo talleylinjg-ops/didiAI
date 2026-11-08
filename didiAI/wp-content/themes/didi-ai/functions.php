@@ -1685,7 +1685,9 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
 .hero h1{font-size:44px;font-weight:700;letter-spacing:2px;margin:22px 0 10px;background:linear-gradient(90deg,#1668dc,#6a3de8);-webkit-background-clip:text;background-clip:text;color:transparent}
 .hero .sub{font-size:15px;color:#4e5969;margin:0 0 18px;line-height:1.8}
 .hero .ver{display:inline-block;font-size:12px;font-weight:600;color:#1668dc;background:linear-gradient(90deg,rgba(22,104,220,.08),rgba(106,61,232,.08));border:1px solid rgba(22,104,220,.25);border-radius:99px;padding:5px 16px;letter-spacing:.5px}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:18px}
+.grid-top{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
+.grid-rest{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:18px}
+@media (max-width:640px){.grid-top{grid-template-columns:1fr;gap:14px}}
 .card{background:#fff;border:1px solid #e5e6eb;border-radius:20px;padding:24px 22px;box-shadow:0 2px 12px rgba(22,40,80,.04);position:relative;transition:transform .2s,box-shadow .2s,border-color .2s;display:flex;flex-direction:column}
 .card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(22,104,220,.12);border-color:#c6d4f5}
 .card .ico{width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,rgba(22,104,220,.1),rgba(106,61,232,.12));display:flex;align-items:center;justify-content:center;font-size:23px;margin-bottom:14px}
@@ -1732,13 +1734,7 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
     <p class="sub">手机、电脑多端同步 · AI对话 / 图片 / 视频 / PPT 一站完成</p>
     <span class="ver">v<?php echo esc_html($v['version']); ?> · 全平台官方发布</span>
   </div>
-  <div class="grid">
-    <div class="card" data-p="web">
-      <div class="ico">&#127760;</div>
-      <h2>H5 网页版</h2>
-      <p>无需安装任何应用，浏览器打开即用；所有客户端数据与本站实时同步。</p>
-      <a class="btn" href="/">立即打开 didi AI</a>
-    </div>
+  <div class="grid-top">
     <div class="card" data-p="android">
       <div class="ico">&#129517;</div>
       <h2>Android 安卓 APK</h2>
@@ -1747,7 +1743,7 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
     </div>
     <div class="card" data-p="ios">
       <div class="ico">&#128241;</div>
-      <h2>PWA 应用（添加主屏幕）</h2>
+      <h2>iOS &amp; PWA 应用（添加主屏幕）</h2>
       <p>全平台通用：iPhone 用 Safari，Android/电脑用 Chrome 或 Edge，通过「添加到主屏幕 / 安装应用」变成桌面应用。</p>
       <div class="ios-steps">
         iPhone（Safari）：<br>
@@ -1756,13 +1752,13 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
       </div>
       <a class="btn ghost" href="/">立即打开 didi AI</a>
     </div>
-    <div class="card pending">
-      <span class="soon-tag">即将上架</span>
-      <div class="ico">&#127757;</div>
-      <h2>应用商店</h2>
-      <p>商店版本已打包就绪，待开发者账号配置完成后上架。</p>
-      <div class="store-pending">Google Play（安卓商店）· 准备中</div>
-      <div class="store-pending" style="margin-top:6px">App Store（苹果商店）· 准备中</div>
+  </div>
+  <div class="grid-rest">
+    <div class="card" data-p="web">
+      <div class="ico">&#127760;</div>
+      <h2>H5 网页版</h2>
+      <p>无需安装任何应用，浏览器打开即用；所有客户端数据与本站实时同步。</p>
+      <a class="btn" href="/">立即打开 didi AI</a>
     </div>
     <div class="card" data-p="windows">
       <div class="ico">&#128421;</div>
@@ -1788,6 +1784,14 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
       <p>HarmonyOS 4 及以下：直接安装上方 Android APK 即可；HarmonyOS NEXT：待华为应用市场上架后安装。</p>
       <a class="btn" href="<?php echo esc_url($v['apk']); ?>">下载 APK 安装</a>
       <span class="btn disabled" style="margin-top:8px">华为应用市场 · 即将上架</span>
+    </div>
+    <div class="card pending">
+      <span class="soon-tag">即将上架</span>
+      <div class="ico">&#127757;</div>
+      <h2>应用商店</h2>
+      <p>商店版本已打包就绪，待开发者账号配置完成后上架。</p>
+      <div class="store-pending">Google Play（安卓商店）· 准备中</div>
+      <div class="store-pending" style="margin-top:6px">App Store（苹果商店）· 准备中</div>
     </div>
   </div>
   <div class="note">
