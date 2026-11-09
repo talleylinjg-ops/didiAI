@@ -24,15 +24,10 @@ $products = json_decode(file_get_contents($dataFile), true);
 if (!is_array($products)) { fwrite(STDERR, "数据文件解析失败\n"); exit(1); }
 fwrite(STDERR, "载入产品=" . count($products) . "\n");
 
-$imported = 0; $imgOnly = 0; $skipped = 0; $failed = 0; $processed = 0;
+$imported = 0; $imgOnly = 0; $skipped = 0; $failed = 0; $processed = 0; $pubFixed = 0; $slugFixed = 0;
 
 foreach ($products as $idx => $pd) {
     $sku = $pd['sku'];
-    $done = $wpdb->get_var($wpdb->prepare(
-        "SELECT m.meta_value FROM {$wpdb->postmeta} m JOIN {$wpdb->postmeta} f ON f.post_id=m.post_id AND f.meta_key='_shop_sync_done'
-         JOIN {$wpdb->posts} p ON p.ID=m.post_id
-         WHERE m.meta_key='_sku' AND m.meta_value=%s AND p.post_type='product' LIMIT 1", $sku));
-    if ($done === 'yes') { $skipped++; continue; }
 
     $existId = $wpdb->get_var($wpdb->prepare(
         "SELECT p.ID FROM {$wpdb->postmeta} m JOIN {$wpdb->posts} p ON p.ID=m.post_id
@@ -40,8 +35,19 @@ foreach ($products as $idx => $pd) {
 
     $pid = 0;
     if ($existId) {
-        // 半成品：只补图片与 meta
+        // 已存在：对齐发布状态与 slug（修复 draft 或 slug 不一致导致的 404），再补图与 meta
         $pid = (int) $existId;
+        $row = $wpdb->get_row($wpdb->prepare(
+            "SELECT post_status, post_name FROM {$wpdb->posts} WHERE ID=%d", $pid));
+        if ($row && $row->post_status !== 'publish') {
+            wp_update_post(array('ID' => $pid, 'post_status' => 'publish'));
+            $pubFixed++;
+        }
+        $wantSlug = $pd['slug'] ? $pd['slug'] : sanitize_title($pd['title']);
+        if ($row && $row->post_name !== $wantSlug) {
+            wp_update_post(array('ID' => $pid, 'post_name' => $wantSlug));
+            $slugFixed++;
+        }
         $imgOnly++;
     } else {
         // slug 冲突处理
@@ -113,7 +119,7 @@ foreach ($products as $idx => $pd) {
 
     $processed++;
     if ($processed % $batch === 0) {
-        fwrite(STDERR, "progress=$processed new=$imported imgOnly=$imgOnly skip=$skipped fail=$failed\n");
+        fwrite(STDERR, "progress=$processed new=$imported imgOnly=$imgOnly pub=$pubFixed slug=$slugFixed fail=$failed\n");
         // 防内存增长，分批退出（重跑幂等续）
         if ($processed >= 200) {
             file_put_contents(__DIR__ . '/sync-progress.tmp', "$idx");
@@ -123,7 +129,7 @@ foreach ($products as $idx => $pd) {
     }
 }
 
-fwrite(STDERR, "DONE 新导入=$imported 补图=$imgOnly 跳过=$skipped 失败=$failed\n");
+fwrite(STDERR, "DONE 新导入=$imported 补图=$imgOnly 补发布=$pubFixed 修slug=$slugFixed 失败=$failed\n");
 
 // 下载外链图并创建附件（shop 端媒体库）
 function shopSideloadImage($url, $parentId) {
