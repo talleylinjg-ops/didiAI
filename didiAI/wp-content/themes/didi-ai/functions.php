@@ -1588,12 +1588,13 @@ function didi_ai_apps_dir() {
   return $dir;
 }
 function didi_ai_app_version() {
+  /* 安装包托管在 R2 桶 daqi-images（media.daqi.asia 自定义域），源站无需存文件 */
   return array(
     'version' => '1.0.0',
-    'apk'     => home_url('/download/didi-ai.apk'),
-    'win'     => home_url('/download/didi-ai-win-x64.zip'),
-    'mac'     => home_url('/download/didi-ai-mac-x64.zip'),
-    'linux'   => home_url('/download/didi-ai-linux-x64.tar.gz'),
+    'apk'     => 'https://media.daqi.asia/didiAI/download/didi-ai.apk',
+    'win'     => 'https://media.daqi.asia/didiAI/download/didi-ai-win-x64.zip',
+    'mac'     => 'https://media.daqi.asia/didiAI/download/didi-ai-mac-x64.zip',
+    'linux'   => 'https://media.daqi.asia/didiAI/download/didi-ai-linux-x64.tar.gz',
     'page'    => home_url('/download'),
     'notes'   => '首发版本',
   );
@@ -1655,8 +1656,8 @@ add_action('template_redirect', function () {
   header('Content-Type: text/html; charset=UTF-8');
   $icon = get_theme_file_uri('assets/pwa/icon-192.png');
   $v = didi_ai_app_version();
-  /* 二维码用公网地址（手机无法访问 localhost）；正式部署后改为 https://daqi.asia */
-  $qrBase = 'https://8080-4e40fe0ce2a47756.monkeycode-ai.online';
+  /* 二维码指向 R2 CDN 直链（media.daqi.asia），与线上下载按钮同源永久可用 */
+  $qrBase = 'https://media.daqi.asia/didiAI/download';
   $ua = isset($_SERVER['HTTP_USER_AGENT']) ? strtolower($_SERVER['HTTP_USER_AGENT']) : '';
   if (strpos($ua, 'android') !== false) {
     /* 华为 HarmonyOS 的 UA 同样含 Android 字样，按是否含 Harmony 判定 */
@@ -1765,7 +1766,7 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
       </div>
       <a class="btn ghost" href="/">立即打开 didi AI</a>
       <div class="store-pending" style="margin-top:12px">App Store（苹果商店）· 准备中</div>
-      <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/'); ?>"></div><div class="qr-label">手机扫码打开 · 添加主屏幕</div></div>
+      <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr(home_url('/', 'https')); ?>"></div><div class="qr-label">手机扫码打开 · 添加主屏幕</div></div>
     </div>
     <div class="card" data-p="windows">
       <div class="ico">&#128421;</div>
