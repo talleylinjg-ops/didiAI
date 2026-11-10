@@ -23,6 +23,9 @@ function didi_ai_enqueue() {
 }
 add_action('wp_enqueue_scripts', 'didi_ai_enqueue');
 
+// 禁用 XML-RPC（无使用场景，关闭暴力破解与 pingback 攻击面）
+add_filter('xmlrpc_enabled', '__return_false');
+
 // 安全响应头（WP 动态页；静态文件由 router.php 输出）
 add_action('send_headers', function () {
   header('X-Content-Type-Options: nosniff');
