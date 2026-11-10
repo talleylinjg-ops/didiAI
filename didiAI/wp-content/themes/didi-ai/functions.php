@@ -1753,7 +1753,7 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
       <p>APK 直接安装，图标直达；应用内自动检测新版本并提示升级。</p>
       <a class="btn" href="<?php echo esc_url($v['apk']); ?>">下载 APK（<?php echo esc_html($v['version']); ?>）</a>
       <div class="store-pending" style="margin-top:12px">Google Play（安卓商店）· 准备中</div>
-      <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/download/didi-ai.apk'); ?>"></div><div class="qr-label">手机扫码下载 APK</div></div>
+      <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/didi-ai.apk'); ?>"></div><div class="qr-label">手机扫码下载 APK</div></div>
     </div>
     <div class="card" data-p="ios">
       <div class="ico">&#128241;</div>
@@ -1766,28 +1766,28 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
       </div>
       <a class="btn ghost" href="/">立即打开 didi AI</a>
       <div class="store-pending" style="margin-top:12px">App Store（苹果商店）· 准备中</div>
-      <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr(home_url('/', 'https')); ?>"></div><div class="qr-label">手机扫码打开 · 添加主屏幕</div></div>
+      <div class="qr"><div class="qr-img" data-qr="https://daqi.asia/"></div><div class="qr-label">手机扫码打开 · 添加主屏幕</div></div>
     </div>
     <div class="card" data-p="windows">
       <div class="ico">&#128421;</div>
       <h2>Windows 电脑</h2>
       <p>下载后解压，双击 <b>didi-ai.exe</b> 运行；内置新版本检测提示。</p>
       <a class="btn" href="<?php echo esc_url($v['win']); ?>">下载 Windows 版</a>
-      <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/download/didi-ai-win-x64.zip'); ?>"></div><div class="qr-label">手机扫码转发下载</div></div>
+      <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/didi-ai-win-x64.zip'); ?>"></div><div class="qr-label">手机扫码转发下载</div></div>
     </div>
     <div class="card" data-p="mac">
       <div class="ico">&#128186;</div>
       <h2>macOS 电脑</h2>
       <p>下载解压后拖入「应用程序」；首次打开需右键 →「打开」绕过公证提示。</p>
       <a class="btn" href="<?php echo esc_url($v['mac']); ?>">下载 Mac 版</a>
-      <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/download/didi-ai-mac-x64.zip'); ?>"></div><div class="qr-label">手机扫码转发下载</div></div>
+      <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/didi-ai-mac-x64.zip'); ?>"></div><div class="qr-label">手机扫码转发下载</div></div>
     </div>
     <div class="card" data-p="linux">
       <div class="ico">&#128039;</div>
       <h2>Linux 电脑</h2>
       <p>下载解压后运行 <b>didi-ai</b>（需已安装 Chrome 或 Chromium 作为运行时）。</p>
       <a class="btn" href="<?php echo esc_url($v['linux']); ?>">下载 Linux 版</a>
-      <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/download/didi-ai-linux-x64.tar.gz'); ?>"></div><div class="qr-label">手机扫码转发下载</div></div>
+      <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/didi-ai-linux-x64.tar.gz'); ?>"></div><div class="qr-label">手机扫码转发下载</div></div>
     </div>
     <div class="card" data-p="harmony">
       <div class="ico">&#127749;</div>
@@ -1795,7 +1795,7 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
       <p>HarmonyOS 4 及以下：直接安装上方 Android APK 即可；HarmonyOS NEXT：待华为应用市场上架后安装。</p>
       <a class="btn" href="<?php echo esc_url($v['apk']); ?>">下载 APK 安装</a>
       <span class="btn disabled" style="margin-top:8px">华为应用市场 · 即将上架</span>
-      <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/download/didi-ai.apk'); ?>"></div><div class="qr-label">手机扫码下载 APK</div></div>
+      <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/didi-ai.apk'); ?>"></div><div class="qr-label">手机扫码下载 APK</div></div>
     </div>
   </div>
   <div class="note">
