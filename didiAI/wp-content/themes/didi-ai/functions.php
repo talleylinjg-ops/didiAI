@@ -1771,21 +1771,21 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
     <div class="card" data-p="windows">
       <div class="ico">&#128421;</div>
       <h2>Windows 电脑</h2>
-      <p>下载后解压，双击 <b>didi-ai.exe</b> 运行；内置新版本检测提示。</p>
+      <p>下载解压，打开 <b>didi-ai-win32-x64</b> 文件夹，双击 <b>didi-ai.exe</b> 运行；内置新版本检测提示。</p>
       <a class="btn" href="<?php echo esc_url($v['win']); ?>">下载 Windows 版</a>
       <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/didi-ai-win-x64.zip'); ?>"></div><div class="qr-label">手机扫码转发下载</div></div>
     </div>
     <div class="card" data-p="mac">
       <div class="ico">&#128186;</div>
       <h2>macOS 电脑</h2>
-      <p>下载解压后拖入「应用程序」；首次打开需右键 →「打开」绕过公证提示。</p>
+      <p>解压后打开文件夹，将 <b>didi-ai.app</b> 拖入「应用程序」；首次打开需右键 →「打开」绕过公证提示。</p>
       <a class="btn" href="<?php echo esc_url($v['mac']); ?>">下载 Mac 版</a>
       <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/didi-ai-mac-x64.zip'); ?>"></div><div class="qr-label">手机扫码转发下载</div></div>
     </div>
     <div class="card" data-p="linux">
       <div class="ico">&#128039;</div>
       <h2>Linux 电脑</h2>
-      <p>下载解压后运行 <b>didi-ai</b>（需已安装 Chrome 或 Chromium 作为运行时）。</p>
+      <p>下载解压，进入 <b>didi-ai-linux-x64</b> 文件夹运行 <b>didi-ai</b>（自带运行时，无需安装依赖）；无法启动时先执行 <b>chmod +x didi-ai</b>。</p>
       <a class="btn" href="<?php echo esc_url($v['linux']); ?>">下载 Linux 版</a>
       <div class="qr"><div class="qr-img" data-qr="<?php echo esc_attr($qrBase . '/didi-ai-linux-x64.tar.gz'); ?>"></div><div class="qr-label">手机扫码转发下载</div></div>
     </div>
