@@ -36,8 +36,9 @@ function didi_ai_menu_items() {
   return array(
     'blog'    => array('url' => home_url('/blog'), 'label' => '博客'),
     'forum'   => array('url' => home_url('/forum'), 'label' => '论坛'),
-    'recharge'=> array('url' => home_url('/recharge'), 'label' => '充值'),
-    'admin'   => array('url' => admin_url(), 'label' => 'Admin'),
+    'theme'   => array('url' => home_url('/theme'), 'label' => '主题'),
+    'geo'     => array('url' => home_url('/geo'), 'label' => 'GEO'),
+    'seo'     => array('url' => home_url('/seo'), 'label' => 'SEO'),
   );
 }
 
@@ -1057,7 +1058,7 @@ function didi_ai_guest_access_control() {
 
   // 访客（未登录）公开页面：首页、博客、论坛、充值、会员、登录注册、WP 基础接口
   // 以及搜索引擎 / 生成式引擎必需的文件（robots / sitemap / llms）
-  $public = array('/blog', '/forum', '/recharge', '/member', '/login', '/register', '/download', '/app-version.json', '/.well-known/', '/wp-login.php', '/wp-admin', '/wp-json', '/feed', '/wp-cron.php', '/xmlrpc.php', '/robots.txt', '/llms.txt', '/manifest.json', '/sw.js', '/sitemap.xml', '/wp-sitemap.xml', '/wp-sitemap');
+  $public = array('/blog', '/forum', '/theme', '/geo', '/seo', '/recharge', '/member', '/login', '/register', '/download', '/app-version.json', '/.well-known/', '/wp-login.php', '/wp-admin', '/wp-json', '/feed', '/wp-cron.php', '/xmlrpc.php', '/robots.txt', '/llms.txt', '/manifest.json', '/sw.js', '/sitemap.xml', '/wp-sitemap.xml', '/wp-sitemap');
 
   if ($path === '/') return;
   // sitemap 全变体放行：/sitemap.xml、/sitemap_index.xml、/post-sitemap.xml 等
@@ -1731,9 +1732,9 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
       <a class="logo-small" href="/">didi AI</a>
       <nav class="nav-links">
         <a href="/">首页</a>
+        <?php echo didi_ai_nav_links(); ?>
         <a href="/recharge">充值</a>
         <a href="/member">会员</a>
-        <a href="/forum">论坛</a>
       </nav>
     </div>
   </div>
@@ -1948,6 +1949,9 @@ add_action('template_redirect', function () {
   $out .= "\n## 内容\n";
   $out .= '- [博客](' . $home . '/blog)：AI 模型能力、应用实践与行业观察。' . "\n";
   $out .= '- [论坛](' . $home . '/forum)：AI 使用经验与技巧交流。' . "\n";
+  $out .= '- [主题中心](' . $home . '/theme)：写作、演示、视觉、开发、视频与社区六大方向场景模板，一键直达对应工具。' . "\n";
+  $out .= '- [GEO 优化](' . $home . '/geo)：生成式引擎优化实践清单（llms.txt、AI 爬虫策略、结构化数据）。' . "\n";
+  $out .= '- [SEO 优化](' . $home . '/seo)：站点 SEO 基础设施说明与实践指南（sitemap、JSON-LD、缓存性能）。' . "\n";
   $out .= "\n## 免费能力\n";
   $out .= "- 图片（didi Media）：文生图、图生图、修图、抠图、画质增强。\n";
   $out .= "- 音频（didi Media）：文字转语音（TTS）；语音识别（ASR）；音频剪辑。\n";
