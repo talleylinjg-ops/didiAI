@@ -48,6 +48,7 @@
     <div class="nav-left">
       <a class="logo-small" href="<?php echo esc_url(home_url('/')); ?>">didi AI</a>
       <nav class="nav-links">
+        <?php echo didi_ai_nav_links(); ?>
         <?php if (is_user_logged_in()) : ?>
           <a href="<?php echo esc_url(home_url('/recharge')); ?>">充值</a>
           <a href="<?php echo esc_url(home_url('/member')); ?>" style="display:flex;align-items:center;gap:4px;"><span data-i18n="member"></span><b id="nav-balance" style="color:#1668dc;font-size:12px;" title="我的点数"></b></a>

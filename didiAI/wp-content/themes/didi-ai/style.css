@@ -311,3 +311,26 @@ footer a:hover{color:#1668dc}
   white-space: nowrap;
   border: 0;
 }
+
+/* ===== 简单落地页（GEO/SEO/主题中心） ===== */
+.page-simple{max-width:1080px;margin:0 auto;padding:40px 20px 60px}
+.ps-hero{text-align:center;padding:24px 0 8px}
+.ps-hero h1{font-size:30px;margin:0 0 12px;background:linear-gradient(90deg,#1668dc,#6a3de8);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ps-lead{color:#4b5563;font-size:15px;max-width:760px;margin:0 auto 16px;line-height:1.8}
+.ps-badges{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:14px 0 6px}
+.ps-badges span{background:linear-gradient(90deg,rgba(22,104,220,.08),rgba(106,61,232,.08));border:1px solid #e5e6eb;border-radius:999px;padding:5px 14px;font-size:13px;color:#1668dc}
+.ps-section{margin-top:34px}
+.ps-section h2{font-size:21px;margin:0 0 14px;padding-left:10px;border-left:4px solid #6a3de8}
+.ps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.ps-grid-4{grid-template-columns:repeat(4,1fr)}
+.ps-card{background:#fff;border:1px solid #e5e6eb;border-radius:16px;padding:18px 16px;transition:box-shadow .2s,transform .2s}
+.ps-card h3{margin:0 0 8px;font-size:15.5px;color:#1f2937}
+.ps-card p{margin:0;font-size:13px;color:#6b7280;line-height:1.7}
+.ps-card.ps-link{display:block;text-decoration:none}
+.ps-card.ps-link:hover{box-shadow:0 8px 24px rgba(22,104,220,.12);transform:translateY(-2px)}
+.ps-card.ps-link h3{color:#1668dc}
+.ps-faq details{background:#fff;border:1px solid #e5e6eb;border-radius:12px;padding:14px 18px;margin-bottom:10px}
+.ps-faq summary{cursor:pointer;font-weight:600;font-size:14.5px;color:#1f2937}
+.ps-faq p{margin:10px 0 0;font-size:13.5px;color:#6b7280;line-height:1.8}
+@media (max-width:1024px){.ps-grid,.ps-grid-4{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:640px){.ps-grid,.ps-grid-4{grid-template-columns:1fr}.ps-hero h1{font-size:23px}}
