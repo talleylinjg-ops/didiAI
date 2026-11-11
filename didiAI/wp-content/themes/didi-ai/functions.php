@@ -1694,9 +1694,8 @@ main{flex:1;width:100%;max-width:1080px;margin:0 auto;padding:48px 20px 40px}
 .hero .ver{display:inline-block;font-size:12px;font-weight:600;color:#1668dc;background:linear-gradient(90deg,rgba(22,104,220,.08),rgba(106,61,232,.08));border:1px solid rgba(22,104,220,.25);border-radius:99px;padding:5px 16px;letter-spacing:.5px}
 .grid-top{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px}
 .grid-rest{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}
-@media (max-width:1024px){.grid-rest{grid-template-columns:repeat(3,1fr)}}
-@media (max-width:640px){.grid-rest{grid-template-columns:1fr;gap:14px}}
-@media (max-width:640px){.grid-top{grid-template-columns:1fr;gap:14px}}
+@media (max-width:1024px){.grid-rest{grid-template-columns:repeat(4,1fr);gap:12px}.grid-top{gap:12px}.card{padding:20px 16px}}
+@media (max-width:640px){.grid-rest{grid-template-columns:repeat(4,1fr);gap:8px}.grid-top{grid-template-columns:1fr 1fr;gap:8px}.card{padding:14px 10px}.card .ico{font-size:30px}.card h2{font-size:16px}.card p{font-size:12px}.card .btn{font-size:13px;padding:9px 14px}.store-pending{font-size:10px}}
 .card{background:#fff;border:1px solid #e5e6eb;border-radius:20px;padding:24px 22px;box-shadow:0 2px 12px rgba(22,40,80,.04);position:relative;transition:transform .2s,box-shadow .2s,border-color .2s;display:flex;flex-direction:column}
 .card:hover{transform:translateY(-3px);box-shadow:0 12px 32px rgba(22,104,220,.12);border-color:#c6d4f5}
 .card .ico{width:46px;height:46px;border-radius:13px;background:linear-gradient(135deg,rgba(22,104,220,.1),rgba(106,61,232,.12));display:flex;align-items:center;justify-content:center;font-size:23px;margin-bottom:14px}
